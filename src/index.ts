@@ -1,10 +1,7 @@
-import foo from './foo'
+import globInit from './inits/global'
 
-Object.assign(global, {foo})
-// global["foo"] =  foo
-
-import {show} from './bar'
-
-console.log(`hello world! -- ${foo}`)
-
-show()
+(async () => {
+    await globInit.init()
+    logger.error('kkkkkkk')
+    console.log('over.')
+})()
