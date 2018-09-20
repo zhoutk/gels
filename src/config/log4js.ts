@@ -1,9 +1,9 @@
 export default {
     appenders: { 
         console: { type: 'console' },
-        cheese: { type: 'file', filename: 'logs.log' } 
+        file: { type: 'file', filename: 'logs.log' } 
     },
     categories: { 
-        default: { appenders: ['console', 'cheese'], level: 'debug' } 
+        default: { appenders: ['console', 'file'], level: 'debug' } 
     }
 }
