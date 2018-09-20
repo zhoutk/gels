@@ -1,7 +1,7 @@
 {
   "name": "arest",
   "version": "0.1.0",
-  "description": "a rest server use kao2, typescript & mongo db.",
+  "description": "A framework, which use koa2, mysql, graphql & typescript , to build micro service rapidly, safely & efficiently.",
   "main": "app.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -14,7 +14,7 @@
     "rest",
     "koa2",
     "typescript",
-    "mongo"
+    "mysql"
   ],
   "dependencies": {
     "bluebird": "^3.5.2",

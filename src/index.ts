@@ -2,6 +2,6 @@ import globInit from './inits/global'
 
 (async () => {
     await globInit.init()
-    logger.error('kkkkkkk')
+    global.logger.debug('global is ok.')
     console.log('over.')
 })()

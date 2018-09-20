@@ -1,3 +1,11 @@
-declare var NODE_ENV: string
-declare var ROOT_PATH: string
-declare var logger: any
+import {Logger} from 'log4js'
+
+declare global {    
+    namespace NodeJS {        
+        interface Global {
+            logger: Logger,
+            NODE_ENV: string,
+            ROOT_PATH: string,
+        }
+    }
+}

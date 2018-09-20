@@ -1,5 +1,5 @@
 export default {
     isDev() {
-        return NODE_ENV !== 'prod'
+        return global.NODE_ENV !== 'prod'
     }
 }
