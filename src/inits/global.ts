@@ -1,4 +1,4 @@
-import lodash from 'lodash'
+import * as lodash from 'lodash'
 import * as Bluebird from 'bluebird'
 import tasks from './tasks'
 import GlobUtils from '../common/globUtils'
