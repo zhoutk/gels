@@ -18,14 +18,15 @@
   ],
   "dependencies": {
     "bluebird": "^3.5.2",
-    "body-parser": "^1.18.3",
     "debug": "^4.0.1",
     "graphql": "^0.13.0",
     "koa": "^2.5.3",
+    "koa-body": "^4.0.4",
     "koa-graphql": "^0.7.5",
     "lodash": "^4.17.11",
     "log4js": "^3.0.5",
-    "mysql2": "^1.6.1"
+    "mysql2": "^1.6.1",
+    "require-dir": "^1.0.0"
   },
   "author": "zhoutk@189.cn",
   "license": "MIT",
@@ -44,6 +45,7 @@
     "@types/log4js": "^2.3.5",
     "@types/mysql": "^2.15.5",
     "@types/node": "^10.9.4",
+    "@types/require-dir": "^0.3.0",
     "tslint": "^5.11.0",
     "typescript": "^3.0.3"
   }
