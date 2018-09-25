@@ -2,6 +2,7 @@ import * as lodash from 'lodash'
 import * as Bluebird from 'bluebird'
 import tasks from './tasks'
 import GlobUtils from '../common/globUtils'
+import CONFIGS from '../config/configs'
 
 export default {
     async init() {
@@ -11,6 +12,7 @@ export default {
             Promise: Bluebird,
             __: lodash,
             globUtils: new GlobUtils(),
+            CONFIGS
         })
         Object.assign(global,
             await tasks.run()
