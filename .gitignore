@@ -8,6 +8,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 **/configs.ts
+**/*.js
+**/*.js.map
 
 # Runtime data
 pids

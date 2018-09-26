@@ -1,5 +1,5 @@
 import * as Koa from 'koa'
-import server from './inits'
+import Startup from './inits'
 
 //加载中间件
 export default {
@@ -45,7 +45,7 @@ export default {
       }
     }
     //其他始始化处理  directory socket schedule ...
-    await server.init(app)
+    await new Startup().init(app)
     return app
   },
   async loadMiddleware(name, ...args) {
