@@ -7,12 +7,8 @@ export default {
     const app = new Koa()
     //支持 X-Forwarded-Host
     app.proxy = true
-    //cookie 密钥
-    //在进行cookie签名时，只有设置 signed 为 true 的时候，才会使用密钥进行加密：
-    //ctx.cookies.set('name', 'tobi', { signed: true });
-    // app.keys = [APP_CONFIG.secret || 'secret key string']
     const middlewares = [
-    //   'logger', //记录所用方式与时间
+      'logger', //记录所用方式与时间
     //   'globalError', // 全局错误处理
     //   'error', // 使用自定义错误
     //   'send', //send

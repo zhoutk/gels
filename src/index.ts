@@ -15,7 +15,7 @@ import appIniter from './app'
         ctx.body = 'Hello Koa2'
       })
       
-    await app.listen(port, () => {
+    app.listen(port, () => {
         global.logger.info(`current running environment is ${global.NODE_ENV}`)
         global.logger.info(`✅ 启动地址 http://127.0.0.1:${port}`)
     })
