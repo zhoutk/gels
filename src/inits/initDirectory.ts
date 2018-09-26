@@ -4,7 +4,7 @@ export default {
     async init(app) {
         const initDirs = global.CONFIGS.inits.directory.dirs
         for (let dir of initDirs) {
-            let dirPath = `${global.ROOT_PATH}/${global.globUtils.isDev() ? 'dist/' : ''}${dir}`
+            let dirPath = `${global.ROOT_PATH}/${dir}`
             const exists = fs.existsSync(dirPath)
             if (!exists) {
                 mkdirp.sync(dirPath)

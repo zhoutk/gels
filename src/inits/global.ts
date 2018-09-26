@@ -6,9 +6,10 @@ import CONFIGS from '../config/configs'
 
 export default {
     async init() {
+        const env = process.env.NODE_ENV || 'dev'            //dev - 开发; prod - 生产； test - 测试;
         Object.assign(global, {
-            ROOT_PATH: process.cwd(),
-            NODE_ENV: process.env.NODE_ENV || 'dev',    //dev - 开发; prod - 生产； test - 测试;
+            ROOT_PATH: `${process.cwd()}${env === 'prod' ? '' : '/dist'}`,
+            NODE_ENV: env,    
             Promise: Bluebird,
             __: lodash,
             globUtils: new GlobUtils(),
