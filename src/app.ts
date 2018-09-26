@@ -9,23 +9,11 @@ export default {
     app.proxy = true
     const middlewares = [
       'logger', //记录所用方式与时间
-    //   'globalError', // 全局错误处理
-    //   'error', // 使用自定义错误
-    //   'send', //send
-    //   'favicon', //favicon
+      'globalError', // 全局错误处理
     //   'conditional', //配合etag
     //   'etag', //etag 客户端缓存处理
-    //   'session', //session处理
       'bodyParser', //body解析
-    //   'json', // 传输JSON
-    //   'views', //模板文件
     //   'rewrite', //url重写
-      // 默认静态文件夹 无路径前缀
-    //   ['static', APP_CONFIG.staticPath],
-      // 文件上传对应的静态文件夹 前缀upload
-    //   ['static', APP_CONFIG.uploadPath, APP_CONFIG.uploadStaticPrefix],
-      // 本项目中的public静态文件夹 前缀@
-    //   ['static', ROOT_PATH + '/public', '@'],
     //   ['cors'],
     //   ['router', { debug, logger }]
     ]

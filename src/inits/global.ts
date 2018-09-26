@@ -12,11 +12,33 @@ export default {
             NODE_ENV: env,    
             Promise: Bluebird,
             __: lodash,
+            jsReponse(status: Number, message = '', data = []) {
+                if (Array.isArray(data))
+                    return { status, message, data }
+                else 
+                    return Object.assign({ status, message }, data)
+            },
             globUtils: new GlobUtils(),
-            CONFIGS
+            CONFIGS,
+            koaError(ctx: any, status: number, message: string, data = []) {
+                ctx.ErrCode = status
+                return new KoaErr({ message, status })
+            }
         })
         Object.assign(global,
             await tasks.run()
         )
+    }
+}
+
+class KoaErr extends Error {
+    public status: Number
+    constructor({ message = 'Error', status = 500 } = {}, ...args) {
+        super()
+        this.message = message
+        this.status = status
+        if (args.length > 0) {
+            Object.assign(this, args[0])
+        }
     }
 }

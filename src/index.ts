@@ -31,6 +31,7 @@ import appIniter from './app'
         } else if ( ctx.url === '/' && ctx.method === 'POST' ) {
           // 当POST请求的时候，中间件koa-bodyparser解析POST表单里的数据，并显示出来
           let postData = ctx.request.body
+          throw global.koaError(ctx, 102, 'asgsdhdfjh')
           ctx.body = postData
         } else {
           // 其他请求显示404
