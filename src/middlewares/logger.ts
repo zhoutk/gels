@@ -13,7 +13,9 @@ export default () => {
                 color.cyan(`${ctx.url}`),
                 (ctx.status >= 400 ? color.redBright : color.greenBright)(`[${ctx.status}]`),
                 '-',
-                color.yellow(`${diff}ms`)
+                color.yellow(`${diff}ms`),
+                'params',
+                color.green(`${JSON.stringify(ctx.method === 'POST' || ctx.method === 'PUT' ? ctx.request.body : ctx.request.query)}`)
             ]
             global.logger.debug(msgs.join(' '))
         }
