@@ -4,10 +4,11 @@ export default {
     async init(app) {
         const initDirs = global.CONFIGS.inits.directory.dirs
         for (let dir of initDirs) {
-            const exists = fs.existsSync(dir)
+            let dirPath = `${global.ROOT_PATH}/${global.globUtils.isDev() ? 'dist/' : ''}${dir}`
+            const exists = fs.existsSync(dirPath)
             if (!exists) {
-                mkdirp.sync(dir)
-                global.logger.debug(`make directory ${dir} `)
+                mkdirp.sync(dirPath)
+                global.logger.debug(`make directory ${dirPath} `)
             }
         }
     }
