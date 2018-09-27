@@ -13,7 +13,7 @@ export default {
       'conditional', //配合etag
       'etag', //etag 客户端缓存处理
       'bodyParser', //body解析
-    //   'rewrite', //url重写
+      'rewrite', //url重写
       ['cors'],
     //   ['router', { debug, logger }]
     ]
