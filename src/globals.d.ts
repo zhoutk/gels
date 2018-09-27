@@ -12,7 +12,7 @@ declare global {
             logger: Logger,
             NODE_ENV: string,
             ROOT_PATH: string,
-            globUtils: GlobUtils,
+            tools: GlobUtils,
             __: LODASH,
             jsReponse: (status: number, message: string, data?: any) => { status: number, message: string, data: any },
             koaError: (ctx: any, status: number, message: string) => any,

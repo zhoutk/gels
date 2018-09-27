@@ -18,7 +18,7 @@ export default {
                 else 
                     return Object.assign({ status, message }, data)
             },
-            globUtils: new GlobUtils(),
+            tools: new GlobUtils(),
             CONFIGS,
             koaError(ctx: any, status: number, message: string, data = []) {
                 ctx.ErrCode = status
