@@ -10,11 +10,11 @@ export default {
     const middlewares = [
       'logger', //记录所用方式与时间
       'globalError', // 全局错误处理
-    //   'conditional', //配合etag
-    //   'etag', //etag 客户端缓存处理
+      'conditional', //配合etag
+      'etag', //etag 客户端缓存处理
       'bodyParser', //body解析
     //   'rewrite', //url重写
-    //   ['cors'],
+      ['cors'],
     //   ['router', { debug, logger }]
     ]
     for (let n of middlewares) {
