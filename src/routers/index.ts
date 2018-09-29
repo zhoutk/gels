@@ -11,7 +11,7 @@ export default class Routers {
             }
         })
         for (let item of inits) {
-            app.use(item().routes()).use(item().allowedMethods())
+            app.use(item.routes()).use(item.allowedMethods())
         }
     }
 }
