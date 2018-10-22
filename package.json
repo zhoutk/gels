@@ -4,6 +4,7 @@
   "description": "A framework, which use koa2, mysql, graphql & typescript , to build micro service rapidly, safely & efficiently.",
   "main": "app.ts",
   "scripts": {
+    "start": "nodemon dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -56,6 +57,7 @@
     "@types/mysql": "^2.15.5",
     "@types/node": "^10.9.4",
     "@types/require-dir": "^0.3.0",
+    "nodemon": "^1.18.4",
     "tslint": "^5.11.0",
     "typescript": "^3.0.3"
   }
