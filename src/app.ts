@@ -16,7 +16,6 @@ export default {
       'rewrite', //url重写
       ['cors'],
       ['router', app]
-    //   ['router', { debug, logger }]
     ]
     for (let n of middlewares) {
       if (n) {
