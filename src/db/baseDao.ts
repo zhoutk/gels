@@ -12,12 +12,15 @@ export default class BaseDao{
         if(!BaseDao.dao)
             BaseDao.dao = new Dao()
     }
-    async retrieve(params = {}, fields =[], session = {userid: ''}){
+    async retrieve(params = {}, fields = [], session = {userid: ''}){
         try {
             let rs = await BaseDao.dao.select(this.table, params, fields);
             return rs;
         } catch (err) {
             return Promise.reject(global.jsReponse(204, err.message));
         }
+    }
+    async create(params = {}, fields =[], session = {userid: ''}){
+        return {params, fields}
     }
 }

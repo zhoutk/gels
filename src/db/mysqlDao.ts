@@ -1,5 +1,5 @@
 import IDao from './idao'
-import { createPool, createConnection } from 'mysql2';
+import { createPool } from 'mysql2';
 
 var options = {
     'host': global.CONFIGS.dbconfig.db_host,
@@ -18,9 +18,10 @@ var pool = createPool(options);
 
 export default class MysqlDao implements IDao{
     select(tablename: string, params: object, fields?: Array<string>): Promise<any>{
-        return this.execQuery(`select * from ${tablename} where username = ? `, [params['username']]);
+        fields = fields || []
+        return this.execQuery(`select ${fields.length > 0 ? fields.join() : '*'} from ${tablename} where username = ? `, [params['username']]);
     }
-    execQuery(sql:string, values:any):Promise<any>{
+    private execQuery(sql:string, values:any):Promise<any>{
         return new Promise(function(fulfill, reject) {
 
             pool.getConnection(function(err, connection) {
