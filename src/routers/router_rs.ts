@@ -3,7 +3,7 @@ let router = new Router()
 
 export default (() => {
     let process = async (ctx, next) => {
-        ctx.body = 'rs result.'
+        ctx.body = `rs result -- ${JSON.stringify(ctx.params)}`
     }
-    return router.all('/rs', process)
+    return router.all('/rs/:table', process).all('/rs/:table/:id', process)
 })() 

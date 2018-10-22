@@ -1,5 +1,4 @@
 {
-    //更多配置：https://palantir.github.io/tslint/rules/ 
     "rules": {
         "class-name": true,
         "comment-format": [

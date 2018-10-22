@@ -42,6 +42,7 @@
   },
   "homepage": "https://github.com/zhoutk/arest#readme",
   "devDependencies": {
+    "@types/bluebird": "^3.5.24",
     "@types/bluebird-global": "^3.5.9",
     "@types/body-parser": "^1.17.0",
     "@types/cli-color": "^0.3.29",
