@@ -1,13 +1,15 @@
 let dialect:string = global.CONFIGS.db_dialect
-import MysqlDao from './mysqlDao'
-// let Dao = require(`./${dialect}Dao`);
+// import Dao from './mysqlDao'
+let Dao = require(`./${dialect}Dao`).default;
+
+type DaoType = typeof Dao
 
 export default class BaseDao{
     table: string
-    dao: MysqlDao
+    dao: DaoType
     constructor(table?: string){
         this.table = table || '';
-        this.dao = new MysqlDao()
+        this.dao = new Dao()
     }
     async retrieve(params = {}, fields =[], session = {userid: ''}){
         try {
