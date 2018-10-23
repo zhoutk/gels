@@ -33,7 +33,7 @@ export default class MysqlDao implements IDao{
     update(tablename:string, values:[], id:string|number):Promise<any>{
         return this.execQuery(OPMETHODS['Update'], [tablename, values, {id}]);
     }
-    delete(tablename:string, values:[], id:string|number):Promise<any>{
+    delete(tablename:string, id:string|number):Promise<any>{
         return this.execQuery(OPMETHODS['Delete'], [tablename, {id}]);
     }
     private query(tablename:string, params = {}, fields =[], sql = '', values = []): Promise<any>{
