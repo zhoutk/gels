@@ -15,12 +15,21 @@ export default class BaseDao{
     async retrieve(params = {}, fields = [], session = {userid: ''}){
         try {
             let rs = await BaseDao.dao.select(this.table, params, fields);
-            return rs;
+            if(rs.length === 0)
+                return global.jsReponse( 602, 'data query empty.', rs)
+            else
+                return global.jsReponse( 200, 'data query success.', rs)
         } catch (err) {
-            return Promise.reject(global.jsReponse(204, err.message));
+            return Promise.reject(err);
         }
     }
     async create(params = {}, fields =[], session = {userid: ''}){
-        return {params, fields}
+        let keys = Object.keys(params)
+        if(keys.length === 0)
+            return global.jsReponse(301, 'params is error.')
+        else{
+            let rs = await BaseDao.dao.insert(this.table, params)
+            return global.jsReponse(200, 'data insert success.', {createRows: rs.affectedRows, lastId: rs.insertId})
+        }
     }
 }

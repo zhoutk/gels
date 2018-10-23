@@ -1,6 +1,12 @@
 import IDao from './idao'
 import { createPool, PoolOptions } from 'mysql2';
 
+const OPMETHODS = {
+    Insert : 'INSERT INTO ?? SET ?',
+    Update : 'UPDATE ?? SET ? WHERE ?',
+    Delete : 'DELETE FROM ?? WHERE ?'
+}
+
 var options:PoolOptions = {
     'host': global.CONFIGS.dbconfig.db_host,
     'port': global.CONFIGS.dbconfig.db_port,
@@ -20,6 +26,15 @@ export default class MysqlDao implements IDao{
     select(tablename: string, params = {}, fields?: Array<string>): Promise<any>{
         fields = fields || []
         return this.query(tablename, params, fields, '', []);
+    }
+    insert(tablename:string, values:[]):Promise<any>{
+        return this.execQuery(OPMETHODS['Insert'], [tablename, values]);
+    }
+    update(tablename:string, values:[], id:string|number):Promise<any>{
+        return this.execQuery(OPMETHODS['Update'], [tablename, values, {id}]);
+    }
+    delete(tablename:string, values:[], id:string|number):Promise<any>{
+        return this.execQuery(OPMETHODS['Delete'], [tablename, {id}]);
     }
     private query(tablename:string, params = {}, fields =[], sql = '', values = []): Promise<any>{
         let where:string = ''
@@ -49,17 +64,17 @@ export default class MysqlDao implements IDao{
 
             pool.getConnection(function(err, connection) {
                 if (err) {
-                    reject({code:204,err:err.message})
+                    reject(global.jsReponse(204, err.message))
                     global.logger.error(err.message)
                 } else {
                     connection.query(sql, values, function(err, result) {
                         connection.release();
                         let v = values ? ' _Values_ :' + JSON.stringify(values) : ''
                         if (err) {
-                            reject({code:204,err:err.message});
+                            reject(global.jsReponse(204, err.message));
                             global.logger.error(err.message + ' Sql is : ' + sql + v);
                         } else {
-                            fulfill(sql.toLocaleUpperCase().startsWith('SELECT') ? result : Object.assign({code:200},result));
+                            fulfill(result)
                             global.logger.debug( ' _Sql_ : ' + sql + v);
                         }
                     });
