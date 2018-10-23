@@ -17,9 +17,32 @@ var options:PoolOptions = {
 var pool = createPool(options);
 
 export default class MysqlDao implements IDao{
-    select(tablename: string, params: object, fields?: Array<string>): Promise<any>{
+    select(tablename: string, params = {}, fields?: Array<string>): Promise<any>{
         fields = fields || []
-        return this.execQuery(`select ${fields.length > 0 ? fields.join() : '*'} from ${tablename} where username = ? `, [params['username']]);
+        return this.query(tablename, params, fields, '', []);
+    }
+    private query(tablename:string, params = {}, fields =[], sql = '', values = []): Promise<any>{
+        let where:string = ''
+        let keys:string[] = Object.keys(params)
+        for(let i = 0; i < keys.length; i++){
+            let value = params[keys[i]]
+            if(where !== ''){
+                where += ' and '
+            }
+
+            where += keys[i] + " = ? ";
+            values.push(value)
+        }
+
+        if (tablename === 'QuerySqlSelect')
+            sql = sql + (where == '' ? '' : (' and ' + where));
+        else {
+            sql = `SELECT ${fields.length > 0 ? fields.join() : '*'} FROM ${tablename} `;
+            if (where != "") {
+                sql += " WHERE " + where;
+            }
+        }
+        return this.execQuery(sql, values)
     }
     private execQuery(sql:string, values:any):Promise<any>{
         return new Promise(function(fulfill, reject) {
