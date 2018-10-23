@@ -54,7 +54,7 @@
     "@types/lodash": "^4.14.116",
     "@types/log4js": "^2.3.5",
     "@types/mkdirp": "^0.5.2",
-    "@types/mysql": "^2.15.5",
+    "@types/mysql2": "types/mysql2",
     "@types/node": "^10.9.4",
     "@types/require-dir": "^0.3.0",
     "nodemon": "^1.18.4",

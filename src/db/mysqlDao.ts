@@ -1,7 +1,7 @@
 import IDao from './idao'
-import { createPool } from 'mysql2';
+import { createPool, PoolOptions } from 'mysql2';
 
-var options = {
+var options:PoolOptions = {
     'host': global.CONFIGS.dbconfig.db_host,
     'port': global.CONFIGS.dbconfig.db_port,
     'database': global.CONFIGS.dbconfig.db_name,
