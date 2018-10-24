@@ -44,7 +44,7 @@ export default class MysqlDao implements IDao{
     execSql(sql: string, values:[]): Promise<any>{
         return this.execQuery(sql, values);
     }
-    private query(tablename:string, params, fields = [], sql = '', values = []):Promise<any>{
+    private async query(tablename:string, params, fields = [], sql = '', values = []):Promise<any>{
         params = params || {}
         let where:string = ''
         
@@ -108,32 +108,26 @@ export default class MysqlDao implements IDao{
             let index = sql.toLocaleLowerCase().lastIndexOf(' from ')
             let end = sql.toLocaleLowerCase().lastIndexOf(' order by')
             let sqlCount = 'SELECT count(1) as count ' + sql.substring(index, end > 0 ? end : sql.length)
-            return Promise.all([this.execQuery(sqlQuery, values), this.execQuery(sqlCount, values)]).then((resp) => {
-                let ct = 0;
-                if (resp[1].length > 0) {
-                    ct = resp[1][0].count;
-                }
-                // if (group) {
-                //     ct = resp[1].length;
-                // }
-                return global.jsReponse(200, 'data query success.', 
-                    {
-                        data: resp[0], 
-                        pages: Math.ceil(ct / size),
-                        records: ct,
-                    }
-                )
-            })
+            const resp = await Promise.all([this.execQuery(sqlQuery, values), this.execQuery(sqlCount, values)]);
+            let ct = 0;
+            if (resp[1].length > 0) {
+                ct = resp[1][0].count;
+            }
+            // if (group) {
+            //     ct = resp[1].length;
+            // }
+            return global.jsReponse(200, 'data query success.', {
+                data: resp[0],
+                pages: Math.ceil(ct / size),
+                records: ct,
+            });
         } else {
-            return this.execQuery(sql, values).then((rs)=>{
-                return global.jsReponse(200, 'data query success.', 
-                    {
-                        data: rs, 
-                        pages: rs.length > 0 ? 1 : 0, 
-                        records: rs.length,
-                    }
-                )
-            })
+            const rs = await this.execQuery(sql, values);
+            return global.jsReponse(200, 'data query success.', {
+                data: rs,
+                pages: rs.length > 0 ? 1 : 0,
+                records: rs.length,
+            });
         }
 
     }
