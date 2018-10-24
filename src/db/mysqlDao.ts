@@ -7,6 +7,10 @@ const OPMETHODS = {
     Delete : 'DELETE FROM ?? WHERE ?'
 }
 
+const QUERYSTATISKEYS = ['count', 'sum']
+const QUERYEXTRAKEYS = ['lks', 'ins', 'ors']
+const QUERYUNEQOPERS = ['>,', '>=,', '<,', '<=,', '<>,', '=,']
+
 var options:PoolOptions = {
     'host': global.CONFIGS.dbconfig.db_host,
     'port': global.CONFIGS.dbconfig.db_port,
@@ -49,6 +53,7 @@ export default class MysqlDao implements IDao{
         let where:string = ''
         
         let {sort, search, page, size, ors, count, lks, ins, sum, group, ...restParams} = params
+        let queryKeys = {ors, count, lks, ins, sum}
         page = page || 0
         size = size || global.PAGESIZE
 
@@ -69,21 +74,15 @@ export default class MysqlDao implements IDao{
         }
 
         let extra:string = ''
-        if(count !== undefined){
-            count = global.tools.arryParse(count)
-            if (!count || count.length === 0 || count.length % 2 === 1)
-                return Promise.resolve(global.jsReponse(301, 'Format of count is wrong.'))
-            for (let i = 0; i < count.length; i += 2) {
-                extra += `,count(${count[i]}) as ${count[i + 1]} `;
-            }
-        }
-
-        if(sum !== undefined){
-            sum = global.tools.arryParse(sum)
-            if (!sum || sum.length === 0 || sum.length % 2 === 1)
-                return Promise.resolve(global.jsReponse(301, 'Format of sum is wrong.'))
-            for (let i = 0; i < sum.length; i += 2) {
-                extra += `,sum(${sum[i]}) as ${sum[i + 1]} `;
+        for(let i = 0; i < QUERYSTATISKEYS.length; i++){
+            let element = QUERYSTATISKEYS[i]
+            if (queryKeys[element]) {
+                let ele = queryKeys[element] = global.tools.arryParse(queryKeys[element])
+                if (!ele || ele.length === 0 || ele.length % 2 === 1)
+                    return Promise.resolve(global.jsReponse(301, `Format of ${element} is wrong.`))
+                for (let i = 0; i < ele.length; i += 2) {
+                    extra += `,${element}(${ele[i]}) as ${ele[i + 1]} `;
+                }
             }
         }
         
