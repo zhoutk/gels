@@ -9,6 +9,7 @@ type CFG = typeof CONFIGS
 declare global {    
     namespace NodeJS {        
         interface Global {
+            PAGESIZE: 10,
             logger: Logger,
             NODE_ENV: string,
             ROOT_PATH: string,

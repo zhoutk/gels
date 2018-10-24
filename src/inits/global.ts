@@ -8,6 +8,7 @@ export default {
     async init() {
         const env = process.env.NODE_ENV || 'dev'            //dev - 开发; prod - 生产； test - 测试;
         Object.assign(global, {
+            PAGESIZE: 10,
             ROOT_PATH: `${process.cwd()}${env === 'prod' ? '' : '/dist'}`,
             NODE_ENV: env,    
             Promise: Bluebird,
@@ -16,7 +17,7 @@ export default {
                 if (Array.isArray(data))
                     return { status, message, data }
                 else 
-                    return Object.assign({ status, message }, data)
+                    return Object.assign({}, data, { status, message })
             },
             tools: new GlobUtils(),
             CONFIGS,
