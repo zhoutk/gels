@@ -48,9 +48,15 @@ export default class MysqlDao implements IDao{
         params = params || {}
         let where:string = ''
         
-        let {sort, search, page, size, ...restParams} = params
+        let {sort, search, page, size, ors, count, lks, ins, sum, group, ...restParams} = params
         page = page || 0
         size = size || global.PAGESIZE
+
+        if(count !== undefined){
+            count = global.tools.arryParse(count)
+            if (!count || count.length === 0 || count.length % 2 === 1)
+                return Promise.resolve(global.jsReponse(301, 'Format of count is error.'))
+        }
 
         let keys:string[] = Object.keys(restParams)
         for(let i = 0; i < keys.length; i++){

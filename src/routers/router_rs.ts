@@ -18,16 +18,15 @@ export default (() => {
         let params = method === 'POST' || method === 'PUT' ? ctx.request.body : ctx.request.query
         if(id != null)
             params.id = id
-        let fields = []
-        if(params.fields){
-            if(Array.isArray(params.fields))
-                fields = fields.concat(params.fields)
-            else if(typeof params.fields === 'string')
-                fields = params.fields.split(',')
-            delete params.fields
+        let {fields, ...restParams} = params
+        if(fields){
+            fields = global.tools.arryParse(fields)
+            if(!fields){
+                throw global.koaError(ctx, 301, 'params fields is wrong.')
+            }
         }
         try{
-            ctx.body = await new BaseDao(tableName)[METHODS[method]](params, fields, ctx.session)
+            ctx.body = await new BaseDao(tableName)[METHODS[method]](restParams, fields, ctx.session)
             // ctx.body = await new BaseDao().execSql("insert into users (username, password, age) values (?,?,?) ", ['alice', 122, 16])          //test execSql create
             // ctx.body = await new BaseDao().execSql("update users set age = ? where id = ? ", [22, 1])          //test execSql update
             // ctx.body = await new BaseDao().querySql("select * from users where age = ? ", [12], params)       //test querySql

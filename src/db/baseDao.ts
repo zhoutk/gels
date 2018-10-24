@@ -14,7 +14,7 @@ export default class BaseDao{
     }
     async retrieve(params = {}, fields = [], session = {userid: ''}):Promise<any>{
         let rs = await BaseDao.dao.select(this.table, params, fields);
-        if(!rs.data || rs.data.length === 0)
+        if(rs.status == 200 && (!rs.data || rs.data.length === 0))
             return global.jsReponse( 602, 'data query empty.', rs)
         else
             return rs
