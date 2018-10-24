@@ -27,11 +27,11 @@ export default class MysqlDao implements IDao{
         fields = fields || []
         return this.query(tablename, params, fields, '', []);
     }
-    insert(tablename:string, values:[]):Promise<any>{
-        return this.execQuery(OPMETHODS['Insert'], [tablename, values]);
+    insert(tablename:string, params = {}):Promise<any>{
+        return this.execQuery(OPMETHODS['Insert'], [tablename, params]);
     }
-    update(tablename:string, values:[], id:string|number):Promise<any>{
-        return this.execQuery(OPMETHODS['Update'], [tablename, values, {id}]);
+    update(tablename:string, params = {}, id:string|number):Promise<any>{
+        return this.execQuery(OPMETHODS['Update'], [tablename, params, {id}]);
     }
     delete(tablename:string, id:string|number):Promise<any>{
         return this.execQuery(OPMETHODS['Delete'], [tablename, {id}]);

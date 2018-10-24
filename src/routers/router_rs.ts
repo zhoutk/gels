@@ -27,8 +27,10 @@ export default (() => {
             delete params.fields
         }
         try{
-            ctx.body = await new BaseDao().querySql("select * from users where age = ? ", [12], params)
-            // ctx.body = await new BaseDao(tableName)[METHODS[method]](params, fields, ctx.session)
+            ctx.body = await new BaseDao(tableName)[METHODS[method]](params, fields, ctx.session)
+            // ctx.body = await new BaseDao().execSql("insert into users (username, password, age) values (?,?,?) ", ['alice', 122, 16])          //test execSql create
+            // ctx.body = await new BaseDao().execSql("update users set age = ? where id = ? ", [22, 1])          //test execSql update
+            // ctx.body = await new BaseDao().querySql("select * from users where age = ? ", [12], params)       //test querySql
         }catch(err){
             ctx.body = err
         }

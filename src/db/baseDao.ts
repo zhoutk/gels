@@ -25,7 +25,7 @@ export default class BaseDao{
             return global.jsReponse(301, 'params is error.')
         else{
             let rs = await BaseDao.dao.insert(this.table, params)
-            return global.jsReponse(200, 'data insert success.', {createRows: rs.affectedRows, lastId: rs.insertId})
+            return global.jsReponse(200, 'data insert success.', {affectedRows: rs.affectedRows, id: rs.insertId})
         }
     }
     async update(params, fields =[], session = {userid: ''}){
@@ -36,7 +36,7 @@ export default class BaseDao{
         else{
             const { id, ...restParams } = params
             let rs = await BaseDao.dao.update(this.table, restParams, id)
-            return global.jsReponse(200, 'data update success.', {updateRows: rs.affectedRows, id})
+            return global.jsReponse(200, 'data update success.', {affectedRows: rs.affectedRows, id})
         }
     }
     async delete(params = {}, fields =[], session = {userid: ''}){
@@ -45,7 +45,7 @@ export default class BaseDao{
         else{
             let id = params['id']
             let rs = await BaseDao.dao.delete(this.table, id)
-            return global.jsReponse(200, 'data delete success.', {deleteRows: rs.affectedRows, id})
+            return global.jsReponse(200, 'data delete success.', {affectedRows: rs.affectedRows, id})
         }
     }
     async querySql(sql: string, values = [], params = {}, fields = []){
@@ -54,5 +54,10 @@ export default class BaseDao{
             return global.jsReponse( 602, 'data query empty.', rs)
         else
             return global.jsReponse( 200, 'data query success.', rs)
+    }
+    async execSql(sql: string, values = []){
+        let rs = await BaseDao.dao.execSql(sql, values)
+        let {affectedRows} = rs
+        return global.jsReponse(200, 'data exec success.', {affectedRows})
     }
 }
