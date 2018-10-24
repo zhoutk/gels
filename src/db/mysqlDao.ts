@@ -36,9 +36,21 @@ export default class MysqlDao implements IDao{
     delete(tablename:string, id:string|number):Promise<any>{
         return this.execQuery(OPMETHODS['Delete'], [tablename, {id}]);
     }
-    private query(tablename:string, params = {}, fields =[], sql = '', values = []): Promise<any>{
+    querySql(sql: string, values:[], params:object, fields?:Array<string>): Promise<any>{
+        fields = fields || []
+        params = params || []
+        return this.query('QuerySqlSelect', params, fields, sql, values);
+    }
+    execSql(sql: string, values:[]): Promise<any>{
+        return this.execQuery(sql, values);
+    }
+    private query(tablename:string, params, fields = [], sql = '', values = []): Promise<any>{
+        params = params || {}
         let where:string = ''
-        let keys:string[] = Object.keys(params)
+        
+        let {sort, ...restParams} = params
+
+        let keys:string[] = Object.keys(restParams)
         for(let i = 0; i < keys.length; i++){
             let value = params[keys[i]]
             if(where !== ''){
@@ -48,7 +60,7 @@ export default class MysqlDao implements IDao{
             where += keys[i] + " = ? ";
             values.push(value)
         }
-
+        
         if (tablename === 'QuerySqlSelect')
             sql = sql + (where == '' ? '' : (' and ' + where));
         else {
@@ -57,6 +69,13 @@ export default class MysqlDao implements IDao{
                 sql += " WHERE " + where;
             }
         }
+        
+        if (sort !== undefined) {
+            let value = pool.escape(sort);
+            sort = " ORDER BY " + value.substring(1, value.length - 1);
+            sql += sort;
+        }
+
         return this.execQuery(sql, values)
     }
     private execQuery(sql:string, values:any):Promise<any>{

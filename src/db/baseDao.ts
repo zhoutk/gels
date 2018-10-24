@@ -13,15 +13,11 @@ export default class BaseDao{
             BaseDao.dao = new Dao()
     }
     async retrieve(params = {}, fields = [], session = {userid: ''}){
-        try {
-            let rs = await BaseDao.dao.select(this.table, params, fields);
-            if(rs.length === 0)
-                return global.jsReponse( 602, 'data query empty.', rs)
-            else
-                return global.jsReponse( 200, 'data query success.', rs)
-        } catch (err) {
-            return Promise.reject(err);
-        }
+        let rs = await BaseDao.dao.select(this.table, params, fields);
+        if(rs.length === 0)
+            return global.jsReponse( 602, 'data query empty.', rs)
+        else
+            return global.jsReponse( 200, 'data query success.', rs)
     }
     async create(params = {}, fields =[], session = {userid: ''}){
         let keys = Object.keys(params)
@@ -51,5 +47,12 @@ export default class BaseDao{
             let rs = await BaseDao.dao.delete(this.table, id)
             return global.jsReponse(200, 'data delete success.', {deleteRows: rs.affectedRows, id})
         }
+    }
+    async querySql(sql: string, values = [], params = {}, fields = []){
+        let rs = await BaseDao.dao.querySql (sql, values, params, fields);
+        if(rs.length === 0)
+            return global.jsReponse( 602, 'data query empty.', rs)
+        else
+            return global.jsReponse( 200, 'data query success.', rs)
     }
 }

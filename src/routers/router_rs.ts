@@ -27,7 +27,8 @@ export default (() => {
             delete params.fields
         }
         try{
-            ctx.body = await new BaseDao(tableName)[METHODS[method]](params, fields, ctx.session)
+            ctx.body = await new BaseDao().querySql("select * from users where age = ? ", [12], params)
+            // ctx.body = await new BaseDao(tableName)[METHODS[method]](params, fields, ctx.session)
         }catch(err){
             ctx.body = err
         }
