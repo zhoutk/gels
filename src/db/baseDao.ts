@@ -12,14 +12,14 @@ export default class BaseDao{
         if(!BaseDao.dao)
             BaseDao.dao = new Dao()
     }
-    async retrieve(params = {}, fields = [], session = {userid: ''}){
+    async retrieve(params = {}, fields = [], session = {userid: ''}):Promise<any>{
         let rs = await BaseDao.dao.select(this.table, params, fields);
         if(rs.length === 0)
             return global.jsReponse( 602, 'data query empty.', rs)
         else
             return global.jsReponse( 200, 'data query success.', rs)
     }
-    async create(params = {}, fields =[], session = {userid: ''}){
+    async create(params = {}, fields =[], session = {userid: ''}):Promise<any>{
         let keys = Object.keys(params)
         if(keys.length === 0 || params['id'] !== undefined && keys.length <= 1)
             return global.jsReponse(301, 'params is error.')
@@ -28,7 +28,7 @@ export default class BaseDao{
             return global.jsReponse(200, 'data insert success.', {affectedRows: rs.affectedRows, id: rs.insertId})
         }
     }
-    async update(params, fields =[], session = {userid: ''}){
+    async update(params, fields =[], session = {userid: ''}):Promise<any>{
         params = params || {}
         let keys = Object.keys(params)
         if(params['id'] === undefined || keys.length <= 1)
@@ -39,7 +39,7 @@ export default class BaseDao{
             return global.jsReponse(200, 'data update success.', {affectedRows: rs.affectedRows, id})
         }
     }
-    async delete(params = {}, fields =[], session = {userid: ''}){
+    async delete(params = {}, fields =[], session = {userid: ''}):Promise<any>{
         if(params['id'] === undefined)
             return global.jsReponse(301, 'params is error.')
         else{
@@ -48,14 +48,14 @@ export default class BaseDao{
             return global.jsReponse(200, 'data delete success.', {affectedRows: rs.affectedRows, id})
         }
     }
-    async querySql(sql: string, values = [], params = {}, fields = []){
+    async querySql(sql: string, values = [], params = {}, fields = []):Promise<any>{
         let rs = await BaseDao.dao.querySql (sql, values, params, fields);
         if(rs.length === 0)
             return global.jsReponse( 602, 'data query empty.', rs)
         else
             return global.jsReponse( 200, 'data query success.', rs)
     }
-    async execSql(sql: string, values = []){
+    async execSql(sql: string, values = []):Promise<any>{
         let rs = await BaseDao.dao.execSql(sql, values)
         let {affectedRows} = rs
         return global.jsReponse(200, 'data exec success.', {affectedRows})

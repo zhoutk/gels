@@ -23,7 +23,7 @@ var options:PoolOptions = {
 var pool = createPool(options);
 
 export default class MysqlDao implements IDao{
-    select(tablename: string, params = {}, fields?: Array<string>): Promise<any>{
+    select(tablename: string, params = {}, fields?: Array<string>):Promise<any>{
         fields = fields || []
         return this.query(tablename, params, fields, '', []);
     }
@@ -36,7 +36,7 @@ export default class MysqlDao implements IDao{
     delete(tablename:string, id:string|number):Promise<any>{
         return this.execQuery(OPMETHODS['Delete'], [tablename, {id}]);
     }
-    querySql(sql: string, values:[], params:object, fields?:Array<string>): Promise<any>{
+    querySql(sql: string, values:[], params:object, fields?:Array<string>):Promise<any>{
         fields = fields || []
         params = params || []
         return this.query('QuerySqlSelect', params, fields, sql, values);
@@ -44,11 +44,12 @@ export default class MysqlDao implements IDao{
     execSql(sql: string, values:[]): Promise<any>{
         return this.execQuery(sql, values);
     }
-    private query(tablename:string, params, fields = [], sql = '', values = []): Promise<any>{
+    private query(tablename:string, params, fields = [], sql = '', values = []):Promise<any>{
         params = params || {}
         let where:string = ''
         
-        let {sort, ...restParams} = params
+        let {sort,search, ...restParams} = params
+
 
         let keys:string[] = Object.keys(restParams)
         for(let i = 0; i < keys.length; i++){
@@ -57,23 +58,29 @@ export default class MysqlDao implements IDao{
                 where += ' and '
             }
 
-            where += keys[i] + " = ? ";
-            values.push(value)
+            if(search !== undefined){
+                value = pool.escape(value)                          //.replace(/,/g, "%' and " + keys[i] + " like '%")
+                value = value.substring(1, value.length - 1)
+                where += keys[i] + " like '%" + value + "%'"
+            }else{
+                where += keys[i] + " = ? "
+                values.push(value)
+            }
         }
         
         if (tablename === 'QuerySqlSelect')
             sql = sql + (where == '' ? '' : (' and ' + where));
         else {
-            sql = `SELECT ${fields.length > 0 ? fields.join() : '*'} FROM ${tablename} `;
+            sql = `SELECT ${fields.length > 0 ? fields.join() : '*'} FROM ${tablename} `
             if (where != "") {
-                sql += " WHERE " + where;
+                sql += " WHERE " + where
             }
         }
         
         if (sort !== undefined) {
             let value = pool.escape(sort);
-            sort = " ORDER BY " + value.substring(1, value.length - 1);
-            sql += sort;
+            sort = " ORDER BY " + value.substring(1, value.length - 1)
+            sql += sort
         }
 
         return this.execQuery(sql, values)
@@ -91,10 +98,10 @@ export default class MysqlDao implements IDao{
                         let v = values ? ' _Values_ :' + JSON.stringify(values) : ''
                         if (err) {
                             reject(global.jsReponse(204, err.message));
-                            global.logger.error(err.message + ' Sql is : ' + sql + v);
+                            global.logger.error(err.message + ' Sql is : ' + sql + v)
                         } else {
                             fulfill(result)
-                            global.logger.debug( ' _Sql_ : ' + sql + v);
+                            global.logger.debug( ' _Sql_ : ' + sql + v)
                         }
                     });
                 }
