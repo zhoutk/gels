@@ -52,8 +52,8 @@ export default class MysqlDao implements IDao{
         params = params || {}
         let where:string = ''
         
-        let {sort, search, page, size, ors, count, group, ...restParams} = params
-        let {lks, ins, sum} = restParams
+        let {sort, search, page, size, sum, count, group, ...restParams} = params
+        let {lks, ins, ors} = restParams
         let queryKeys = {ors, count, lks, ins, sum}
         page = page || 0
         size = size || global.PAGESIZE
@@ -71,12 +71,38 @@ export default class MysqlDao implements IDao{
                     let whereExtra = '', err = null
                     if (queryKeys[key]) {
                         let ele = queryKeys[key] = global.tools.arryParse(queryKeys[key])
-                        if (!ele || ele.length < 2)
+                        if (!ele || ele.length < 2 || key === 'ors' && ele.length % 2 === 1)
                             err = `Format of ${key} is wrong.`
                         else {
-                            let c = ele.shift();
-                            whereExtra += c + " in ( ? ) ";
-                            values.push(ele);
+                            if(key === 'ins'){
+                                let c = ele.shift()
+                                whereExtra += c + " in ( ? ) "
+                                values.push(ele);
+                            }else if(key === 'lks'){
+                                let val = ele.shift()
+                                whereExtra = ' ( '
+                                for (let j = 0; j < ele.length; j++) {
+                                    if(j > 0)
+                                        whereExtra += ' or '
+                                    whereExtra += ele[j] + " like ? "
+                                    values.push(`%${val}%`)
+                                }
+                                whereExtra += ' ) '
+                            }else if(key === 'ors'){
+                                whereExtra += ' ( '
+                                for (let j = 0; j < ele.length; j+=2) {
+                                    if(ele[j+1] == null){
+                                        whereExtra += ele[j] + " is null ";
+                                    }else{
+                                        whereExtra += ele[j] + " = ? "
+                                        values.push(ele[j+1])
+                                    }
+                                    if (j < ele.length - 2) {
+                                        whereExtra += ' or '
+                                    }
+                                }
+                                whereExtra += ' ) '
+                            }
                         }
                     }
                     return { err, whereExtra }
