@@ -72,9 +72,18 @@ export default class MysqlDao implements IDao{
         if(count !== undefined){
             count = global.tools.arryParse(count)
             if (!count || count.length === 0 || count.length % 2 === 1)
-                return Promise.resolve(global.jsReponse(301, 'Format of count is error.'))
+                return Promise.resolve(global.jsReponse(301, 'Format of count is wrong.'))
             for (let i = 0; i < count.length; i += 2) {
                 extra += `,count(${count[i]}) as ${count[i + 1]} `;
+            }
+        }
+
+        if(sum !== undefined){
+            sum = global.tools.arryParse(sum)
+            if (!sum || sum.length === 0 || sum.length % 2 === 1)
+                return Promise.resolve(global.jsReponse(301, 'Format of sum is wrong.'))
+            for (let i = 0; i < sum.length; i += 2) {
+                extra += `,sum(${sum[i]}) as ${sum[i + 1]} `;
             }
         }
         
