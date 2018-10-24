@@ -5,7 +5,7 @@ export default class GlobUtils {
     isLogin() {
         return true
     }
-    arryParse(arr:Array<any>|string){
+    arryParse(arr){
         try{
             if (!Array.isArray(arr))
                 arr = JSON.parse(arr)

@@ -52,24 +52,47 @@ export default class MysqlDao implements IDao{
         params = params || {}
         let where:string = ''
         
-        let {sort, search, page, size, ors, count, lks, ins, sum, group, ...restParams} = params
+        let {sort, search, page, size, ors, count, group, ...restParams} = params
+        let {lks, ins, sum} = restParams
         let queryKeys = {ors, count, lks, ins, sum}
         page = page || 0
         size = size || global.PAGESIZE
 
         let keys:string[] = Object.keys(restParams)
         for(let i = 0; i < keys.length; i++){
-            let value = params[keys[i]]
+            let key = keys[i]
+            let value = params[key]
             if(where !== ''){
                 where += ' and '
             }
 
-            if(search !== undefined){
-                where += keys[i] + " like ? "
-                values.push(`%${value}%`)
+            if (QUERYEXTRAKEYS.indexOf(key) >= 0) {
+                const { err, whereExtra } = ((key) => {
+                    let whereExtra = '', err = null
+                    if (queryKeys[key]) {
+                        let ele = queryKeys[key] = global.tools.arryParse(queryKeys[key])
+                        if (!ele || ele.length < 2)
+                            err = `Format of ${key} is wrong.`
+                        else {
+                            let c = ele.shift();
+                            whereExtra += c + " in ( ? ) ";
+                            values.push(ele);
+                        }
+                    }
+                    return { err, whereExtra }
+                })(key)
+                if (err)
+                    return Promise.reject(global.jsReponse(301, err))
+                else
+                    where += whereExtra
             }else{
-                where += keys[i] + " = ? "
-                values.push(value)
+                if(search !== undefined){
+                    where += keys[i] + " like ? "
+                    values.push(`%${value}%`)
+                }else{
+                    where += keys[i] + " = ? "
+                    values.push(value)
+                }
             }
         }
 
