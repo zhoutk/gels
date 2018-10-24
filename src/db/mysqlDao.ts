@@ -52,12 +52,6 @@ export default class MysqlDao implements IDao{
         page = page || 0
         size = size || global.PAGESIZE
 
-        if(count !== undefined){
-            count = global.tools.arryParse(count)
-            if (!count || count.length === 0 || count.length % 2 === 1)
-                return Promise.resolve(global.jsReponse(301, 'Format of count is error.'))
-        }
-
         let keys:string[] = Object.keys(restParams)
         for(let i = 0; i < keys.length; i++){
             let value = params[keys[i]]
@@ -66,19 +60,28 @@ export default class MysqlDao implements IDao{
             }
 
             if(search !== undefined){
-                value = pool.escape(value)                          //.replace(/,/g, "%' and " + keys[i] + " like '%")
-                value = value.substring(1, value.length - 1)
-                where += keys[i] + " like '%" + value + "%'"
+                where += keys[i] + " like ? "
+                values.push(`%${value}%`)
             }else{
                 where += keys[i] + " = ? "
                 values.push(value)
+            }
+        }
+
+        let extra:string = ''
+        if(count !== undefined){
+            count = global.tools.arryParse(count)
+            if (!count || count.length === 0 || count.length % 2 === 1)
+                return Promise.resolve(global.jsReponse(301, 'Format of count is error.'))
+            for (let i = 0; i < count.length; i += 2) {
+                extra += `,count(${count[i]}) as ${count[i + 1]} `;
             }
         }
         
         if (tablename === 'QuerySqlSelect')
             sql = sql + (where == '' ? '' : (' and ' + where));
         else {
-            sql = `SELECT ${fields.length > 0 ? fields.join() : '*'} FROM ${tablename} `
+            sql = `SELECT ${fields.length > 0 ? fields.join() : '*'}${extra} FROM ${tablename} `
             if (where != "") {
                 sql += " WHERE " + where
             }
