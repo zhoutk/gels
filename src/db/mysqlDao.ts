@@ -62,6 +62,8 @@ export default class MysqlDao implements IDao {
         for (let i = 0; i < keys.length; i++) {
             let key = keys[i]
             let value = params[key]
+            if (value === undefined)
+                continue
             if (where !== '') {
                 where += ' and '
             }
@@ -120,11 +122,16 @@ export default class MysqlDao implements IDao {
                         where += keys[i] + ' is null '
                     } else if (QUERYUNEQOPERS.some((element) => {
                                 if (Array.isArray(value)) {
-                                    value = value.join()
-                                }
-                                return value.startsWith(element)
+                                    return value.join().startsWith(element)
+                                } else if (typeof value === 'string' && value.length > 2) {
+                                    return value.startsWith(element)
+                                } else
+                                    return false
                             })
                         ) {
+                        if (Array.isArray(value)) {
+                            value = value.join()
+                        }
                         let vls = value.split(',')
                         if (vls.length === 2) {
                             where += keys[i] + vls[0] + ' ? '
