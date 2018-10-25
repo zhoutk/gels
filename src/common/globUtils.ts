@@ -5,11 +5,11 @@ export default class GlobUtils {
     isLogin() {
         return true
     }
-    arryParse(arr){
-        try{
+    arryParse(arr) {
+        try {
             if (!Array.isArray(arr))
                 arr = JSON.parse(arr)
-        }catch(err){
+        } catch (err) {
             arr = null
         }
         return arr

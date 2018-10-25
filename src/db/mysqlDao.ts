@@ -1,5 +1,5 @@
 import IDao from './idao'
-import { createPool, PoolOptions } from 'mysql2';
+import { createPool, PoolOptions } from 'mysql2'
 
 const OPMETHODS = {
     Insert : 'INSERT INTO ?? SET ?',
@@ -11,7 +11,7 @@ const QUERYSTATISKEYS = ['count', 'sum']
 const QUERYEXTRAKEYS = ['lks', 'ins', 'ors']
 const QUERYUNEQOPERS = ['>,', '>=,', '<,', '<=,', '<>,', '=,']
 
-var options:PoolOptions = {
+let options: PoolOptions = {
     'host': global.CONFIGS.dbconfig.db_host,
     'port': global.CONFIGS.dbconfig.db_port,
     'database': global.CONFIGS.dbconfig.db_name,
@@ -24,33 +24,33 @@ var options:PoolOptions = {
     'bigNumberStrings': true
 }
 
-var pool = createPool(options);
+let pool = createPool(options)
 
-export default class MysqlDao implements IDao{
-    select(tablename: string, params = {}, fields?: Array<string>):Promise<any>{
+export default class MysqlDao implements IDao {
+    select(tablename: string, params = {}, fields?: Array<string>): Promise<any> {
         fields = fields || []
-        return this.query(tablename, params, fields, '', []);
+        return this.query(tablename, params, fields, '', [])
     }
-    insert(tablename:string, params = {}):Promise<any>{
-        return this.execQuery(OPMETHODS['Insert'], [tablename, params]);
+    insert(tablename: string, params = {}): Promise<any> {
+        return this.execQuery(OPMETHODS['Insert'], [tablename, params])
     }
-    update(tablename:string, params = {}, id:string|number):Promise<any>{
-        return this.execQuery(OPMETHODS['Update'], [tablename, params, {id}]);
+    update(tablename: string, params = {}, id: string|number): Promise<any> {
+        return this.execQuery(OPMETHODS['Update'], [tablename, params, {id}])
     }
-    delete(tablename:string, id:string|number):Promise<any>{
-        return this.execQuery(OPMETHODS['Delete'], [tablename, {id}]);
+    delete(tablename: string, id: string|number): Promise<any> {
+        return this.execQuery(OPMETHODS['Delete'], [tablename, {id}])
     }
-    querySql(sql: string, values:[], params:object, fields?:Array<string>):Promise<any>{
+    querySql(sql: string, values: [], params: object, fields?: Array<string>): Promise<any> {
         fields = fields || []
         params = params || []
-        return this.query('QuerySqlSelect', params, fields, sql, values);
+        return this.query('QuerySqlSelect', params, fields, sql, values)
     }
-    execSql(sql: string, values:[]): Promise<any>{
-        return this.execQuery(sql, values);
+    execSql(sql: string, values: []): Promise<any> {
+        return this.execQuery(sql, values)
     }
-    private async query(tablename:string, params, fields = [], sql = '', values = []):Promise<any>{
+    private async query(tablename: string, params, fields = [], sql = '', values = []): Promise<any> {
         params = params || {}
-        let where:string = ''
+        let where: string = ''
         
         let {sort, search, page, size, sum, count, group, ...restParams} = params
         let {lks, ins, ors} = restParams
@@ -58,11 +58,11 @@ export default class MysqlDao implements IDao{
         page = page || 0
         size = size || global.PAGESIZE
 
-        let keys:string[] = Object.keys(restParams)
-        for(let i = 0; i < keys.length; i++){
+        let keys: string[] = Object.keys(restParams)
+        for (let i = 0; i < keys.length; i++) {
             let key = keys[i]
             let value = params[key]
-            if(where !== ''){
+            if (where !== '') {
                 where += ' and '
             }
 
@@ -74,28 +74,28 @@ export default class MysqlDao implements IDao{
                         if (!ele || ele.length < 2 || key === 'ors' && ele.length % 2 === 1)
                             err = `Format of ${key} is wrong.`
                         else {
-                            if(key === 'ins'){
+                            if (key === 'ins') {
                                 let c = ele.shift()
-                                whereExtra += c + " in ( ? ) "
-                                values.push(ele);
-                            }else if(key === 'lks'){
+                                whereExtra += c + ' in ( ? ) '
+                                values.push(ele) 
+                            } else if (key === 'lks') {
                                 let val = ele.shift()
                                 whereExtra = ' ( '
                                 for (let j = 0; j < ele.length; j++) {
-                                    if(j > 0)
+                                    if (j > 0)
                                         whereExtra += ' or '
-                                    whereExtra += ele[j] + " like ? "
+                                    whereExtra += ele[j] + ' like ? '
                                     values.push(`%${val}%`)
                                 }
                                 whereExtra += ' ) '
-                            }else if(key === 'ors'){
+                            } else if (key === 'ors') {
                                 whereExtra += ' ( '
-                                for (let j = 0; j < ele.length; j+=2) {
-                                    if(ele[j+1] == null){
-                                        whereExtra += ele[j] + " is null ";
-                                    }else{
-                                        whereExtra += ele[j] + " = ? "
-                                        values.push(ele[j+1])
+                                for (let j = 0; j < ele.length; j += 2) {
+                                    if (ele[j + 1] == null) {
+                                        whereExtra += ele[j] + ' is null '
+                                    } else {
+                                        whereExtra += ele[j] + ' = ? '
+                                        values.push(ele[j + 1])
                                     }
                                     if (j < ele.length - 2) {
                                         whereExtra += ' or '
@@ -111,9 +111,9 @@ export default class MysqlDao implements IDao{
                     return Promise.reject(global.jsReponse(301, err))
                 else
                     where += whereExtra
-            }else{
-                if(search !== undefined && value !== 'null'){
-                    where += keys[i] + " like ? "
+            } else {
+                if (search !== undefined && value !== 'null') {
+                    where += keys[i] + ' like ? '
                     values.push(`%${value}%`)
                 } else {
                     if (value === 'null') {
@@ -124,51 +124,55 @@ export default class MysqlDao implements IDao{
                                 }
                                 return value.startsWith(element)
                             })
-                        ){
-                        let vls = value.split(',');
-                        if (vls.length == 2) {
-                            where += keys[i] + vls[0] + " ? "
+                        ) {
+                        let vls = value.split(',')
+                        if (vls.length === 2) {
+                            where += keys[i] + vls[0] + ' ? '
                             values.push(vls[1])
-                        } else if (vls.length == 4) {
-                            where += keys[i] + vls[0] + " ? and " + keys[i] + vls[2] + " ? "
+                        } else if (vls.length === 4) {
+                            where += keys[i] + vls[0] + ' ? and ' + keys[i] + vls[2] + ' ? '
                             values.push(vls[1])
                             values.push(vls[3])
                         } else {
                             where = where.substr(0, where.length - 3)
                         }
                     } else {
-                        where += keys[i] + " = ? "
+                        where += keys[i] + ' = ? '
                         values.push(value)
                     }
                 }
             }
         }
 
-        let extra:string = ''
-        for(let i = 0; i < QUERYSTATISKEYS.length; i++){
+        let extra: string = ''
+        for (let i = 0; i < QUERYSTATISKEYS.length; i++) {
             let element = QUERYSTATISKEYS[i]
             if (queryKeys[element]) {
                 let ele = queryKeys[element] = global.tools.arryParse(queryKeys[element])
                 if (!ele || ele.length === 0 || ele.length % 2 === 1)
                     return Promise.resolve(global.jsReponse(301, `Format of ${element} is wrong.`))
                 for (let i = 0; i < ele.length; i += 2) {
-                    extra += `,${element}(${ele[i]}) as ${ele[i + 1]} `;
+                    extra += `,${element}(${ele[i]}) as ${ele[i + 1]} `
                 }
             }
         }
         
         if (tablename === 'QuerySqlSelect')
-            sql = sql + (where == '' ? '' : (' and ' + where));
+            sql = sql + (where === '' ? '' : (' and ' + where))
         else {
             sql = `SELECT ${fields.length > 0 ? fields.join() : '*'}${extra} FROM ${tablename} `
-            if (where != "") {
-                sql += " WHERE " + where
+            if (where !== '') {
+                sql += ' WHERE ' + where
             }
+        }
+
+        if (group !== undefined) {
+            
         }
         
         if (sort !== undefined) {
-            let value = pool.escape(sort);
-            sort = " ORDER BY " + value.substring(1, value.length - 1)
+            let value = pool.escape(sort)
+            sort = ' ORDER BY ' + value.substring(1, value.length - 1)
             sql += sort
         }
 
@@ -178,10 +182,10 @@ export default class MysqlDao implements IDao{
             let index = sql.toLocaleLowerCase().lastIndexOf(' from ')
             let end = sql.toLocaleLowerCase().lastIndexOf(' order by')
             let sqlCount = 'SELECT count(1) as count ' + sql.substring(index, end > 0 ? end : sql.length)
-            const resp = await Promise.all([this.execQuery(sqlQuery, values), this.execQuery(sqlCount, values)]);
-            let ct = 0;
+            const resp = await Promise.all([this.execQuery(sqlQuery, values), this.execQuery(sqlCount, values)])
+            let ct = 0
             if (resp[1].length > 0) {
-                ct = resp[1][0].count;
+                ct = resp[1][0].count
             }
             // if (group) {
             //     ct = resp[1].length;
@@ -190,18 +194,18 @@ export default class MysqlDao implements IDao{
                 data: resp[0],
                 pages: Math.ceil(ct / size),
                 records: ct,
-            });
+            })
         } else {
-            const rs = await this.execQuery(sql, values);
+            const rs = await this.execQuery(sql, values)
             return global.jsReponse(200, 'data query success.', {
                 data: rs,
                 pages: rs.length > 0 ? 1 : 0,
                 records: rs.length,
-            });
+            })
         }
 
     }
-    private execQuery(sql:string, values:any):Promise<any>{
+    private execQuery(sql: string, values: any): Promise<any> {
         return new Promise(function(fulfill, reject) {
 
             pool.getConnection(function(err, connection) {
@@ -210,19 +214,19 @@ export default class MysqlDao implements IDao{
                     global.logger.error(err.message)
                 } else {
                     connection.query(sql, values, function(err, result) {
-                        connection.release();
+                        connection.release()
                         let v = values ? ' _Values_ :' + JSON.stringify(values) : ''
                         if (err) {
-                            reject(global.jsReponse(204, err.message));
+                            reject(global.jsReponse(204, err.message))
                             global.logger.error(err.message + ' Sql is : ' + sql + v)
                         } else {
                             fulfill(result)
                             global.logger.debug( ' _Sql_ : ' + sql + v)
                         }
-                    });
+                    })
                 }
-            });
+            })
     
-        });
+        })
     }
 }

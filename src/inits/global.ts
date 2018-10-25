@@ -13,7 +13,7 @@ export default {
             NODE_ENV: env,    
             Promise: Bluebird,
             __: lodash,
-            jsReponse(status: Number, message = '', data?:any) {
+            jsReponse(status: Number, message = '', data?: any) {
                 if (Array.isArray(data))
                     return { status, message, data }
                 else 

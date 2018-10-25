@@ -1,5 +1,5 @@
 import * as Router from 'koa-router'
-import BaseDao from '../db/baseDao';
+import BaseDao from '../db/baseDao'
 let router = new Router()
 
 const METHODS = {
@@ -16,21 +16,21 @@ export default (() => {
         let tableName: string = ctx.params.table
         let id: string | number | undefined = ctx.params.id
         let params = method === 'POST' || method === 'PUT' ? ctx.request.body : ctx.request.query
-        if(id != null)
+        if (id != null)
             params.id = id
         let {fields, ...restParams} = params
-        if(fields){
+        if (fields) {
             fields = global.tools.arryParse(fields)
-            if(!fields){
+            if (!fields) {
                 throw global.koaError(ctx, 301, 'params fields is wrong.')
             }
         }
-        try{
+        try {
             ctx.body = await new BaseDao(tableName)[METHODS[method]](restParams, fields, ctx.session)
             // ctx.body = await new BaseDao().execSql("insert into users (username, password, age) values (?,?,?) ", ['alice', 122, 16])          //test execSql create
             // ctx.body = await new BaseDao().execSql("update users set age = ? where id = ? ", [22, 1])          //test execSql update
             // ctx.body = await new BaseDao().querySql("select * from users where age = ? ", [12], params)       //test querySql
-        }catch(err){
+        } catch (err) {
             ctx.body = err
         }
     }
