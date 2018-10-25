@@ -167,7 +167,9 @@ export default class MysqlDao implements IDao {
         }
 
         if (group !== undefined) {
-            
+            let value = pool.escape(group)
+            group = ' GROUP BY ' + value.substring(1, value.length - 1)
+            sql += group
         }
         
         if (sort !== undefined) {
@@ -184,12 +186,11 @@ export default class MysqlDao implements IDao {
             let sqlCount = 'SELECT count(1) as count ' + sql.substring(index, end > 0 ? end : sql.length)
             const resp = await Promise.all([this.execQuery(sqlQuery, values), this.execQuery(sqlCount, values)])
             let ct = 0
-            if (resp[1].length > 0) {
+            if (group) {
+                ct = resp[1].length
+            } else if (resp[1].length > 0) {
                 ct = resp[1][0].count
             }
-            // if (group) {
-            //     ct = resp[1].length;
-            // }
             return global.jsReponse(200, 'data query success.', {
                 data: resp[0],
                 pages: Math.ceil(ct / size),
