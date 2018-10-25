@@ -40,12 +40,12 @@ export default class MysqlDao implements IDao {
     delete(tablename: string, id: string|number): Promise<any> {
         return this.execQuery(OPMETHODS['Delete'], [tablename, {id}])
     }
-    querySql(sql: string, values: [], params: object, fields?: Array<string>): Promise<any> {
+    querySql(sql: string, values: Array<any>, params: object, fields?: Array<string>): Promise<any> {
         fields = fields || []
         params = params || []
         return this.query('QuerySqlSelect', params, fields, sql, values)
     }
-    execSql(sql: string, values: []): Promise<any> {
+    execSql(sql: string, values: Array<any>): Promise<any> {
         return this.execQuery(sql, values)
     }
     private async query(tablename: string, params, fields = [], sql = '', values = []): Promise<any> {

@@ -1,12 +1,10 @@
 let dialect: string = global.CONFIGS.db_dialect
-// import Dao from './mysqlDao'
 let Dao = require(`./${dialect}Dao`).default
-
-type DaoType = typeof Dao
+import MysqlDao from './mysqlDao'
 
 export default class BaseDao {
     table: string
-    static dao: DaoType
+    static dao: MysqlDao            //编辑时，设定为相应的数据驱动类型，获得智能提示，运行时为动态引入，类型为any
     constructor(table?: string) {
         this.table = table || ''
         if (!BaseDao.dao)
