@@ -112,12 +112,16 @@ export default class MysqlDao implements IDao{
                 else
                     where += whereExtra
             }else{
-                if(search !== undefined){
+                if(search !== undefined && value !== 'null'){
                     where += keys[i] + " like ? "
                     values.push(`%${value}%`)
                 }else{
-                    where += keys[i] + " = ? "
-                    values.push(value)
+                    if(value === 'null'){
+                        where += keys[i] + ' is null '
+                    } else {
+                        where += keys[i] + " = ? "
+                        values.push(value)
+                    }
                 }
             }
         }
