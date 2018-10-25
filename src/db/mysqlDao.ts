@@ -62,6 +62,11 @@ export default class MysqlDao implements IDao {
         for (let i = 0; i < keys.length; i++) {
             let key = keys[i]
             let value = params[key]
+            if (QUERYEXTRAKEYS.indexOf(key) < 0) {
+                let is_val_arr = global.tools.arryParse(value)
+                if (is_val_arr)
+                    value = is_val_arr
+            }
             if (where !== '') {
                 where += ' and '
             }

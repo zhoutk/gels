@@ -7,8 +7,12 @@ export default class GlobUtils {
     }
     arryParse(arr) {
         try {
-            if (!Array.isArray(arr))
+            if (Array.isArray(arr))
+                return arr
+            else if (typeof arr === 'string' && arr.startsWith('['))
                 arr = JSON.parse(arr)
+            else 
+                return null
         } catch (err) {
             arr = null
         }
