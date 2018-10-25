@@ -118,6 +118,22 @@ export default class MysqlDao implements IDao{
                 }else{
                     if(value === 'null'){
                         where += keys[i] + ' is null '
+                    } else if(QUERYUNEQOPERS.some((element)=>{
+                        if(Array.isArray(value)){
+                            value = value.join()
+                        }
+                        return value.startsWith(element)})){
+                        let vls = value.split(',');
+                        if (vls.length == 2) {
+                            where += keys[i] + vls[0] + " ? "
+                            values.push(vls[1])
+                        } else if (vls.length == 4) {
+                            where += keys[i] + vls[0] + " ? and " + keys[i] + vls[2] + " ? "
+                            values.push(vls[1])
+                            values.push(vls[3])
+                        } else {
+                            where = where.substr(0, where.length - 3)
+                        }
                     } else {
                         where += keys[i] + " = ? "
                         values.push(value)
