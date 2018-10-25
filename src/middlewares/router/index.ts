@@ -26,11 +26,7 @@ export default async (app) => {
       }
     },
     async (ctx, next) => {
-      await next()
-      if (ctx.status === 404) {
-        ctx.status = 404
-        // await ctx.render('pug/404.pug')
-      }
+      ctx.body = global.jsReponse(global.STCODES.NOTFOUND, 'What you request is not found.')
     }
   ]
 }

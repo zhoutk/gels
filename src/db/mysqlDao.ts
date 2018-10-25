@@ -108,7 +108,7 @@ export default class MysqlDao implements IDao {
                     return { err, whereExtra }
                 })(key)
                 if (err)
-                    return Promise.reject(global.jsReponse(301, err))
+                    return Promise.reject(global.jsReponse(global.STCODES.PRAMAERR, err))
                 else
                     where += whereExtra
             } else {
@@ -150,7 +150,7 @@ export default class MysqlDao implements IDao {
             if (queryKeys[element]) {
                 let ele = queryKeys[element] = global.tools.arryParse(queryKeys[element])
                 if (!ele || ele.length === 0 || ele.length % 2 === 1)
-                    return Promise.resolve(global.jsReponse(301, `Format of ${element} is wrong.`))
+                    return Promise.resolve(global.jsReponse(global.STCODES.PRAMAERR, `Format of ${element} is wrong.`))
                 for (let i = 0; i < ele.length; i += 2) {
                     extra += `,${element}(${ele[i]}) as ${ele[i + 1]} `
                 }
@@ -191,14 +191,14 @@ export default class MysqlDao implements IDao {
             } else if (resp[1].length > 0) {
                 ct = resp[1][0].count
             }
-            return global.jsReponse(200, 'data query success.', {
+            return global.jsReponse(global.STCODES.SUCCESS, 'data query success.', {
                 data: resp[0],
                 pages: Math.ceil(ct / size),
                 records: ct,
             })
         } else {
             const rs = await this.execQuery(sql, values)
-            return global.jsReponse(200, 'data query success.', {
+            return global.jsReponse(global.STCODES.SUCCESS, 'data query success.', {
                 data: rs,
                 pages: rs.length > 0 ? 1 : 0,
                 records: rs.length,
@@ -211,14 +211,14 @@ export default class MysqlDao implements IDao {
 
             pool.getConnection(function(err, connection) {
                 if (err) {
-                    reject(global.jsReponse(204, err.message))
+                    reject(global.jsReponse(global.STCODES.DATABASERR, err.message))
                     global.logger.error(err.message)
                 } else {
                     connection.query(sql, values, function(err, result) {
                         connection.release()
                         let v = values ? ' _Values_ :' + JSON.stringify(values) : ''
                         if (err) {
-                            reject(global.jsReponse(204, err.message))
+                            reject(global.jsReponse(global.STCODES.DATABASERR, err.message))
                             global.logger.error(err.message + ' Sql is : ' + sql + v)
                         } else {
                             fulfill(result)

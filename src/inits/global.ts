@@ -3,12 +3,14 @@ import * as Bluebird from 'bluebird'
 import tasks from './tasks'
 import GlobUtils from '../common/globUtils'
 import CONFIGS from '../config/configs'
+import STCODES from './enums'
 
 export default {
     async init() {
         const env = process.env.NODE_ENV || 'dev'            //dev - 开发; prod - 生产； test - 测试;
         Object.assign(global, {
             PAGESIZE: 10,
+            STCODES,
             ROOT_PATH: `${process.cwd()}${env === 'prod' ? '' : '/dist'}`,
             NODE_ENV: env,    
             Promise: Bluebird,
@@ -34,7 +36,7 @@ export default {
 
 class KoaErr extends Error {
     public status: Number
-    constructor({ message = 'Error', status = 500 } = {}, ...args) {
+    constructor({ message = 'Error', status = global.STCODES.EXCEPTION } = {}, ...args) {
         super()
         this.message = message
         this.status = status

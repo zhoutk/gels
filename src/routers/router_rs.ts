@@ -22,7 +22,7 @@ export default (() => {
         if (fields) {
             fields = global.tools.arryParse(fields)
             if (!fields) {
-                throw global.koaError(ctx, 301, 'params fields is wrong.')
+                throw global.koaError(ctx, global.STCODES.PRAMAERR, 'params fields is wrong.')
             }
         }
         try {
