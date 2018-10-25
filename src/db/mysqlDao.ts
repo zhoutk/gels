@@ -115,14 +115,16 @@ export default class MysqlDao implements IDao{
                 if(search !== undefined && value !== 'null'){
                     where += keys[i] + " like ? "
                     values.push(`%${value}%`)
-                }else{
-                    if(value === 'null'){
+                } else {
+                    if (value === 'null') {
                         where += keys[i] + ' is null '
-                    } else if(QUERYUNEQOPERS.some((element)=>{
-                        if(Array.isArray(value)){
-                            value = value.join()
-                        }
-                        return value.startsWith(element)})){
+                    } else if (QUERYUNEQOPERS.some((element) => {
+                                if (Array.isArray(value)) {
+                                    value = value.join()
+                                }
+                                return value.startsWith(element)
+                            })
+                        ){
                         let vls = value.split(',');
                         if (vls.length == 2) {
                             where += keys[i] + vls[0] + " ? "
