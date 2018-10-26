@@ -110,7 +110,7 @@ export default class MysqlDao implements IDao {
                     reject(global.jsReponse(global.STCODES.DATABASECOERR, err.message))
                     global.logger.error(err.message)
                 }
-                global.logger.debug(`Beginning trans, ${sqls.length} operations are going to do.`)
+                global.logger.debug(`Beginning ${isAsync ? 'Async' : 'Sync'} trans, ${sqls.length} operations are going to do.`)
                 conn.beginTransaction((err) => {
                     if (err) {
                         reject(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
@@ -136,11 +136,11 @@ export default class MysqlDao implements IDao {
                                     conn.rollback(() => {
                                         conn.release()
                                     })
-                                    global.logger.error(`trans run fail, ${err.message}`)
+                                    global.logger.error(`Async trans run fail, ${err.message}`)
                                     reject(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
                                 } else {
                                     conn.release()
-                                    global.logger.debug(`Ending trans, ${funcArr.length} operations have been done.`)
+                                    global.logger.debug(`Ending Async trans, ${funcArr.length} operations have been done.`)
                                     resolve(global.jsReponse(global.STCODES.SUCCESS, 'trans run succes.', {affectedRows: funcArr.length}))
                                 }
                             })
@@ -157,26 +157,26 @@ export default class MysqlDao implements IDao {
                         conn.query(sql, values, (err) => {
                             if (err) {
                                 conn.rollback(() => {
-                                    global.logger.error(`trans run fail, _Sql_ : ${sqlParam.text}, _Values_ : ${JSON.stringify(sqlParam.values)}, _Err_ : ${err.message}`)
+                                    global.logger.error(`${isAsync ? 'Async' : 'Sync'} trans run fail, _Sql_ : ${sqlParam.text}, _Values_ : ${JSON.stringify(sqlParam.values)}, _Err_ : ${err.message}`)
                                     return callback(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
                                 })
                             } else {
-                                global.logger.debug(`trans run success, _Sql_ : ${sqlParam.text}, _Values_ : ${JSON.stringify(sqlParam.values)}`)
+                                global.logger.debug(`${isAsync ? 'Async' : 'Sync'} trans run success, _Sql_ : ${sqlParam.text}, _Values_ : ${JSON.stringify(sqlParam.values)}`)
                                 return callback(null)
                             }
                         })
                     })
                 }
 
-                function goTrans(sqls: Array<any>) {
-                    let sqlArr = global.__.cloneDeep(sqls)
+                function goTrans(sqlArray: Array<any>) {
+                    let sqlArr = global.__.cloneDeep(sqlArray)
                     if (sqlArr.length > 0) {
                         doOne(sqlArr.shift()).then((err) => {
                              if (err) {
                                 conn.rollback(() => {
                                     conn.release()
                                 })
-                                global.logger.error(`trans run fail, ${err.message}`)
+                                global.logger.error(`Sync trans run fail, ${err.message}`)
                                 reject(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
                             } else {
                                 goTrans(sqlArr)
@@ -188,11 +188,12 @@ export default class MysqlDao implements IDao {
                                 conn.rollback(() => {
                                     conn.release()
                                 })
-                                global.logger.debug(`trans run fail, ${err.message}`)
+                                global.logger.debug(`Sync trans run fail, ${err.message}`)
                                 reject(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
                             } else {
                                 conn.release()
-                                resolve(global.jsReponse(global.STCODES.SUCCESS, 'trans run succes.', {affectedRows: sqls.length}))
+                                global.logger.debug(`Ending Sync trans, ${sqls.length} operations have been done.`)
+                                resolve(global.jsReponse(global.STCODES.SUCCESS, 'Sync trans run succes.', {affectedRows: sqls.length}))
                             }
                         })
                     }
