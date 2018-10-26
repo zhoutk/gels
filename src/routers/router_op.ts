@@ -46,9 +46,36 @@ export default (() => {
                             password: '2',
                             age: 2
                         }
+                    },
+                    {
+                        table: 'users',
+                        method: 'Insert',
+                        params: {
+                            username: 'zhou3',
+                            password: '3',
+                            age: 3
+                        }
+                    },
+                    {
+                        table: 'users',
+                        method: 'Insert',
+                        params: {
+                            username: 'zhou4',
+                            password: '4',
+                            age: 4
+                        }
+                    },
+                    {
+                        table: 'users',
+                        method: 'Insert',
+                        params: {
+                            username: 'zhou5',
+                            password: '5',
+                            age: 5
+                        }
                     }
                 ]
-                return ctx.body = await new BaseDao().transGo(trs)
+                return ctx.body = await new BaseDao().transGo(trs, false)
             default:
                 ctx.body = global.jsReponse(global.STCODES.NOTFOUND, 'command is not found.')
                 break

@@ -110,7 +110,7 @@ export default class MysqlDao implements IDao {
                     reject(global.jsReponse(global.STCODES.DATABASECOERR, err.message))
                     global.logger.error(err.message)
                 }
-                global.logger.debug(`beginning trans, ${sqls.length} operations are going to do.`)
+                global.logger.debug(`Beginning trans, ${sqls.length} operations are going to do.`)
                 conn.beginTransaction((err) => {
                     if (err) {
                         reject(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
@@ -155,15 +155,45 @@ export default class MysqlDao implements IDao {
                                     reject(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
                                 } else {
                                     conn.release()
-                                    global.logger.debug(`ending trans, ${funcArr.length} operations have been done.`)
+                                    global.logger.debug(`Ending trans, ${funcArr.length} operations have been done.`)
                                     resolve(global.jsReponse(global.STCODES.SUCCESS, 'trans run succes.', {affectedRows: funcArr.length}))
                                 }
                             })
                         }
                     })
                 } else {                        //同步执行
-
+                    goTrans(funcArr)
                 }
+
+                function goTrans(funcArr: Array<Promise<any>>) {
+                    if (funcArr.length > 0) {
+                        funcArr.pop().then((err) => {
+                             if (err) {
+                                conn.rollback(() => {
+                                    conn.release()
+                                })
+                                global.logger.error(`trans run fail, ${err.message}`)
+                                reject(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
+                            } else {
+                                goTrans(funcArr)
+                            }
+                        })
+                    } else {
+                        conn.commit((err) => {
+                            if (err) {
+                                conn.rollback(() => {
+                                    conn.release()
+                                })
+                                global.logger.debug(`trans run fail, ${err.message}`)
+                                reject(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
+                            } else {
+                                conn.release()
+                                resolve(global.jsReponse(global.STCODES.SUCCESS, 'trans run succes.', {affectedRows: sqls.length}))
+                            }
+                        })
+                    }
+                }
+
             })
         })
     }
