@@ -5,7 +5,8 @@ enum STCODES {
     NOTFOUND = 404,      
     JWTAUTHERR = 400,        
     EXCEPTION = 500,            //发生异常
-    DATABASERR = 700,           //数据库操作失败
+    DATABASECOERR = 701,        //数据库连接失败
+    DATABASEOPERR = 702,        //数据库操作失败
 }
 
 export default STCODES

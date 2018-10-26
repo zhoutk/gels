@@ -1,5 +1,6 @@
 import IDao from './idao'
 import { createPool, PoolOptions } from 'mysql2'
+import TransElement from '../common/transElement'
 
 const OPMETHODS = {
     Insert : 'INSERT INTO ?? SET ?',
@@ -74,6 +75,97 @@ export default class MysqlDao implements IDao {
         sql += updateStr.substring(0, updateStr.length - 1)
 
         return this.execQuery(sql, values)
+    }
+    transGo(elements: Array<TransElement>, isAsync: boolean = true): Promise<any> {
+        let sqls = []
+        elements.forEach((ele) => {
+            let values: Array<any> = [ele.table]
+            let params: object | Array<any> = ele.params
+            let keys = Object.keys(params)
+
+            if (Array.isArray(params)) {
+                values = values.concat(params)
+            } else if (keys.length > 0) {
+                values.push(params)
+            }
+
+            if (ele.id !== undefined)
+                values.push({id: ele.id})
+
+            let sql = {text: '', values}
+            if (ele.sql !== undefined) {
+                sql.text = ele.sql
+            } else {
+                sql.text = OPMETHODS[ele.method]
+            }
+
+            sqls.push(sql)
+        })
+        return this.execTrans (sqls, isAsync)
+    }
+    private execTrans (sqls: Array<any>, isAsync: boolean): Promise<any> {
+        return new Promise((resolve, reject) => {
+            pool.getConnection((err, conn) => {
+                if (err) {
+                    reject(global.jsReponse(global.STCODES.DATABASECOERR, err.message))
+                    global.logger.error(err.message)
+                }
+                global.logger.debug(`beginning trans, ${sqls.length} operations are going to do.`)
+                conn.beginTransaction((err) => {
+                    if (err) {
+                        reject(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
+                    }
+                })
+                let funcArr = []
+                sqls.forEach((sqlPrams: {text: string; values: object|Array<any>}) => {
+                    funcArr.push(global.tools.promisify((callback) => {
+                        let sql = sqlPrams.text
+                        let values = sqlPrams.values
+                        conn.query(sql, values, (err, data, fields) => {
+                            if (err) {
+                                conn.rollback(() => {
+                                    global.logger.error(`trans run fail, _Sql_ : ${sqlPrams.text}, _Values_ : ${JSON.stringify(sqlPrams.values)}, _Err_ : ${err.message}`)
+                                    return callback(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
+                                })
+                            } else {
+                                global.logger.debug(`trans run success, _Sql_ : ${sqlPrams.text}, _Values_ : ${JSON.stringify(sqlPrams.values)}`)
+                                return callback(null, global.jsReponse(global.STCODES.SUCCESS, 'trans go success.'))
+                            }
+                        })
+                    }))
+                })
+                if (isAsync) {                  //异步执行
+                    Promise.all(funcArr).then((err) => {
+                        let i = 0
+                        for (; i < err.length; i++) 
+                            if (err[i]) 
+                                break
+                        if (i < err.length) {
+                            conn.rollback(() => {
+                                conn.release()
+                            })
+                            reject(global.jsReponse(global.STCODES.DATABASEOPERR, err[i].message))
+                        } else {
+                            conn.commit((err, ...rest) => {
+                                if (err) {
+                                    conn.rollback(() => {
+                                        conn.release()
+                                    })
+                                    global.logger.error(`trans run fail, ${err.message}`)
+                                    reject(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
+                                } else {
+                                    conn.release()
+                                    global.logger.debug(`ending trans, ${funcArr.length} operations have been done.`)
+                                    resolve(global.jsReponse(global.STCODES.SUCCESS, 'trans run succes.', {affectedRows: funcArr.length}))
+                                }
+                            })
+                        }
+                    })
+                } else {                        //同步执行
+
+                }
+            })
+        })
     }
     private async query(tablename: string, params, fields = [], sql = '', values = []): Promise<any> {
         params = params || {}
@@ -250,14 +342,14 @@ export default class MysqlDao implements IDao {
 
             pool.getConnection(function(err, connection) {
                 if (err) {
-                    reject(global.jsReponse(global.STCODES.DATABASERR, err.message))
+                    reject(global.jsReponse(global.STCODES.DATABASECOERR, err.message))
                     global.logger.error(err.message)
                 } else {
                     connection.query(sql, values, function(err, result) {
                         connection.release()
                         let v = values ? ' _Values_ :' + JSON.stringify(values) : ''
                         if (err) {
-                            reject(global.jsReponse(global.STCODES.DATABASERR, err.message))
+                            reject(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
                             global.logger.error(err.message + ' Sql is : ' + sql + v)
                         } else {
                             fulfill(result)

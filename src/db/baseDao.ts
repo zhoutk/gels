@@ -1,6 +1,7 @@
 let dialect: string = global.CONFIGS.db_dialect
 let Dao = require(`./${dialect}Dao`).default
 import MysqlDao from './mysqlDao'
+import TransElement from '../common/transElement'
 
 export default class BaseDao {
     table: string
@@ -60,6 +61,17 @@ export default class BaseDao {
     }
     async insertBatch(tablename: string, elements = []): Promise<any> {
         let rs = await BaseDao.dao.insertBatch(tablename, elements)
+        let {affectedRows} = rs
+        return global.jsReponse(global.STCODES.SUCCESS, 'data batch success.', {affectedRows})
+    }
+    async transGo(elements: Array<TransElement>, isAsync = true): Promise<any> {
+        let rs
+        try {
+            rs = await BaseDao.dao.transGo(elements, isAsync)
+        } catch (err) {
+            err.message = `data batch fail: ${err.message}`
+            return err
+        }
         let {affectedRows} = rs
         return global.jsReponse(global.STCODES.SUCCESS, 'data batch success.', {affectedRows})
     }

@@ -18,4 +18,9 @@ export default class GlobUtils {
         }
         return arr
     }
+    promisify(func) {
+        return new Promise((resolve) => {
+            func(resolve)
+        })
+    }
 }

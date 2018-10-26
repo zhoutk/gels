@@ -27,6 +27,28 @@ export default (() => {
                 break
             case 'batch':
                 return ctx.body = await new BaseDao().insertBatch('users', ctx.request.body)
+            case 'trans':
+                let trs = [
+                    {
+                        table: 'users',
+                        method: 'Insert',
+                        params: {
+                            username: 'zhout1',
+                            password: '1',
+                            age: 1
+                        }
+                    },
+                    {
+                        table: 'users',
+                        method: 'Insert',
+                        params: {
+                            username: 'zhou2',
+                            password: '2',
+                            age: 2
+                        }
+                    }
+                ]
+                return ctx.body = await new BaseDao().transGo(trs)
             default:
                 ctx.body = global.jsReponse(global.STCODES.NOTFOUND, 'command is not found.')
                 break
