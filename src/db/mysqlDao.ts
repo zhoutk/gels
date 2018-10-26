@@ -119,7 +119,7 @@ export default class MysqlDao implements IDao {
                 
                 if (isAsync) {                  //异步执行
                     let funcArr = []
-                    sqls.forEach((sqlPrams: { text: string; values: object | Array<any> }) => {funcArr.push(doOne(sqlPrams))})
+                    sqls.forEach((sqlParam: { text: string; values: object | Array<any> }) => {funcArr.push(doOne(sqlParam))})
                     Promise.all(funcArr).then((err) => {
                         let i = 0
                         for (; i < err.length; i++) 
@@ -147,30 +147,31 @@ export default class MysqlDao implements IDao {
                         }
                     })
                 } else {                        //同步执行
-                    // goTrans(funcArr)
+                    goTrans(sqls)
                 }
 
-                function doOne(sqlPrams: { text: string; values: object | Array<any> }) {
+                function doOne(sqlParam: { text: string; values: object | Array<any> }): Promise<any> {
                     return global.tools.promisify((callback) => {
-                        let sql = sqlPrams.text
-                        let values = sqlPrams.values
+                        let sql = sqlParam.text
+                        let values = sqlParam.values
                         conn.query(sql, values, (err) => {
                             if (err) {
                                 conn.rollback(() => {
-                                    global.logger.error(`trans run fail, _Sql_ : ${sqlPrams.text}, _Values_ : ${JSON.stringify(sqlPrams.values)}, _Err_ : ${err.message}`)
+                                    global.logger.error(`trans run fail, _Sql_ : ${sqlParam.text}, _Values_ : ${JSON.stringify(sqlParam.values)}, _Err_ : ${err.message}`)
                                     return callback(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
                                 })
                             } else {
-                                global.logger.debug(`trans run success, _Sql_ : ${sqlPrams.text}, _Values_ : ${JSON.stringify(sqlPrams.values)}`)
+                                global.logger.debug(`trans run success, _Sql_ : ${sqlParam.text}, _Values_ : ${JSON.stringify(sqlParam.values)}`)
                                 return callback(null)
                             }
                         })
                     })
                 }
 
-                function goTrans(funcArr: Array<Promise<any>>) {
-                    if (funcArr.length > 0) {
-                        funcArr.pop().then((err) => {
+                function goTrans(sqls: Array<any>) {
+                    let sqlArr = global.__.cloneDeep(sqls)
+                    if (sqlArr.length > 0) {
+                        doOne(sqlArr.shift()).then((err) => {
                              if (err) {
                                 conn.rollback(() => {
                                     conn.release()
@@ -178,7 +179,7 @@ export default class MysqlDao implements IDao {
                                 global.logger.error(`trans run fail, ${err.message}`)
                                 reject(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
                             } else {
-                                goTrans(funcArr)
+                                goTrans(sqlArr)
                             }
                         })
                     } else {

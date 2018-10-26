@@ -33,7 +33,7 @@ export default (() => {
                         table: 'users',
                         method: 'Insert',
                         params: {
-                            username: 'zhout1',
+                            username: 'zhou1',
                             password: '1',
                             age: 1
                         }
@@ -75,7 +75,7 @@ export default (() => {
                         }
                     }
                 ]
-                return ctx.body = await new BaseDao().transGo(trs, true)
+                return ctx.body = await new BaseDao().transGo(trs, false)
             default:
                 ctx.body = global.jsReponse(global.STCODES.NOTFOUND, 'command is not found.')
                 break
