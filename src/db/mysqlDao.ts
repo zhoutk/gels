@@ -121,7 +121,7 @@ export default class MysqlDao implements IDao {
                     funcArr.push(global.tools.promisify((callback) => {
                         let sql = sqlPrams.text
                         let values = sqlPrams.values
-                        conn.query(sql, values, (err, data, fields) => {
+                        conn.query(sql, values, (err) => {
                             if (err) {
                                 conn.rollback(() => {
                                     global.logger.error(`trans run fail, _Sql_ : ${sqlPrams.text}, _Values_ : ${JSON.stringify(sqlPrams.values)}, _Err_ : ${err.message}`)
@@ -129,7 +129,7 @@ export default class MysqlDao implements IDao {
                                 })
                             } else {
                                 global.logger.debug(`trans run success, _Sql_ : ${sqlPrams.text}, _Values_ : ${JSON.stringify(sqlPrams.values)}`)
-                                return callback(null, global.jsReponse(global.STCODES.SUCCESS, 'trans go success.'))
+                                return callback(null)
                             }
                         })
                     }))
@@ -146,7 +146,7 @@ export default class MysqlDao implements IDao {
                             })
                             reject(global.jsReponse(global.STCODES.DATABASEOPERR, err[i].message))
                         } else {
-                            conn.commit((err, ...rest) => {
+                            conn.commit((err) => {
                                 if (err) {
                                     conn.rollback(() => {
                                         conn.release()
