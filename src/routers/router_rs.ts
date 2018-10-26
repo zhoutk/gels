@@ -25,14 +25,10 @@ export default (() => {
                 throw global.koaError(ctx, global.STCODES.PRAMAERR, 'params fields is wrong.')
             }
         }
-        try {
-            ctx.body = await new BaseDao(tableName)[METHODS[method]](restParams, fields, ctx.session)
-            // ctx.body = await new BaseDao().execSql("insert into users (username, password, age) values (?,?,?) ", ['alice', 122, 16])          //test execSql create
-            // ctx.body = await new BaseDao().execSql("update users set age = ? where id = ? ", [22, 1])          //test execSql update
-            // ctx.body = await new BaseDao().querySql("select * from users where age = ? ", [12], params)       //test querySql
-        } catch (err) {
-            ctx.body = err
-        }
+        ctx.body = await new BaseDao(tableName)[METHODS[method]](restParams, fields, ctx.session)
+        // ctx.body = await new BaseDao().execSql("insert into users (username, password, age) values (?,?,?) ", ['alice', 122, 16])          //test execSql create
+        // ctx.body = await new BaseDao().execSql("update users set age = ? where id = ? ", [22, 1])          //test execSql update
+        // ctx.body = await new BaseDao().querySql("select * from users where age = ? ", [12], params)       //test querySql
     }
     return router.all('/rs/:table', process).all('/rs/:table/:id', process)
 })() 

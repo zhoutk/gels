@@ -11,10 +11,16 @@ export default class BaseDao {
         if (!BaseDao.dao)
             BaseDao.dao = new Dao()
     }
-    async retrieve(params = {}, fields = [], session = {userid: ''}): Promise<any> {
-        let rs = await BaseDao.dao.select(this.table, params, fields) 
+    async retrieve(params = {}, fields = [], session = { userid: '' }): Promise<any> {
+        let rs
+        try {
+            rs = await BaseDao.dao.select(this.table, params, fields)
+        } catch (err) {
+            err.message = `data query fail: ${err.message}`
+            return err
+        }
         if (rs.status === global.STCODES.SUCCESS && (!rs.data || rs.data.length === 0))
-            return global.jsReponse( global.STCODES.QUERYEMPTY, 'data query empty.', rs)
+            return global.jsReponse(global.STCODES.QUERYEMPTY, 'data query empty.', rs)
         else
             return rs
     }
@@ -23,19 +29,33 @@ export default class BaseDao {
         if (keys.length === 0 || params['id'] !== undefined && keys.length <= 1)
             return global.jsReponse(global.STCODES.PRAMAERR, 'params is error.')
         else {
-            let rs = await BaseDao.dao.insert(this.table, params)
-            return global.jsReponse(global.STCODES.SUCCESS, 'data insert success.', {affectedRows: rs.affectedRows, id: rs.insertId})
+            let rs
+            try {
+                rs = await BaseDao.dao.insert(this.table, params)
+            } catch (err) {
+                err.message = `data insert fail: ${err.message}`
+                return err
+            }
+            let {affectedRows} = rs
+            return global.jsReponse(global.STCODES.SUCCESS, 'data insert success.', {affectedRows, id: rs.insertId})
         }
     }
-    async update(params, fields = [], session = {userid: ''}): Promise<any> {
+    async update(params, fields = [], session = { userid: '' }): Promise<any> {
         params = params || {}
         let keys = Object.keys(params)
         if (params['id'] === undefined || keys.length <= 1)
             return global.jsReponse(global.STCODES.PRAMAERR, 'params is error.')
         else {
             const { id, ...restParams } = params
-            let rs = await BaseDao.dao.update(this.table, restParams, id)
-            return global.jsReponse(global.STCODES.SUCCESS, 'data update success.', {affectedRows: rs.affectedRows, id})
+            let rs
+            try {
+                rs = await BaseDao.dao.update(this.table, restParams, id)
+            } catch (err) {
+                err.message = `data update fail: ${err.message}`
+                return err
+            }
+            let { affectedRows } = rs
+            return global.jsReponse(global.STCODES.SUCCESS, 'data update success.', { affectedRows, id })
         }
     }
     async delete(params = {}, fields = [], session = {userid: ''}): Promise<any> {
@@ -43,24 +63,49 @@ export default class BaseDao {
             return global.jsReponse(global.STCODES.PRAMAERR, 'params is error.')
         else {
             let id = params['id']
-            let rs = await BaseDao.dao.delete(this.table, id)
-            return global.jsReponse(global.STCODES.SUCCESS, 'data delete success.', {affectedRows: rs.affectedRows, id})
+            let rs
+            try {
+                rs = await BaseDao.dao.delete(this.table, id)
+            } catch (err) {
+                err.message = `data delete fail: ${err.message}`
+                return err
+            }
+            let {affectedRows} = rs
+            return global.jsReponse(global.STCODES.SUCCESS, 'data delete success.', { affectedRows, id })
         }
     }
     async querySql(sql: string, values = [], params = {}, fields = []): Promise<any> {
-        let rs = await BaseDao.dao.querySql (sql, values, params, fields) 
+        let rs
+        try {
+            rs = await BaseDao.dao.querySql (sql, values, params, fields) 
+        } catch (err) {
+            err.message = `data querySql fail: ${err.message}`
+            return err
+        }
         if (rs.length === 0)
-            return global.jsReponse( global.STCODES.QUERYEMPTY, 'data query empty.', rs)
+            return global.jsReponse( global.STCODES.QUERYEMPTY, 'data querySql empty.', rs)
         else
-            return global.jsReponse( global.STCODES.SUCCESS, 'data query success.', rs)
+            return global.jsReponse( global.STCODES.SUCCESS, 'data querySql success.', rs)
     }
     async execSql(sql: string, values = []): Promise<any> {
-        let rs = await BaseDao.dao.execSql(sql, values)
+        let rs
+        try {
+            rs = await BaseDao.dao.execSql(sql, values)
+        } catch (err) {
+            err.message = `data execSql fail: ${err.message}`
+            return err
+        }
         let {affectedRows} = rs
-        return global.jsReponse(global.STCODES.SUCCESS, 'data exec success.', {affectedRows})
+        return global.jsReponse(global.STCODES.SUCCESS, 'data execSql success.', {affectedRows})
     }
     async insertBatch(tablename: string, elements = []): Promise<any> {
-        let rs = await BaseDao.dao.insertBatch(tablename, elements)
+        let rs
+        try {
+            rs = await BaseDao.dao.insertBatch(tablename, elements)
+        } catch (err) {
+            err.message = `data batch fail: ${err.message}`
+            return err
+        }
         let {affectedRows} = rs
         return global.jsReponse(global.STCODES.SUCCESS, 'data batch success.', {affectedRows})
     }
@@ -69,10 +114,10 @@ export default class BaseDao {
         try {
             rs = await BaseDao.dao.transGo(elements, isAsync)
         } catch (err) {
-            err.message = `data batch fail: ${err.message}`
+            err.message = `data trans fail: ${err.message}`
             return err
         }
         let {affectedRows} = rs
-        return global.jsReponse(global.STCODES.SUCCESS, 'data batch success.', {affectedRows})
+        return global.jsReponse(global.STCODES.SUCCESS, 'data trans success.', {affectedRows})
     }
 }
