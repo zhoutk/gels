@@ -58,4 +58,9 @@ export default class BaseDao {
         let {affectedRows} = rs
         return global.jsReponse(global.STCODES.SUCCESS, 'data exec success.', {affectedRows})
     }
+    async insertBatch(tablename: string, elements = []): Promise<any> {
+        let rs = await BaseDao.dao.insertBatch(tablename, elements)
+        let {affectedRows} = rs
+        return global.jsReponse(global.STCODES.SUCCESS, 'data batch success.', {affectedRows})
+    }
 }

@@ -25,6 +25,8 @@ export default (() => {
                     ctx.body = global.jsReponse(global.STCODES.QUERYEMPTY, 'The user is missing.')
                 }
                 break
+            case 'batch':
+                return ctx.body = await new BaseDao().insertBatch('users', ctx.request.body)
             default:
                 ctx.body = global.jsReponse(global.STCODES.NOTFOUND, 'command is not found.')
                 break

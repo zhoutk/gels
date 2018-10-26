@@ -7,14 +7,14 @@ export default () => {
     return async (ctx, next) => {
         const { header: { token } } = ctx
         let urlStrs = ctx && ctx.url && ctx.url.split('/')
-
+        let isAuth: boolean = AUTHURL.some((url) => { return urlStrs[1] === url})
         if (token) {
             try {
                 const decoded = jwt.verify(token, config.secret)
                 ctx.session = decoded
                 await next()
             } catch (err) {
-                if (ctx.method === 'GET') {
+                if (ctx.method === 'GET' || !isAuth) {
                     return await next()
                 }
                 if (err.name === 'TokenExpiredError') {
@@ -26,7 +26,7 @@ export default () => {
                 }
             }
         } else {
-            if (ctx.method !== 'GET' && AUTHURL.some((url) => { return urlStrs[1] === url})) {
+            if (ctx.method !== 'GET' && isAuth) {
                 ctx.body = global.jsReponse(global.STCODES.JWTAUTHERR, 'Missing Auth Token.')
             } else {
                 await next()

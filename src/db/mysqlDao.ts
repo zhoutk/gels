@@ -4,7 +4,8 @@ import { createPool, PoolOptions } from 'mysql2'
 const OPMETHODS = {
     Insert : 'INSERT INTO ?? SET ?',
     Update : 'UPDATE ?? SET ? WHERE ?',
-    Delete : 'DELETE FROM ?? WHERE ?'
+    Delete : 'DELETE FROM ?? WHERE ?',
+    Batch  : 'INSERT INTO ?? (??) VALUES ',
 }
 
 const QUERYSTATISKEYS = ['count', 'sum']
@@ -46,6 +47,32 @@ export default class MysqlDao implements IDao {
         return this.query('QuerySqlSelect', params, fields, sql, values)
     }
     execSql(sql: string, values: Array<any>): Promise<any> {
+        return this.execQuery(sql, values)
+    }
+    insertBatch(tablename: string, elements: Array<any>): Promise<any> {
+        let sql: string = OPMETHODS['Batch']
+        let updateStr = ''
+        let values: [any] = [tablename]
+        let valKeys = []
+
+        for (let i = 0; i < elements.length; i++) {
+            if (i === 0) {
+                valKeys = Object.keys(elements[i])
+                values.push(valKeys)
+            }
+            let valueStr = []
+            for (let j = 0; j < valKeys.length; j++) {
+                valueStr.push(elements[i][valKeys[j]])
+                if (i === 0)
+                    updateStr += valKeys[j] + ' = values(' + valKeys[j] + '),'
+            }
+            values.push(valueStr)
+            sql += ' (?),'
+        }
+        sql = sql.substring(0, sql.length - 1)
+        sql += ' ON DUPLICATE KEY UPDATE '
+        sql += updateStr.substring(0, updateStr.length - 1)
+
         return this.execQuery(sql, values)
     }
     private async query(tablename: string, params, fields = [], sql = '', values = []): Promise<any> {
