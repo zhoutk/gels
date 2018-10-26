@@ -116,25 +116,10 @@ export default class MysqlDao implements IDao {
                         reject(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
                     }
                 })
-                let funcArr = []
-                sqls.forEach((sqlPrams: {text: string; values: object|Array<any>}) => {
-                    funcArr.push(global.tools.promisify((callback) => {
-                        let sql = sqlPrams.text
-                        let values = sqlPrams.values
-                        conn.query(sql, values, (err) => {
-                            if (err) {
-                                conn.rollback(() => {
-                                    global.logger.error(`trans run fail, _Sql_ : ${sqlPrams.text}, _Values_ : ${JSON.stringify(sqlPrams.values)}, _Err_ : ${err.message}`)
-                                    return callback(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
-                                })
-                            } else {
-                                global.logger.debug(`trans run success, _Sql_ : ${sqlPrams.text}, _Values_ : ${JSON.stringify(sqlPrams.values)}`)
-                                return callback(null)
-                            }
-                        })
-                    }))
-                })
+                
                 if (isAsync) {                  //异步执行
+                    let funcArr = []
+                    sqls.forEach((sqlPrams: { text: string; values: object | Array<any> }) => {funcArr.push(doOne(sqlPrams))})
                     Promise.all(funcArr).then((err) => {
                         let i = 0
                         for (; i < err.length; i++) 
@@ -162,7 +147,25 @@ export default class MysqlDao implements IDao {
                         }
                     })
                 } else {                        //同步执行
-                    goTrans(funcArr)
+                    // goTrans(funcArr)
+                }
+
+                function doOne(sqlPrams: { text: string; values: object | Array<any> }) {
+                    return global.tools.promisify((callback) => {
+                        let sql = sqlPrams.text
+                        let values = sqlPrams.values
+                        conn.query(sql, values, (err) => {
+                            if (err) {
+                                conn.rollback(() => {
+                                    global.logger.error(`trans run fail, _Sql_ : ${sqlPrams.text}, _Values_ : ${JSON.stringify(sqlPrams.values)}, _Err_ : ${err.message}`)
+                                    return callback(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
+                                })
+                            } else {
+                                global.logger.debug(`trans run success, _Sql_ : ${sqlPrams.text}, _Values_ : ${JSON.stringify(sqlPrams.values)}`)
+                                return callback(null)
+                            }
+                        })
+                    })
                 }
 
                 function goTrans(funcArr: Array<Promise<any>>) {
