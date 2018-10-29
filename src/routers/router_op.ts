@@ -75,7 +75,7 @@ export default (() => {
                         }
                     }
                 ]
-                return ctx.body = await new BaseDao().transGo(trs, false)
+                return ctx.body = await new BaseDao().transGo(trs, true)
             default:
                 ctx.body = global.jsReponse(global.STCODES.NOTFOUND, 'command is not found.')
                 break

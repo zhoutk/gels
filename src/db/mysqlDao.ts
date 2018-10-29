@@ -120,67 +120,55 @@ export default class MysqlDao implements IDao {
                 if (isAsync) {                  //异步执行
                     let funcArr = []
                     sqls.forEach((sqlParam: { text: string; values: object | Array<any> }) => {funcArr.push(doOne(sqlParam))})
-                    Promise.all(funcArr).then((err) => {
-                        let i = 0
-                        for (; i < err.length; i++) 
-                            if (err[i]) 
-                                break
-                        if (i < err.length) {
-                            conn.rollback(() => {
-                                conn.release()
-                            })
-                            reject(global.jsReponse(global.STCODES.DATABASEOPERR, err[i].message))
-                        } else {
-                            conn.commit((err) => {
-                                if (err) {
-                                    conn.rollback(() => {
-                                        conn.release()
-                                    })
-                                    global.logger.error(`Async trans run fail, ${err.message}`)
-                                    reject(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
-                                } else {
+                    Promise.all(funcArr).then((resp) => {
+                        conn.commit((err) => {
+                            if (err) {
+                                conn.rollback(() => {
                                     conn.release()
-                                    global.logger.debug(`Ending Async trans, ${funcArr.length} operations have been done.`)
-                                    resolve(global.jsReponse(global.STCODES.SUCCESS, 'trans run succes.', {affectedRows: funcArr.length}))
-                                }
-                            })
-                        }
+                                })
+                                global.logger.error(`Async trans run fail, ${err.message}`)
+                                reject(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
+                            } else {
+                                conn.release()
+                                global.logger.debug(`Ending Async trans, ${funcArr.length} operations have been done.`)
+                                resolve(global.jsReponse(global.STCODES.SUCCESS, 'trans run succes.', {resp, affectedRows: resp.length}))
+                            }
+                        })
+                    }).catch((err) => {
+                        conn.rollback(() => {
+                            conn.release()
+                        })
+                        reject(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
                     })
                 } else {                        //同步执行
                     goTrans(sqls)
                 }
 
                 function doOne(sqlParam: { text: string; values: object | Array<any> }): Promise<any> {
-                    return global.tools.promisify((callback) => {
+                    return new Promise((resolve, reject) => {
                         let sql = sqlParam.text
                         let values = sqlParam.values
-                        conn.query(sql, values, (err) => {
+                        conn.query(sql, values, (err, result) => {
                             if (err) {
                                 conn.rollback(() => {
                                     global.logger.error(`${isAsync ? 'Async' : 'Sync'} trans run fail, _Sql_ : ${sqlParam.text}, _Values_ : ${JSON.stringify(sqlParam.values)}, _Err_ : ${err.message}`)
-                                    return callback(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
+                                    return reject(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
                                 })
                             } else {
                                 global.logger.debug(`${isAsync ? 'Async' : 'Sync'} trans run success, _Sql_ : ${sqlParam.text}, _Values_ : ${JSON.stringify(sqlParam.values)}`)
-                                return callback(null)
+                                return resolve(global.jsReponse(global.STCODES.SUCCESS, 'trans run success', result))
                             }
                         })
                     })
                 }
 
-                function goTrans(sqlArray: Array<any>) {
+                function goTrans(sqlArray: Array<any>, result?) {
                     let sqlArr = global.__.cloneDeep(sqlArray)
                     if (sqlArr.length > 0) {
-                        doOne(sqlArr.shift()).then((err) => {
-                             if (err) {
-                                conn.rollback(() => {
-                                    conn.release()
-                                })
-                                global.logger.error(`Sync trans run fail, ${err.message}`)
-                                reject(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
-                            } else {
-                                goTrans(sqlArr)
-                            }
+                        doOne(sqlArr.shift()).then((result) => {
+                            goTrans(sqlArr/*, result*/)                 //以此方式，传递上一执行结果给下一执行操作
+                        }).catch((err) => {
+                            reject(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
                         })
                     } else {
                         conn.commit((err) => {
@@ -373,8 +361,7 @@ export default class MysqlDao implements IDao {
 
     }
     private execQuery(sql: string, values: any): Promise<any> {
-        return new Promise(function(fulfill, reject) {
-
+        return new Promise((resolve, reject) => {
             pool.getConnection(function(err, connection) {
                 if (err) {
                     reject(global.jsReponse(global.STCODES.DATABASECOERR, err.message))
@@ -387,13 +374,12 @@ export default class MysqlDao implements IDao {
                             reject(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
                             global.logger.error(err.message + ' Sql is : ' + sql + v)
                         } else {
-                            fulfill(result)
+                            resolve(result)
                             global.logger.debug( ' _Sql_ : ' + sql + v)
                         }
                     })
                 }
             })
-    
         })
     }
 }
