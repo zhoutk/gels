@@ -18,8 +18,7 @@ export default () => {
                 color.green(`${JSON.stringify(ctx.method === 'POST' || ctx.method === 'PUT' ? ctx.request.body : ctx.request.query)}`)
             ]
             global.logger.debug(msgs.join(' '))
-        }
-        else {
+        } else {
             await next()
         }
     }

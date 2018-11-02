@@ -1,6 +1,7 @@
 # mine
 yarn.lock
 dist/
+**/.DS_Store
 # Logs
 logs
 *.log
