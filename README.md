@@ -124,7 +124,7 @@ gels -- 凝胶，希冀该项目能成为联结设计、开发，前端、后端
 - [GET] /rs/users/{id}, 单条查询
 - [POST] /rs/users, 新增记录
 - [PUT] /rs/users/{id}, 修改记录
-- [DELETE], /rs/users/{id}, 删除记录
+- [DELETE] /rs/users/{id}, 删除记录
 
 ## 智能查询
 > 查询保留字：fields, page, size, sort, search, lks, ins, ors, count, sum, group
