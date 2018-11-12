@@ -251,10 +251,6 @@ export default class MysqlDao implements IDao {
                 else
                     where += whereExtra
             } else {
-                if (search !== undefined && value !== 'null') {
-                    where += keys[i] + ' like ? '
-                    values.push(`%${value}%`)
-                } else {
                     if (value === 'null') {
                         where += keys[i] + ' is null '
                     } else if ((Array.isArray(value) && value.length > 0 && typeof value[0] === 'string' && value[0].indexOf(',') > 0 ||
@@ -282,11 +278,14 @@ export default class MysqlDao implements IDao {
                         } else {
                             where = where.substr(0, where.length - 3)
                         }
+                    } else if (search !== undefined) {
+                        where += keys[i] + ' like ? '
+                        values.push(`%${value}%`)
                     } else {
                         where += keys[i] + ' = ? '
                         values.push(value)
                     }
-                }
+                
             }
         }
 

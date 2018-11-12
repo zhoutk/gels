@@ -154,6 +154,29 @@ gels -- 凝胶，希冀该项目能成为联结设计、开发，前端、后端
     生成sql：   SELECT age,count(*) as total  FROM users  GROUP BY age
     ```
 
+> 不等操作符查询支持
+
+所有不等操作符：>, >=, <, <=, <>, =；逗号符为分隔符，一个字段支持一或二个操作。
+特殊处：使用"="可以使某个字段跳过search影响，让模糊匹配与精确匹配同时出现在一个查询语句中
+
+- 一个字段一个操作，示例：
+    ```
+    查询示例：  /rs/users?age=>,10
+    生成sql：   SELECT * FROM users  WHERE age> ?
+    ```
+- 一个字段二个操作，示例：
+    ```
+    查询示例：  /rs/users?age=>,10,<=,35
+    生成sql：   SELECT * FROM users  WHERE age> ? and age<= ?
+    ```
+- 使用"="去除字段的search影响，示例：
+    ```
+    查询示例：  /rs/users?age==,22&username=i&search
+    生成sql：   SELECT * FROM users  WHERE age= ?  and username like ?
+    ```
+
+
+
 
 
 
