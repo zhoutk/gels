@@ -14,7 +14,7 @@ gels -- 凝胶，希冀该项目能成为联结设计、开发，前端、后端
 - [数据库接口设计](#数据库接口设计)
 - [默认路由](#默认路由)
 - [中间件](#中间件)
-- [restful api](#restful api)
+- [restful api](#restful_api)
 - [智能查询](#智能查询)
 - [高级操作](#高级操作)
 
@@ -119,7 +119,7 @@ gels -- 凝胶，希冀该项目能成为联结设计、开发，前端、后端
 - session，使用jsonwebtoken，实现鉴权；同时，为通过的鉴权的用户生成对应的session
     - 用户登录成功后得到的token，在以后的ajax调用时，需要在header头中加入token key
 
-## restful api
+## restful_api
 - [GET] /rs/users[?key=value&...], 列表查询，支持各种智能查询
 - [GET] /rs/users/{id}, 单条查询
 - [POST] /rs/users, 新增记录
