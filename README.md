@@ -1,5 +1,5 @@
 ## 项目介绍
-基于koa2、关系数据库（暂时只支持mysql）建立的智能微服务快速开发框架，同时支持graphql与rest标准，使用typescript语言编写，力求案例、高效。  
+基于koa2、关系数据库（暂时只支持mysql）建立的智能微服务快速开发框架，同时支持graphql与rest标准，使用typescript语言编写，力求安全、高效。  
 
 A framework,  which use koa2, mysql, graphql &amp; typescript , to build micro service rapidly, safely &amp; efficiently.
 
@@ -76,7 +76,7 @@ gels -- 凝胶，希冀该项目能成为联结设计、开发，前端、后端
     yarn global install typescript tslint nodemon
     yarn install
     tsc -w          //或 command + shift + B，选 tsc:监视
-    yarn start      //或 node ./dist/index.js
+    yarn start      //或 node ./dist/index.js
     ```
 
 ## 数据库接口设计  
@@ -128,15 +128,30 @@ gels -- 凝胶，希冀该项目能成为联结设计、开发，前端、后端
     查询示例：  /rs/users?ins=["age",11,22,26]
     生成sql：   SELECT * FROM users  WHERE age in ( ? )
     ```
-- ors, 多字段精确查询，or连接，多个字段对多个值，支持null值查询，例：
+- ors, 数据库表多字段精确查询，or连接，多个字段对多个值，支持null值查询，例：
     ```
     查询示例：  /rs/users?ors=["age",1,"age",22,"password",null]
     生成sql：   SELECT * FROM users  WHERE  ( age = ?  or age = ?  or password is null )
     ```
-- lks, 多字段模糊查询，or连接，多个字段对多个值，支持null值查询，例：
+- lks, 数据库表多字段模糊查询，or连接，多个字段对多个值，支持null值查询，例：
     ```
     查询示例：  /rs/users?lks=["username","i","password",null]
     生成sql：   SELECT * FROM users  WHERE  ( username like ?  or password is null  )
+    ```
+- count, 数据库查询函数count，行统计，例：
+    ```
+    查询示例：  /rs/users?count=["1","total"]&fields=["username"]
+    生成sql：   SELECT username,count(1) as total  FROM users
+    ```
+- sum, 数据库查询函数sum，字段求和，例：
+    ```
+    查询示例：  /rs/users?sum=["age","ageSum"]&fields=["username"]
+    生成sql：   SELECT username,sum(age) as ageSum  FROM users
+    ```
+- group, 数据库分组函数group，例：
+    ```
+    查询示例：  /rs/users?group=age&count=["*","total"]&fields=["age"]
+    生成sql：   SELECT age,count(*) as total  FROM users  GROUP BY age
     ```
 
 
