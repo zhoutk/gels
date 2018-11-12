@@ -12,10 +12,11 @@ gels -- 凝胶，希冀该项目能成为联结设计、开发，前端、后端
 ## 内容目录
 - [安装运行](#安装运行)
 - [数据库接口设计](#数据库接口设计)
-- [默认路由](默认路由)
-- [中间件](中间件)
+- [默认路由](#默认路由)
+- [中间件](#中间件)
+- [restful api](#restful api)
 - [智能查询](#智能查询)
-- [高级操作](高级操作)
+- [高级操作](#高级操作)
 
 ## 安装运行 
 - 运行数据脚本
@@ -116,7 +117,14 @@ gels -- 凝胶，希冀该项目能成为联结设计、开发，前端、后端
 - globalError，全局错误处理中间件
 - logger，日志，集成log4js，输出系统日志
 - session，使用jsonwebtoken，实现鉴权；同时，为通过的鉴权的用户生成对应的session
-    - 用户登录得的token，在以后的ajax调用时，需要在header头中加入token key
+    - 用户登录成功后得到的token，在以后的ajax调用时，需要在header头中加入token key
+
+## restful api
+- [GET] /rs/users[?key=value&...], 列表查询，支持各种智能查询
+- [GET] /rs/users/{id}, 单条查询
+- [POST] /rs/users, 新增记录
+- [PUT] /rs/users/{id}, 修改记录
+- [DELETE], /rs/users/{id}, 删除记录
 
 ## 智能查询
 > 查询保留字：fields, page, size, sort, search, lks, ins, ors, count, sum, group
