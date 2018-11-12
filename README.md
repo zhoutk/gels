@@ -12,7 +12,10 @@ gels -- 凝胶，希冀该项目能成为联结设计、开发，前端、后端
 ## 内容目录
 - [安装运行](#安装运行)
 - [数据库接口设计](#数据库接口设计)
+- [默认路由](默认路由)
+- [中间件](中间件)
 - [智能查询](#智能查询)
+- [高级操作](高级操作)
 
 ## 安装运行 
 - 运行数据脚本
@@ -103,6 +106,18 @@ gels -- 凝胶，希冀该项目能成为联结设计、开发，前端、后端
         transGo(elements: Array<TransElement>, isAsync?: boolean): Promise<any>;
     }
     ```
+
+## 默认路由
+- /op/:command，只支持POST请求，不鉴权，提供登录等特定服务支持
+    - login，登录接口；输入参数{username, password}；登录成功返回参数：{status:200, token}
+- /rs/:table[/:id]，支持四种restful请求，GET, POST, PUT, DELELTE，除GET外，其它请求检测是否授权
+
+## 中间件
+- globalError，全局错误处理中间件
+- logger，日志，集成log4js，输出系统日志
+- session，使用jsonwebtoken，实现鉴权；同时，为通过的鉴权的用户生成对应的session
+    - 用户登录得的token，在以后的ajax调用时，需要在header头中加入token key
+
 ## 智能查询
 > 查询保留字：fields, page, size, sort, search, lks, ins, ors, count, sum, group
 
@@ -173,6 +188,121 @@ gels -- 凝胶，希冀该项目能成为联结设计、开发，前端、后端
     ```
     查询示例：  /rs/users?age==,22&username=i&search
     生成sql：   SELECT * FROM users  WHERE age= ?  and username like ?
+    ```
+
+## 高级操作
+- 新增一条记录
+    - url
+    ```
+        [POST]/rs/users
+    ```
+    - header
+    ```
+        Content-Type: application/json
+        token: eyJhbGciOiJIUzI1NiIsInR...
+    ```
+    - 输入参数
+    ```
+        {
+            "username":"bill",
+            "password":"abcd",
+            "age":46,
+            "power": "[\"admin\",\"data\"]"
+        }
+    ``` 
+    - 返回参数
+    ```
+        {
+            "affectedRows": 1,
+            "id": 7,
+            "status": 200,
+            "message": "data insert success."
+        }
+    ```
+- execSql执行手写sql语句，供后端内部调用
+    - 使用示例
+    ```
+        await new BaseDao().execSql("update users set username = ?, age = ? where id = ? ", ["gels","99","6"])
+    ```
+    - 返回参数
+    ```
+        {
+            "affectedRows": 1,
+            "status": 200,
+            "message": "data execSql success."
+        }
+    ```
+- insertBatch批量插入与更新二合一接口，供后端内部调用
+    - 使用示例
+    ```
+        let params = [
+                        {
+                            "username":"bill2",
+                            "password":"523",
+                            "age":4
+                        },
+                        {
+                            "username":"bill3",
+                            "password":"4",
+                            "age":44
+                        },
+                        {
+                            "username":"bill6",
+                            "password":"46",
+                            "age":46
+                        }
+                    ]
+        await new BaseDao().insertBatch('users', params)
+    ```
+    - 返回参数
+    ```
+        {
+            "affectedRows": 3,
+            "status": 200,
+            "message": "data batch success."
+        }
+    ```
+- tranGo事务处理接口，供后端内部调用
+    - 使用示例
+    ```
+        let trs = [
+                    {
+                        table: 'users',
+                        method: 'Insert',
+                        params: {
+                            username: 'zhou1',
+                            password: '1',
+                            age: 1
+                        }
+                    },
+                    {
+                        table: 'users',
+                        method: 'Insert',
+                        params: {
+                            username: 'zhou2',
+                            password: '2',
+                            age: 2
+                        }
+                    },
+                    {
+                        table: 'users',
+                        method: 'Insert',
+                        params: {
+                            username: 'zhou3',
+                            password: '3',
+                            age: 3
+                        }
+                    }
+                ]
+        await new BaseDao().transGo(trs, true)          //true，异步执行；false,同步执行
+    ```
+    - 返回参数
+    ```
+        {
+            "affectedRows": 3,
+            "status": 200,
+            "message": "data trans success."
+        }
     ```
 
 
