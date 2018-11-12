@@ -218,38 +218,30 @@ export default class MysqlDao implements IDao {
                     let whereExtra = '', err = null
                     if (queryKeys[key]) {
                         let ele = queryKeys[key] = global.tools.arryParse(queryKeys[key])
-                        if (!ele || ele.length < 2 || key === 'ors' && ele.length % 2 === 1)
+                        if (!ele || ele.length < 2 || ((key === 'ors' || key === 'lks') && ele.length % 2 === 1))
                             err = `Format of ${key} is wrong.`
                         else {
                             if (key === 'ins') {
                                 let c = ele.shift()
                                 whereExtra += c + ' in ( ? ) '
                                 values.push(ele) 
-                            } else if (key === 'lks') {
-                                let val = ele.shift()
+                            } else if (key === 'lks' || key === 'ors') {         
                                 whereExtra = ' ( '
-                                for (let j = 0; j < ele.length; j++) {
+                                for (let j = 0; j < ele.length; j += 2) {
                                     if (j > 0)
                                         whereExtra += ' or '
-                                    whereExtra += ele[j] + ' like ? '
-                                    values.push(`%${val}%`)
-                                }
-                                whereExtra += ' ) '
-                            } else if (key === 'ors') {
-                                whereExtra += ' ( '
-                                for (let j = 0; j < ele.length; j += 2) {
                                     if (ele[j + 1] == null) {
                                         whereExtra += ele[j] + ' is null '
                                     } else {
-                                        whereExtra += ele[j] + ' = ? '
-                                        values.push(ele[j + 1])
-                                    }
-                                    if (j < ele.length - 2) {
-                                        whereExtra += ' or '
+                                        whereExtra += `${ele[j]} ${key === 'lks' ? 'like' : '='} ? `
+                                        let whereStr = ele[j + 1]
+                                        if (key === 'lks')
+                                            whereStr = `%${ele[j + 1]}%`
+                                        values.push(whereStr)
                                     }
                                 }
                                 whereExtra += ' ) '
-                            }
+                            } 
                         }
                     }
                     return { err, whereExtra }
