@@ -13,7 +13,6 @@ export default {
             STCODES,
             ROOT_PATH: `${process.cwd()}${env === 'prod' ? '' : '/dist'}`,
             NODE_ENV: env,    
-            Promise: Bluebird,
             L: lodash,
             jsReponse(status: Number, message = '', data?: any) {
                 if (Array.isArray(data))
@@ -29,7 +28,7 @@ export default {
             }
         }
         Object.assign(gVar, await tasks.run())
-        Object.assign(global, {G: gVar})
+        Object.assign(global, {G: gVar}, {Promise: Bluebird})
 
     }
 }
