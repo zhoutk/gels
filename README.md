@@ -11,6 +11,7 @@ gels -- 凝胶，希冀该项目能成为联结设计、开发，前端、后端
 
 ## 内容目录
 - [安装运行](#安装运行)
+- [项目结构](#项目结构)
 - [数据库接口设计](#数据库接口设计)
 - [默认路由](#默认路由)
 - [中间件](#中间件)
@@ -82,6 +83,35 @@ gels -- 凝胶，希冀该项目能成为联结设计、开发，前端、后端
     tsc -w          //或 command + shift + B，选 tsc:监视
     yarn start      //或 node ./dist/index.js
     ```
+## 项目结构
+
+```
+├── package.json
+├── src                              //源代码目录
+│   ├── app.ts                       //koa配置及启动
+│   ├── common                       //通用函数或元素目录
+│   │   ├── globUtils.ts 			
+│   ├── config                       //配置文件目录
+│   │   ├── configs.ts
+│   ├── db                           //数据封装目录
+│   │   ├── baseDao.ts
+│   ├── globals.d.ts                 //全局声明定义文件
+│   ├── index.ts                     //运行入口
+│   ├── inits                        //启动初始化配置目录
+│   │   ├── global.ts
+│   │   ├── index.ts
+│   │   ├── initDirectory.ts
+│   ├── middlewares                  //中间件目录
+│   │   ├── globalError.ts
+│   │   ├── logger.ts
+│   │   ├── router
+│   │   └── session.ts
+│   └── routers                      //路由配置目录
+│       ├── index.ts
+│       └── router_rs.ts
+├── tsconfig.json
+└── tslint.json
+```
 
 ## 数据库接口设计  
 - 事务元素接口，sql参数用于手动书写sql语句，id会作为最后一个参数被送入参数数组。
