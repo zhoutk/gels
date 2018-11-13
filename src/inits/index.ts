@@ -4,9 +4,9 @@ export default class Startup {
     async init(app) {
         const inits = []
         let dirData = requireDir(__dirname)
-        global.__.each(dirData, (item, name) => {
+        G.L.each(dirData, (item, name) => {
             let initOp = name.length > 4 && name.substr(4).toLowerCase()
-            if (initOp && global.CONFIGS.inits[initOp] && global.CONFIGS.inits[initOp].run && 
+            if (initOp && G.CONFIGS.inits[initOp] && G.CONFIGS.inits[initOp].run && 
                     name.match(/^init/) && item && item.default && item.default.init) {
                 inits.push(item.default)
             }

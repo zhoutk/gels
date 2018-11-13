@@ -4,7 +4,7 @@ import * as color from 'cli-color'
  */
 export default () => {
     return async (ctx, next) => {
-        if (global.tools.isDev()) {
+        if (G.tools.isDev()) {
             const start = Date.now()
             await next()
             const diff = Date.now() - start
@@ -17,7 +17,7 @@ export default () => {
                 'params',
                 color.green(`${JSON.stringify(ctx.method === 'POST' || ctx.method === 'PUT' ? ctx.request.body : ctx.request.query)}`)
             ]
-            global.logger.debug(msgs.join(' '))
+            G.logger.debug(msgs.join(' '))
         } else {
             await next()
         }

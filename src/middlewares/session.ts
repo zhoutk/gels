@@ -1,6 +1,6 @@
 import * as jwt from 'jsonwebtoken'
 
-const config = global.CONFIGS.jwt
+const config = G.CONFIGS.jwt
 const AUTHURL = ['rs']
 
 export default () => {
@@ -18,16 +18,16 @@ export default () => {
                     return await next()
                 }
                 if (err.name === 'TokenExpiredError') {
-                    ctx.body = global.jsReponse(global.STCODES.JWTAUTHERR, 'Token Expired.')
+                    ctx.body = G.jsReponse(G.STCODES.JWTAUTHERR, 'Token Expired.')
                 } else if (err.name === 'JsonWebTokenError') {
-                    ctx.body = global.jsReponse(global.STCODES.JWTAUTHERR, 'Invalid Token.')
+                    ctx.body = G.jsReponse(G.STCODES.JWTAUTHERR, 'Invalid Token.')
                 } else {
-                    ctx.body = global.jsReponse(global.STCODES.JWTAUTHERR, err.message)
+                    ctx.body = G.jsReponse(G.STCODES.JWTAUTHERR, err.message)
                 }
             }
         } else {
             if (ctx.method !== 'GET' && isAuth) {
-                ctx.body = global.jsReponse(global.STCODES.JWTAUTHERR, 'Missing Auth Token.')
+                ctx.body = G.jsReponse(G.STCODES.JWTAUTHERR, 'Missing Auth Token.')
             } else {
                 await next()
             }

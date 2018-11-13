@@ -8,13 +8,13 @@ import STCODES from './enums'
 export default {
     async init() {
         const env = process.env.NODE_ENV || 'dev'            //dev - 开发; prod - 生产； test - 测试;
-        Object.assign(global, {
+        let gVar = {
             PAGESIZE: 10,
             STCODES,
             ROOT_PATH: `${process.cwd()}${env === 'prod' ? '' : '/dist'}`,
             NODE_ENV: env,    
             Promise: Bluebird,
-            __: lodash,
+            L: lodash,
             jsReponse(status: Number, message = '', data?: any) {
                 if (Array.isArray(data))
                     return { status, message, data }
@@ -27,16 +27,16 @@ export default {
                 ctx.ErrCode = status
                 return new KoaErr({ message, status })
             }
-        })
-        Object.assign(global,
-            await tasks.run()
-        )
+        }
+        Object.assign(gVar, await tasks.run())
+        Object.assign(global, {G: gVar})
+
     }
 }
 
 class KoaErr extends Error {
     public status: Number
-    constructor({ message = 'Error', status = global.STCODES.EXCEPTION } = {}, ...args) {
+    constructor({ message = 'Error', status = G.STCODES.EXCEPTION } = {}, ...args) {
         super()
         this.message = message
         this.status = status

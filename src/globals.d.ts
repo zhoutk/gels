@@ -8,19 +8,17 @@ type LODASH = typeof lodash
 type CFG = typeof CONFIGS
 type ST = typeof STCODES
 
-declare global {    
-    namespace NodeJS {        
-        interface Global {
-            PAGESIZE: 10,
-            STCODES: ST,
-            logger: Logger,
-            NODE_ENV: string,
-            ROOT_PATH: string,
-            tools: GlobUtils,
-            __: LODASH,
-            jsReponse: (status: number, message: string, data?: any) => { status: number, message: string, data: any },
-            koaError: (ctx: any, status: number, message: string) => any,
-            CONFIGS: CFG,
-        }
+declare global {
+    var G: {
+        PAGESIZE: 10,
+        STCODES: ST,
+        logger: Logger,
+        NODE_ENV: string,
+        ROOT_PATH: string,
+        tools: GlobUtils,
+        L: LODASH,
+        jsReponse: (status: number, message: string, data?: any) => { status: number, message: string, data: any },
+        koaError: (ctx: any, status: number, message: string) => any,
+        CONFIGS: CFG,
     }
 }

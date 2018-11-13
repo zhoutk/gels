@@ -14,13 +14,13 @@ const QUERYEXTRAKEYS = ['lks', 'ins', 'ors']
 const QUERYUNEQOPERS = ['>,', '>=,', '<,', '<=,', '<>,', '=,']
 
 let options: PoolOptions = {
-    'host': global.CONFIGS.dbconfig.db_host,
-    'port': global.CONFIGS.dbconfig.db_port,
-    'database': global.CONFIGS.dbconfig.db_name,
-    'user': global.CONFIGS.dbconfig.db_user,
-    'password': global.CONFIGS.dbconfig.db_pass,
-    'charset': global.CONFIGS.dbconfig.db_char,
-    'connectionLimit': global.CONFIGS.dbconfig.db_conn,
+    'host': G.CONFIGS.dbconfig.db_host,
+    'port': G.CONFIGS.dbconfig.db_port,
+    'database': G.CONFIGS.dbconfig.db_name,
+    'user': G.CONFIGS.dbconfig.db_user,
+    'password': G.CONFIGS.dbconfig.db_pass,
+    'charset': G.CONFIGS.dbconfig.db_char,
+    'connectionLimit': G.CONFIGS.dbconfig.db_conn,
     'connectTimeout' : 30000,
     'supportBigNumbers': true,
     'bigNumberStrings': true
@@ -107,13 +107,13 @@ export default class MysqlDao implements IDao {
         return new Promise((resolve, reject) => {
             pool.getConnection((err, conn) => {
                 if (err) {
-                    reject(global.jsReponse(global.STCODES.DATABASECOERR, err.message))
-                    global.logger.error(err.message)
+                    reject(G.jsReponse(G.STCODES.DATABASECOERR, err.message))
+                    G.logger.error(err.message)
                 }
-                global.logger.debug(`Beginning ${isAsync ? 'Async' : 'Sync'} trans, ${sqls.length} operations are going to do.`)
+                G.logger.debug(`Beginning ${isAsync ? 'Async' : 'Sync'} trans, ${sqls.length} operations are going to do.`)
                 conn.beginTransaction((err) => {
                     if (err) {
-                        reject(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
+                        reject(G.jsReponse(G.STCODES.DATABASEOPERR, err.message))
                     }
                 })
                 
@@ -126,19 +126,19 @@ export default class MysqlDao implements IDao {
                                 conn.rollback(() => {
                                     conn.release()
                                 })
-                                global.logger.error(`Async trans run fail, ${err.message}`)
-                                reject(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
+                                G.logger.error(`Async trans run fail, ${err.message}`)
+                                reject(G.jsReponse(G.STCODES.DATABASEOPERR, err.message))
                             } else {
                                 conn.release()
-                                global.logger.debug(`Ending Async trans, ${funcArr.length} operations have been done.`)
-                                resolve(global.jsReponse(global.STCODES.SUCCESS, 'trans run succes.', {resp, affectedRows: resp.length}))
+                                G.logger.debug(`Ending Async trans, ${funcArr.length} operations have been done.`)
+                                resolve(G.jsReponse(G.STCODES.SUCCESS, 'trans run succes.', {resp, affectedRows: resp.length}))
                             }
                         })
                     }).catch((err) => {
                         conn.rollback(() => {
                             conn.release()
                         })
-                        reject(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
+                        reject(G.jsReponse(G.STCODES.DATABASEOPERR, err.message))
                     })
                 } else {                        //同步执行
                     goTrans(sqls)
@@ -151,24 +151,24 @@ export default class MysqlDao implements IDao {
                         conn.query(sql, values, (err, result) => {
                             if (err) {
                                 conn.rollback(() => {
-                                    global.logger.error(`${isAsync ? 'Async' : 'Sync'} trans run fail, _Sql_ : ${sqlParam.text}, _Values_ : ${JSON.stringify(sqlParam.values)}, _Err_ : ${err.message}`)
-                                    return reject(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
+                                    G.logger.error(`${isAsync ? 'Async' : 'Sync'} trans run fail, _Sql_ : ${sqlParam.text}, _Values_ : ${JSON.stringify(sqlParam.values)}, _Err_ : ${err.message}`)
+                                    return reject(G.jsReponse(G.STCODES.DATABASEOPERR, err.message))
                                 })
                             } else {
-                                global.logger.debug(`${isAsync ? 'Async' : 'Sync'} trans run success, _Sql_ : ${sqlParam.text}, _Values_ : ${JSON.stringify(sqlParam.values)}`)
-                                return resolve(global.jsReponse(global.STCODES.SUCCESS, 'trans run success', result))
+                                G.logger.debug(`${isAsync ? 'Async' : 'Sync'} trans run success, _Sql_ : ${sqlParam.text}, _Values_ : ${JSON.stringify(sqlParam.values)}`)
+                                return resolve(G.jsReponse(G.STCODES.SUCCESS, 'trans run success', result))
                             }
                         })
                     })
                 }
 
                 function goTrans(sqlArray: Array<any>, result?) {
-                    let sqlArr = global.__.cloneDeep(sqlArray)
+                    let sqlArr = G.L.cloneDeep(sqlArray)
                     if (sqlArr.length > 0) {
                         doOne(sqlArr.shift()).then((result) => {
                             goTrans(sqlArr/*, result*/)                 //以此方式，传递上一执行结果给下一执行操作
                         }).catch((err) => {
-                            reject(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
+                            reject(G.jsReponse(G.STCODES.DATABASEOPERR, err.message))
                         })
                     } else {
                         conn.commit((err) => {
@@ -176,12 +176,12 @@ export default class MysqlDao implements IDao {
                                 conn.rollback(() => {
                                     conn.release()
                                 })
-                                global.logger.debug(`Sync trans run fail, ${err.message}`)
-                                reject(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
+                                G.logger.debug(`Sync trans run fail, ${err.message}`)
+                                reject(G.jsReponse(G.STCODES.DATABASEOPERR, err.message))
                             } else {
                                 conn.release()
-                                global.logger.debug(`Ending Sync trans, ${sqls.length} operations have been done.`)
-                                resolve(global.jsReponse(global.STCODES.SUCCESS, 'Sync trans run succes.', {affectedRows: sqls.length}))
+                                G.logger.debug(`Ending Sync trans, ${sqls.length} operations have been done.`)
+                                resolve(G.jsReponse(G.STCODES.SUCCESS, 'Sync trans run succes.', {affectedRows: sqls.length}))
                             }
                         })
                     }
@@ -198,14 +198,14 @@ export default class MysqlDao implements IDao {
         let {lks, ins, ors} = restParams
         let queryKeys = {ors, count, lks, ins, sum}
         page = page || 0
-        size = size || global.PAGESIZE
+        size = size || G.PAGESIZE
 
         let keys: string[] = Object.keys(restParams)
         for (let i = 0; i < keys.length; i++) {
             let key = keys[i]
             let value = params[key]
             if (QUERYEXTRAKEYS.indexOf(key) < 0) {
-                let is_val_arr = global.tools.arryParse(value)
+                let is_val_arr = G.tools.arryParse(value)
                 if (is_val_arr)
                     value = is_val_arr
             }
@@ -217,7 +217,7 @@ export default class MysqlDao implements IDao {
                 const { err, whereExtra } = ((key) => {
                     let whereExtra = '', err = null
                     if (queryKeys[key]) {
-                        let ele = queryKeys[key] = global.tools.arryParse(queryKeys[key])
+                        let ele = queryKeys[key] = G.tools.arryParse(queryKeys[key])
                         if (!ele || ele.length < 2 || ((key === 'ors' || key === 'lks') && ele.length % 2 === 1))
                             err = `Format of ${key} is wrong.`
                         else {
@@ -247,7 +247,7 @@ export default class MysqlDao implements IDao {
                     return { err, whereExtra }
                 })(key)
                 if (err)
-                    return Promise.reject(global.jsReponse(global.STCODES.PRAMAERR, err))
+                    return Promise.reject(G.jsReponse(G.STCODES.PRAMAERR, err))
                 else
                     where += whereExtra
             } else {
@@ -293,9 +293,9 @@ export default class MysqlDao implements IDao {
         for (let i = 0; i < QUERYSTATISKEYS.length; i++) {
             let element = QUERYSTATISKEYS[i]
             if (queryKeys[element]) {
-                let ele = queryKeys[element] = global.tools.arryParse(queryKeys[element])
+                let ele = queryKeys[element] = G.tools.arryParse(queryKeys[element])
                 if (!ele || ele.length === 0 || ele.length % 2 === 1)
-                    return Promise.resolve(global.jsReponse(global.STCODES.PRAMAERR, `Format of ${element} is wrong.`))
+                    return Promise.resolve(G.jsReponse(G.STCODES.PRAMAERR, `Format of ${element} is wrong.`))
                 for (let i = 0; i < ele.length; i += 2) {
                     extra += `,${element}(${ele[i]}) as ${ele[i + 1]} `
                 }
@@ -336,14 +336,14 @@ export default class MysqlDao implements IDao {
             } else if (resp[1].length > 0) {
                 ct = resp[1][0].count
             }
-            return global.jsReponse(global.STCODES.SUCCESS, 'data query success.', {
+            return G.jsReponse(G.STCODES.SUCCESS, 'data query success.', {
                 data: resp[0],
                 pages: Math.ceil(ct / size),
                 records: ct,
             })
         } else {
             const rs = await this.execQuery(sql, values)
-            return global.jsReponse(global.STCODES.SUCCESS, 'data query success.', {
+            return G.jsReponse(G.STCODES.SUCCESS, 'data query success.', {
                 data: rs,
                 pages: rs.length > 0 ? 1 : 0,
                 records: rs.length,
@@ -355,18 +355,18 @@ export default class MysqlDao implements IDao {
         return new Promise((resolve, reject) => {
             pool.getConnection(function(err, connection) {
                 if (err) {
-                    reject(global.jsReponse(global.STCODES.DATABASECOERR, err.message))
-                    global.logger.error(err.message)
+                    reject(G.jsReponse(G.STCODES.DATABASECOERR, err.message))
+                    G.logger.error(err.message)
                 } else {
                     connection.query(sql, values, function(err, result) {
                         connection.release()
                         let v = values ? ' _Values_ :' + JSON.stringify(values) : ''
                         if (err) {
-                            reject(global.jsReponse(global.STCODES.DATABASEOPERR, err.message))
-                            global.logger.error(err.message + ' Sql is : ' + sql + v)
+                            reject(G.jsReponse(G.STCODES.DATABASEOPERR, err.message))
+                            G.logger.error(err.message + ' Sql is : ' + sql + v)
                         } else {
                             resolve(result)
-                            global.logger.debug( ' _Sql_ : ' + sql + v)
+                            G.logger.debug( ' _Sql_ : ' + sql + v)
                         }
                     })
                 }

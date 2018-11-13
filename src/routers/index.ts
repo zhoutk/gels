@@ -4,7 +4,7 @@ export default class Routers {
     async init(app) {
         const inits = []
         let dirData = requireDir(__dirname)
-        global.__.each(dirData, (item, name) => {
+        G.L.each(dirData, (item, name) => {
             let initOp = name.length > 7 && name.substr(7).toLowerCase()
             if (initOp && name.match(/^router/) && item && item.default) {
                 inits.push(item.default)

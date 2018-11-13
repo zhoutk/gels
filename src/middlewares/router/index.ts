@@ -11,7 +11,7 @@ export default async (app) => {
       ctx.getUserName = function () {
         return ctx.cookies.get('username') || ''
       }
-      if (global.tools.isDev() || !global.tools.isLogin()) {            //跳过权限验证
+      if (G.tools.isDev() || !G.tools.isLogin()) {            //跳过权限验证
         return await next()
       }
 
@@ -26,7 +26,7 @@ export default async (app) => {
       }
     },
     async (ctx, next) => {
-      ctx.body = global.jsReponse(global.STCODES.NOTFOUND, 'What you request is not found.')
+      ctx.body = G.jsReponse(G.STCODES.NOTFOUND, 'What you request is not found.')
     }
   ]
 }

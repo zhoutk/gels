@@ -1,5 +1,5 @@
 export default {
     async init(app) {
-        global.logger.debug('init schedule.')
+        G.logger.debug('init schedule.')
     }
 }

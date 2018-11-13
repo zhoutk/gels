@@ -1,5 +1,5 @@
 export default {
     async init(app) {
-        global.logger.debug('init memery.') 
+        G.logger.debug('init memery.') 
     }
 }

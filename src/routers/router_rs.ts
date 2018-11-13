@@ -20,9 +20,9 @@ export default (() => {
             params.id = id
         let {fields, ...restParams} = params
         if (fields) {
-            fields = global.tools.arryParse(fields)
+            fields = G.tools.arryParse(fields)
             if (!fields) {
-                throw global.koaError(ctx, global.STCODES.PRAMAERR, 'params fields is wrong.')
+                throw G.koaError(ctx, G.STCODES.PRAMAERR, 'params fields is wrong.')
             }
         }
         ctx.body = await new BaseDao(tableName)[METHODS[method]](restParams, fields, ctx.session)
