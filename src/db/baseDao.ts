@@ -1,11 +1,11 @@
 let dialect: string = G.CONFIGS.db_dialect
 let Dao = require(`./${dialect}Dao`).default
-import MysqlDao from './mysqlDao'
 import TransElement from '../common/transElement'
+import IDao from './idao'
 
 export default class BaseDao {
     table: string
-    static dao: MysqlDao            //编辑时，设定为相应的数据驱动类型，获得智能提示，运行时为动态引入，类型为any
+    static dao: IDao            
     constructor(table?: string) {
         this.table = table || ''
         if (!BaseDao.dao)
