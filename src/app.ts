@@ -16,7 +16,7 @@ export default {
       'cors',
       'bodyParser', //body解析
       'rewrite', //url重写
-      ['router', app]
+      'router',
     ]
     for (let n of middlewares) {
       if (n) {
