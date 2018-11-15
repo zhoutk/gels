@@ -20,9 +20,9 @@ export default (() => {
                             expiresIn: config.expires_max,
                         }
                     )
-                    ctx.body = G.jsReponse(G.STCODES.SUCCESS, 'login success.', { token })
+                    ctx.body = G.jsResponse(G.STCODES.SUCCESS, 'login success.', { token })
                 } else {
-                    ctx.body = G.jsReponse(G.STCODES.QUERYEMPTY, 'The user is missing.')
+                    ctx.body = G.jsResponse(G.STCODES.QUERYEMPTY, 'The user is missing.')
                 }
                 break
             case 'batch':
@@ -77,7 +77,7 @@ export default (() => {
                 ]
                 return ctx.body = await new BaseDao().transGo(trs, true)
             default:
-                ctx.body = G.jsReponse(G.STCODES.NOTFOUND, 'command is not found.')
+                ctx.body = G.jsResponse(G.STCODES.NOTFOUND, 'command is not found.')
                 break
         }
     }

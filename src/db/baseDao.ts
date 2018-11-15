@@ -20,14 +20,14 @@ export default class BaseDao {
             return err
         }
         if (rs.status === G.STCODES.SUCCESS && (!rs.data || rs.data.length === 0))
-            return G.jsReponse(G.STCODES.QUERYEMPTY, 'data query empty.', rs)
+            return G.jsResponse(G.STCODES.QUERYEMPTY, 'data query empty.', rs)
         else
             return rs
     }
     async create(params = {}, fields = [], session = {userid: ''}): Promise<any> {
         let keys = Object.keys(params)
         if (keys.length === 0 || params['id'] !== undefined && keys.length <= 1)
-            return G.jsReponse(G.STCODES.PRAMAERR, 'params is error.')
+            return G.jsResponse(G.STCODES.PRAMAERR, 'params is error.')
         else {
             let rs
             try {
@@ -37,14 +37,14 @@ export default class BaseDao {
                 return err
             }
             let {affectedRows} = rs
-            return G.jsReponse(G.STCODES.SUCCESS, 'data insert success.', {affectedRows, id: rs.insertId})
+            return G.jsResponse(G.STCODES.SUCCESS, 'data insert success.', {affectedRows, id: rs.insertId})
         }
     }
     async update(params, fields = [], session = { userid: '' }): Promise<any> {
         params = params || {}
         let keys = Object.keys(params)
         if (params['id'] === undefined || keys.length <= 1)
-            return G.jsReponse(G.STCODES.PRAMAERR, 'params is error.')
+            return G.jsResponse(G.STCODES.PRAMAERR, 'params is error.')
         else {
             const { id, ...restParams } = params
             let rs
@@ -55,12 +55,12 @@ export default class BaseDao {
                 return err
             }
             let { affectedRows } = rs
-            return G.jsReponse(G.STCODES.SUCCESS, 'data update success.', { affectedRows, id })
+            return G.jsResponse(G.STCODES.SUCCESS, 'data update success.', { affectedRows, id })
         }
     }
     async delete(params = {}, fields = [], session = {userid: ''}): Promise<any> {
         if (params['id'] === undefined)
-            return G.jsReponse(G.STCODES.PRAMAERR, 'params is error.')
+            return G.jsResponse(G.STCODES.PRAMAERR, 'params is error.')
         else {
             let id = params['id']
             let rs
@@ -71,7 +71,7 @@ export default class BaseDao {
                 return err
             }
             let {affectedRows} = rs
-            return G.jsReponse(G.STCODES.SUCCESS, 'data delete success.', { affectedRows, id })
+            return G.jsResponse(G.STCODES.SUCCESS, 'data delete success.', { affectedRows, id })
         }
     }
     async querySql(sql: string, values = [], params = {}, fields = []): Promise<any> {
@@ -83,9 +83,9 @@ export default class BaseDao {
             return err
         }
         if (rs.length === 0)
-            return G.jsReponse( G.STCODES.QUERYEMPTY, 'data querySql empty.', rs)
+            return G.jsResponse( G.STCODES.QUERYEMPTY, 'data querySql empty.', rs)
         else
-            return G.jsReponse( G.STCODES.SUCCESS, 'data querySql success.', rs)
+            return G.jsResponse( G.STCODES.SUCCESS, 'data querySql success.', rs)
     }
     async execSql(sql: string, values = []): Promise<any> {
         let rs
@@ -96,7 +96,7 @@ export default class BaseDao {
             return err
         }
         let {affectedRows} = rs
-        return G.jsReponse(G.STCODES.SUCCESS, 'data execSql success.', {affectedRows})
+        return G.jsResponse(G.STCODES.SUCCESS, 'data execSql success.', {affectedRows})
     }
     async insertBatch(tablename: string, elements = []): Promise<any> {
         let rs
@@ -107,7 +107,7 @@ export default class BaseDao {
             return err
         }
         let {affectedRows} = rs
-        return G.jsReponse(G.STCODES.SUCCESS, 'data batch success.', {affectedRows})
+        return G.jsResponse(G.STCODES.SUCCESS, 'data batch success.', {affectedRows})
     }
     async transGo(elements: Array<TransElement>, isAsync = true): Promise<any> {
         let rs
@@ -118,6 +118,6 @@ export default class BaseDao {
             return err
         }
         let {affectedRows} = rs
-        return G.jsReponse(G.STCODES.SUCCESS, 'data trans success.', {affectedRows})
+        return G.jsResponse(G.STCODES.SUCCESS, 'data trans success.', {affectedRows})
     }
 }

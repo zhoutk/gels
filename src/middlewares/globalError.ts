@@ -3,7 +3,7 @@ export default () => {
         try {
             await next()
         } catch (err) {
-            ctx.body = G.jsReponse(ctx.ErrCode, err.message, { stack: err.stack })
+            ctx.body = G.jsResponse(ctx.ErrCode, err.message, { stack: err.stack })
         }
     }
 }

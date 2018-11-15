@@ -14,7 +14,7 @@ export default {
             ROOT_PATH: `${process.cwd()}${env === 'prod' ? '' : '/dist'}`,
             NODE_ENV: env,    
             L: lodash,
-            jsReponse(status: Number, message = '', data?: any) {
+            jsResponse(status: Number, message = '', data?: any) {
                 if (Array.isArray(data))
                     return { status, message, data }
                 else 

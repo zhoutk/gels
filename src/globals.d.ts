@@ -17,7 +17,7 @@ declare global {
         ROOT_PATH: string,
         tools: GlobUtils,
         L: LODASH,
-        jsReponse: (status: number, message: string, data?: any) => { status: number, message: string, data: any },
+        jsResponse: (status: number, message: string, data?: any) => { status: number, message: string, data: any },
         koaError: (ctx: any, status: number, message: string) => any,
         CONFIGS: CFG,
     }
