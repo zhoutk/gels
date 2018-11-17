@@ -18,6 +18,7 @@ gels -- 凝胶，希冀该项目能成为联结设计、开发，前端、后端
 - [restful api](#restful_api)
 - [智能查询](#智能查询)
 - [高级操作](#高级操作)
+- [相关视频资料](#相关视频资料)
 
 ## 安装运行 
 - 运行数据脚本
@@ -342,6 +343,15 @@ gels -- 凝胶，希冀该项目能成为联结设计、开发，前端、后端
             "message": "data trans success."
         }
     ```
+    
+## 相关视频资料
+ 
+[运用typescript进行node.js后端开发精要][1]  
+[nodejs实战之智能微服务快速开发框架][2]  
+
+
+  [1]: https://segmentfault.com/l/1500000016954243
+  [2]: https://segmentfault.com/l/1500000017034959
 
 
 
