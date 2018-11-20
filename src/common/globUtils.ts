@@ -9,9 +9,12 @@ export default class GlobUtils {
         try {
             if (Array.isArray(arr))
                 return arr
-            else if (typeof arr === 'string' && arr.startsWith('['))
-                arr = JSON.parse(arr)
-            else 
+            else if (typeof arr === 'string') {
+                if (arr.startsWith('['))
+                    arr = JSON.parse(arr)
+                else
+                    arr = arr.split(',')
+            } else 
                 return null
         } catch (err) {
             arr = null
