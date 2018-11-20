@@ -193,6 +193,7 @@ export default class MysqlDao implements IDao {
     private async query(tablename: string, params, fields = [], sql = '', values = []): Promise<any> {
         params = params || {}
         let where: string = ''
+        const AndJoinStr = ' and '
         
         let {sort, search, page, size, sum, count, group, ...restParams} = params
         let {lks, ins, ors} = restParams
@@ -210,7 +211,7 @@ export default class MysqlDao implements IDao {
                     value = is_val_arr
             }
             if (where !== '') {
-                where += ' and '
+                where += AndJoinStr
             }
 
             if (QUERYEXTRAKEYS.indexOf(key) >= 0) {
@@ -276,7 +277,8 @@ export default class MysqlDao implements IDao {
                             values.push(vls[1])
                             values.push(vls[3])
                         } else {
-                            where = where.substr(0, where.length - 3)
+                            if (where.endsWith(AndJoinStr))
+                                where = where.substr(0, where.length - AndJoinStr.length)
                         }
                     } else if (search !== undefined) {
                         where += keys[i] + ' like ? '
