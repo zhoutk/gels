@@ -1,24 +1,7 @@
-import { Logger } from 'log4js'
-import GlobUtils from './common/globUtils'
-import * as lodash from 'lodash'
-import CONFIGS from './config/configs'
-import STCODES from './inits/enums'
+import { GlobVar } from './inits/global'
 
-type LODASH = typeof lodash
-type CFG = typeof CONFIGS
-type ST = typeof STCODES
+type GLOB = typeof GlobVar
 
 declare global {
-    var G: {
-        PAGESIZE: 10,
-        STCODES: ST,
-        logger: Logger,
-        NODE_ENV: string,
-        ROOT_PATH: string,
-        tools: GlobUtils,
-        L: LODASH,
-        jsResponse: (status: number, message: string, data?: any) => { status: number, message: string, data: any },
-        koaError: (ctx: any, status: number, message: string) => any,
-        CONFIGS: CFG,
-    }
+    var G: GLOB
 }

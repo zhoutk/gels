@@ -1,8 +1,8 @@
-import globInit from './inits/global'
+import { globInit } from './inits/global'
 import appIniter from './app'
 
 (async () => {
-    await globInit.init()
+    await globInit()
     //初始化koa app
     let port = process.env.PORT || G.CONFIGS.port
     try {

@@ -5,9 +5,9 @@ export default class GlobUtils {
     isLogin() {
         return true
     }
-    arryParse(arr) {
+    arryParse(arr): Array<any>|null {
         try {
-            if (Array.isArray(arr))
+            if (Array.isArray(arr) || G.L.isNull(arr))
                 return arr
             else if (typeof arr === 'string') {
                 if (arr.startsWith('['))

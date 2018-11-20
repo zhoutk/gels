@@ -215,38 +215,33 @@ export default class MysqlDao implements IDao {
             }
 
             if (QUERYEXTRAKEYS.indexOf(key) >= 0) {
-                const { err, whereExtra } = ((key) => {
-                    let whereExtra = '', err = null
-                    if (queryKeys[key]) {
-                        let ele = queryKeys[key] = G.tools.arryParse(queryKeys[key])
-                        if (!ele || ele.length < 2 || ((key === 'ors' || key === 'lks') && ele.length % 2 === 1))
-                            err = `Format of ${key} is wrong.`
-                        else {
-                            if (key === 'ins') {
-                                let c = ele.shift()
-                                whereExtra += c + ' in ( ? ) '
-                                values.push(ele) 
-                            } else if (key === 'lks' || key === 'ors') {         
-                                whereExtra = ' ( '
-                                for (let j = 0; j < ele.length; j += 2) {
-                                    if (j > 0)
-                                        whereExtra += ' or '
-                                    if (ele[j + 1] == null) {
-                                        whereExtra += ele[j] + ' is null '
-                                    } else {
-                                        whereExtra += `${ele[j]} ${key === 'lks' ? 'like' : '='} ? `
-                                        let whereStr = ele[j + 1]
-                                        if (key === 'lks')
-                                            whereStr = `%${ele[j + 1]}%`
-                                        values.push(whereStr)
-                                    }
-                                }
-                                whereExtra += ' ) '
-                            } 
+                let whereExtra = '', err = null
+                let ele = queryKeys[key] = G.tools.arryParse(queryKeys[key])
+                if (!ele || ele.length < 2 || ((key === 'ors' || key === 'lks') && ele.length % 2 === 1))
+                    err = `Format of ${key} is wrong.`
+                else {
+                    if (key === 'ins') {
+                        let c = ele.shift()
+                        whereExtra += c + ' in ( ? ) '
+                        values.push(ele) 
+                    } else if (key === 'lks' || key === 'ors') {         
+                        whereExtra = ' ( '
+                        for (let j = 0; j < ele.length; j += 2) {
+                            if (j > 0)
+                                whereExtra += ' or '
+                            if (ele[j + 1] == null) {
+                                whereExtra += ele[j] + ' is null '
+                            } else {
+                                whereExtra += `${ele[j]} ${key === 'lks' ? 'like' : '='} ? `
+                                let whereStr = ele[j + 1]
+                                if (key === 'lks')
+                                    whereStr = `%${ele[j + 1]}%`
+                                values.push(whereStr)
+                            }
                         }
-                    }
-                    return { err, whereExtra }
-                })(key)
+                        whereExtra += ' ) '
+                    } 
+                }
                 if (err)
                     return Promise.reject(G.jsResponse(G.STCODES.PRAMAERR, err))
                 else
@@ -365,7 +360,7 @@ export default class MysqlDao implements IDao {
                         let v = values ? ' _Values_ :' + JSON.stringify(values) : ''
                         if (err) {
                             reject(G.jsResponse(G.STCODES.DATABASEOPERR, err.message))
-                            G.logger.error(err.message + ' Sql is : ' + sql + v)
+                            G.logger.error(err.message + ' _Sql_ : ' + sql + v)
                         } else {
                             resolve(result)
                             G.logger.debug( ' _Sql_ : ' + sql + v)
