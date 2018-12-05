@@ -276,8 +276,9 @@ export default class MysqlDao implements IDao {
                                 where = where.substr(0, where.length - AndJoinStr.length)
                         }
                     } else if (search !== undefined) {
-                        where += keys[i] + ' like ? '
-                        values.push(`%${value}%`)
+                        value = pool.escape(value).replace(/\', \'/g, "%' and " + key + " like '%")
+                        value = value.substring(1, value.length - 1)
+                        where += key + " like '%" + value + "%'"
                     } else {
                         where += keys[i] + ' = ? '
                         values.push(value)
