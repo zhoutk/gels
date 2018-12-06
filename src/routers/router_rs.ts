@@ -1,5 +1,4 @@
 import * as Router from 'koa-router'
-import BaseDao from '../db/baseDao'
 let router = new Router()
 
 const METHODS = {
@@ -25,10 +24,27 @@ export default (() => {
                 throw G.koaError(ctx, G.STCODES.PRAMAERR, 'params fields is wrong.')
             }
         }
-        ctx.body = await new BaseDao(tableName)[METHODS[method]](restParams, fields, ctx.session)
+
+        let module = loadModule(`../dao/${tableName}`).default
+        if (!module) {
+            module = require('../db/baseDao').default
+        }
+        let db = new module(tableName)
+
+        ctx.body = await db[METHODS[method]](restParams, fields, ctx.session)
         // ctx.body = await new BaseDao().execSql("insert into users (username, password, age) values (?,?,?) ", ['alice', 122, 16])          //test execSql create
         // ctx.body = await new BaseDao().execSql("update users set age = ? where id = ? ", [22, 1])          //test execSql update
         // ctx.body = await new BaseDao().querySql("select * from users where age = ? ", [12], params)       //test querySql
     }
     return router.all('/rs/:table', process).all('/rs/:table/:id', process)
 })() 
+
+function loadModule(path: string) {
+    try {
+        return require(path)
+    } catch (err) {
+        if (err.message.indexOf('Cannot find module') < 0)
+            G.logger.error(err.message)
+        return null
+    }
+}
