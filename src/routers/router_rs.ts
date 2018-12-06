@@ -25,11 +25,11 @@ export default (() => {
             }
         }
 
-        let module = loadModule(`../dao/${tableName}`).default
+        let module = loadModule(`../dao/${tableName}`)
         if (!module) {
-            module = require('../db/baseDao').default
+            module = require('../db/baseDao')
         }
-        let db = new module(tableName)
+        let db = new module.default(tableName)
 
         ctx.body = await db[METHODS[method]](restParams, fields, ctx.session)
         // ctx.body = await new BaseDao().execSql("insert into users (username, password, age) values (?,?,?) ", ['alice', 122, 16])          //test execSql create
