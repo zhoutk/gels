@@ -10,7 +10,7 @@ const env = process.env.NODE_ENV || 'dev'            //dev - 开发; prod - 生�
 let GlobVar = {
     PAGESIZE: 10,
     STCODES,
-    ROOT_PATH: `${process.cwd()}${env === 'prod' ? '' : '/dist'}`,
+    ROOT_PATH: `${process.cwd()}${env === 'dev' ? '' : '/dist'}`,
     NODE_ENV: env,
     L: lodash,
     logger: (() => {

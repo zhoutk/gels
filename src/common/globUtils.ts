@@ -1,4 +1,9 @@
+import * as uuid from 'uuid'
+
 export default class GlobUtils {
+    uuid() {
+        return uuid.v1().split('-')[0]
+    }
     isDev() {
         return G.NODE_ENV !== 'prod'
     }
