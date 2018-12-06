@@ -109,84 +109,84 @@ export default class MysqlDao implements IDao {
                 if (err) {
                     reject(G.jsResponse(G.STCODES.DATABASECOERR, err.message))
                     G.logger.error(err.message)
-                }
-                G.logger.debug(`Beginning ${isAsync ? 'Async' : 'Sync'} trans, ${sqls.length} operations are going to do.`)
-                conn.beginTransaction((err) => {
-                    if (err) {
-                        reject(G.jsResponse(G.STCODES.DATABASEOPERR, err.message))
-                    }
-                })
-                
-                if (isAsync) {                  //异步执行
-                    let funcArr = []
-                    sqls.forEach((sqlParam: { text: string; values: object | Array<any> }) => {funcArr.push(doOne(sqlParam))})
-                    Promise.all(funcArr).then((resp) => {
-                        conn.commit((err) => {
-                            if (err) {
-                                conn.rollback(() => {
-                                    conn.release()
-                                })
-                                G.logger.error(`Async trans run fail, ${err.message}`)
-                                reject(G.jsResponse(G.STCODES.DATABASEOPERR, err.message))
-                            } else {
-                                conn.release()
-                                G.logger.debug(`Ending Async trans, ${funcArr.length} operations have been done.`)
-                                resolve(G.jsResponse(G.STCODES.SUCCESS, 'trans run succes.', {resp, affectedRows: resp.length}))
-                            }
-                        })
-                    }).catch((err) => {
-                        conn.rollback(() => {
-                            conn.release()
-                        })
-                        reject(G.jsResponse(G.STCODES.DATABASEOPERR, err.message))
-                    })
-                } else {                        //同步执行
-                    goTrans(sqls)
-                }
-
-                function doOne(sqlParam: { text: string; values: object | Array<any> }): Promise<any> {
-                    return new Promise((resolve, reject) => {
-                        let sql = sqlParam.text
-                        let values = sqlParam.values
-                        conn.query(sql, values, (err, result) => {
-                            if (err) {
-                                conn.rollback(() => {
-                                    G.logger.error(`${isAsync ? 'Async' : 'Sync'} trans run fail, _Sql_ : ${sqlParam.text}, _Values_ : ${JSON.stringify(sqlParam.values)}, _Err_ : ${err.message}`)
-                                    return reject(G.jsResponse(G.STCODES.DATABASEOPERR, err.message))
-                                })
-                            } else {
-                                G.logger.debug(`${isAsync ? 'Async' : 'Sync'} trans run success, _Sql_ : ${sqlParam.text}, _Values_ : ${JSON.stringify(sqlParam.values)}`)
-                                return resolve(G.jsResponse(G.STCODES.SUCCESS, 'trans run success', result))
-                            }
-                        })
-                    })
-                }
-
-                function goTrans(sqlArray: Array<any>, result?) {
-                    let sqlArr = G.L.cloneDeep(sqlArray)
-                    if (sqlArr.length > 0) {
-                        doOne(sqlArr.shift()).then((result) => {
-                            goTrans(sqlArr/*, result*/)                 //以此方式，传递上一执行结果给下一执行操作
-                        }).catch((err) => {
+                } else {
+                    G.logger.debug(`Beginning ${isAsync ? 'Async' : 'Sync'} trans, ${sqls.length} operations are going to do.`)
+                    conn.beginTransaction((err) => {
+                        if (err) {
                             reject(G.jsResponse(G.STCODES.DATABASEOPERR, err.message))
-                        })
-                    } else {
-                        conn.commit((err) => {
-                            if (err) {
-                                conn.rollback(() => {
-                                    conn.release()
+                        } else {
+                            if (isAsync) {                  //异步执行
+                                let funcArr = []
+                                sqls.forEach((sqlParam: { text: string; values: object | Array<any> }) => { funcArr.push(doOne(sqlParam)) })
+                                Promise.all(funcArr).then((resp) => {
+                                    conn.commit((err) => {
+                                        if (err) {
+                                            conn.rollback(() => {
+                                                conn.release()
+                                            })
+                                            G.logger.error(`Async trans run fail, ${err.message}`)
+                                            reject(G.jsResponse(G.STCODES.DATABASEOPERR, err.message))
+                                        } else {
+                                            conn.release()
+                                            G.logger.debug(`Ending Async trans, ${funcArr.length} operations have been done.`)
+                                            resolve(G.jsResponse(G.STCODES.SUCCESS, 'trans run succes.', { resp, affectedRows: resp.length }))
+                                        }
+                                    })
+                                }).catch((err) => {
+                                    conn.rollback(() => {
+                                        conn.release()
+                                    })
+                                    reject(G.jsResponse(G.STCODES.DATABASEOPERR, err.message))
                                 })
-                                G.logger.debug(`Sync trans run fail, ${err.message}`)
-                                reject(G.jsResponse(G.STCODES.DATABASEOPERR, err.message))
-                            } else {
-                                conn.release()
-                                G.logger.debug(`Ending Sync trans, ${sqls.length} operations have been done.`)
-                                resolve(G.jsResponse(G.STCODES.SUCCESS, 'Sync trans run succes.', {affectedRows: sqls.length}))
+                            } else {                        //同步执行
+                                let sqlArr = G.L.cloneDeep(sqls)
+                                goTrans(sqlArr)
                             }
-                        })
-                    }
-                }
 
+                            function doOne(sqlParam: { text: string; values: object | Array<any> }): Promise<any> {
+                                return new Promise((resolve, reject) => {
+                                    let sql = sqlParam.text
+                                    let values = sqlParam.values
+                                    conn.query(sql, values, (err, result) => {
+                                        if (err) {
+                                            conn.rollback(() => {
+                                                G.logger.error(`${isAsync ? 'Async' : 'Sync'} trans run fail, _Sql_ : ${sqlParam.text}, _Values_ : ${JSON.stringify(sqlParam.values)}, _Err_ : ${err.message}`)
+                                                return reject(G.jsResponse(G.STCODES.DATABASEOPERR, err.message))
+                                            })
+                                        } else {
+                                            G.logger.debug(`${isAsync ? 'Async' : 'Sync'} trans run success, _Sql_ : ${sqlParam.text}, _Values_ : ${JSON.stringify(sqlParam.values)}`)
+                                            return resolve(G.jsResponse(G.STCODES.SUCCESS, 'trans run success', result))
+                                        }
+                                    })
+                                })
+                            }
+
+                            function goTrans(sqlArr: Array<any>, result?) {
+                                if (sqlArr.length > 0) {
+                                    doOne(sqlArr.shift()).then((result) => {
+                                        goTrans(sqlArr/*, result*/)                 //以此方式，传递上一执行结果给下一执行操作
+                                    }).catch((err) => {
+                                        reject(G.jsResponse(G.STCODES.DATABASEOPERR, err.message))
+                                    })
+                                } else {
+                                    conn.commit((err) => {
+                                        if (err) {
+                                            conn.rollback(() => {
+                                                conn.release()
+                                            })
+                                            G.logger.debug(`Sync trans run fail, ${err.message}`)
+                                            reject(G.jsResponse(G.STCODES.DATABASEOPERR, err.message))
+                                        } else {
+                                            conn.release()
+                                            G.logger.debug(`Ending Sync trans, ${sqls.length} operations have been done.`)
+                                            resolve(G.jsResponse(G.STCODES.SUCCESS, 'Sync trans run succes.', { affectedRows: sqls.length }))
+                                        }
+                                    })
+                                }
+                            }
+                        }
+                    })
+                }
             })
         })
     }
