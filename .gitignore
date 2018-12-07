@@ -2,6 +2,7 @@
 yarn.lock
 dist/
 **/.DS_Store
+public/
 # Logs
 logs
 *.log
