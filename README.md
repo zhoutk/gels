@@ -344,13 +344,16 @@ gels -- 凝胶，希冀该项目能成为联结设计、开发，前端、后端
         }
     ```
     
-## 相关视频资料
+##相关视频课程
  
 [运用typescript进行node.js后端开发精要][1]  
-[nodejs实战之智能微服务快速开发框架][2]  
-[JSON-ORM（对象关系映射）设计与实现][3]
-
+[nodejs实战之智能微服务快速开发框架][2] 
+[JSON-ORM（对象关系映射）设计与实现][3] 
+[Koa2封装数据库高级操作][4] 
+[蜘蛛实时爬取数据提供图书信息微服务][5]  
 
   [1]: https://segmentfault.com/l/1500000016954243
   [2]: https://segmentfault.com/l/1500000017034959
   [3]: https://segmentfault.com/l/1500000017108031
+  [4]: https://segmentfault.com/l/1500000017274102
+  [5]: https://segmentfault.com/l/1500000017329004
