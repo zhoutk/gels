@@ -1,14 +1,14 @@
 import IDao from './idao'
-import { MongoClient } from 'mongodb'
+import { MongoClient, ObjectId } from 'mongodb'
 
 const url = `mongodb://${G.CONFIGS.dbconfig.db_user}:${G.CONFIGS.dbconfig.db_pass}@${G.CONFIGS.dbconfig.db_host}:${G.CONFIGS.dbconfig.db_port}`
 const dbName = G.CONFIGS.dbconfig.db_name
-const client = new MongoClient(url)
+const mongoClient = new MongoClient(url)
 
 export default class MongoDao implements IDao {
     select(tablename: string, params: object, fields?: string[]): Promise<any> {
         return new Promise((resolve, reject) => {
-            client.connect(function (err, client) { 
+            mongoClient.connect(function (err, client) { 
                 const db = client.db(dbName)
                 const collection = db.collection(tablename)
                 collection.find({}).toArray(function (err, docs) {
@@ -41,16 +41,28 @@ export default class MongoDao implements IDao {
 
     private execQuery(tablename, params): Promise<any> {
         return new Promise((resolve, reject) => {
-            client.connect(function (err, client) {
-                const db = client.db(dbName)
-                db.collection(tablename).insertMany([].concat(params), function (err, r) {
-                    if (err) {
-                        reject(G.jsResponse(G.STCODES.DATABASEOPERR, err.message))
-                    } else {
-                        resolve(G.jsResponse(G.STCODES.SUCCESS))
-                        client.close()
-                    }
-                })
+            mongoClient.connect(function (err, client) {
+                if (err) {
+                    reject(G.jsResponse(G.STCODES.DATABASECOERR, err.message))
+                    G.logger.error(err.message)
+                } else {
+                    const db = client.db(dbName)
+                    db.collection(tablename).insertMany([].concat(params), function (err, r) {
+                        if (err) {
+                            reject(G.jsResponse(G.STCODES.DATABASEOPERR, err.message))
+                            G.logger.error(err.message)
+                        } else {
+                            let ids = []
+                            Object.values(r.insertedIds).forEach((a) => ids.push(a.toString()))
+                            resolve(G.jsResponse(G.STCODES.SUCCESS, 'create success.', {
+                                affectedRows: r.result.n, 
+                                insertId: ids.join()
+                            }))
+                            G.logger.debug(`insert object ${JSON.stringify(params)} success.`)
+                            // client.close()
+                        }
+                    })
+                }
             })
         })
     }
