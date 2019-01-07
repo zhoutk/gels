@@ -3,17 +3,17 @@ import { MongoClient, ObjectId } from 'mongodb'
 
 const url = `mongodb://${G.CONFIGS.dbconfig.db_user}:${G.CONFIGS.dbconfig.db_pass}@${G.CONFIGS.dbconfig.db_host}:${G.CONFIGS.dbconfig.db_port}`
 const dbName = G.CONFIGS.dbconfig.db_name
-const mongoClient = new MongoClient(url)
 
 export default class MongoDao implements IDao {
     select(tablename: string, params: object, fields?: string[]): Promise<any> {
         return new Promise((resolve, reject) => {
-            mongoClient.connect(function (err, client) { 
+            MongoClient.connect(url, { useNewUrlParser: true }, (err, client) => { 
                 const db = client.db(dbName)
                 const collection = db.collection(tablename)
                 collection.find({}).toArray(function (err, docs) {
                     resolve(G.jsResponse(G.STCODES.SUCCESS, 'query success.', docs))
                 })
+                client.close()
             })
         })
     }    
@@ -41,7 +41,7 @@ export default class MongoDao implements IDao {
 
     private execQuery(tablename, params): Promise<any> {
         return new Promise((resolve, reject) => {
-            mongoClient.connect(function (err, client) {
+            MongoClient.connect(url, { useNewUrlParser: true }, (err, client) => {
                 if (err) {
                     reject(G.jsResponse(G.STCODES.DATABASECOERR, err.message))
                     G.logger.error(err.message)
@@ -59,7 +59,7 @@ export default class MongoDao implements IDao {
                                 insertId: ids.join()
                             }))
                             G.logger.debug(`insert object ${JSON.stringify(params)} success.`)
-                            // client.close()
+                            client.close()
                         }
                     })
                 }
