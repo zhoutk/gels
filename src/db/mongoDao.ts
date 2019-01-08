@@ -21,57 +21,19 @@ export default class MongoDao implements IDao {
         })
     }    
     insert(tablename: string, params: object): Promise<any> {
-        return new Promise((resolve, reject) => {
-            MongoClient.connect(url, { useNewUrlParser: true }, (err, client) => {
-                if (err) {
-                    reject(G.jsResponse(G.STCODES.DATABASECOERR, err.message))
-                    G.logger.error(err.message)
-                } else {
-                    const db = client.db(dbName)
-                    db.collection(tablename).insertMany([].concat(params), function (err, r) {
-                        if (err) {
-                            reject(G.jsResponse(G.STCODES.DATABASEOPERR, err.message))
-                            G.logger.error(err.message)
-                        } else {
-                            let ids = []
-                            Object.values(r.insertedIds).forEach((a) => ids.push(a.toString()))
-                            resolve(G.jsResponse(G.STCODES.SUCCESS, 'create success.', {
-                                affectedRows: r.result.n, 
-                                insertId: ids.join()
-                            }))
-                            G.logger.debug(`insert object ${JSON.stringify(params)} success.`)
-                            client.close()
-                        }
-                    })
-                }
-            })
-        })
+        params = params || {}
+        return this.execOperate('insert', tablename, params)
     }
-    update(tablename: string, params: object, id: string | number): Promise<any> {
-        return new Promise((resolve, reject) => {
-            MongoClient.connect(url, { useNewUrlParser: true }, (err, client) => {
-                if (err) {
-                    reject(G.jsResponse(G.STCODES.DATABASECOERR, err.message))
-                    G.logger.error(err.message)
-                } else {
-                    const db = client.db(dbName)
-                    db.collection(tablename).updateOne({_id: new ObjectId(id)}, {$set: params}, function (err, r) {
-                        if (err) {
-                            reject(G.jsResponse(G.STCODES.DATABASEOPERR, err.message))
-                            G.logger.error(err.message)
-                        } else {
-                            resolve(G.jsResponse(G.STCODES.SUCCESS, 'create success.', {
-                                affectedRows: r.result.n
-                            }))
-                            G.logger.debug(`update object ${JSON.stringify(params)} success.`)
-                            client.close()
-                        }
-                    })
-                }
-            })
-        })
+    update(tablename: string, params: object, id: string): Promise<any> {
+        params = params || {}
+        return this.execOperate('update', tablename, params, id)
     }
-    delete(tablename: string, id: string | number): Promise<any> {
+    delete(tablename: string, id: string): Promise<any> {
+        let params = {}
+        return this.execOperate('delete', tablename, params, id)
+    }
+    private execOperate(method: string, tablename: string, params?: any, id?: string): Promise<any> {
+        params = params || {}
         return new Promise((resolve, reject) => {
             MongoClient.connect(url, { useNewUrlParser: true }, (err, client) => {
                 if (err) {
@@ -79,13 +41,22 @@ export default class MongoDao implements IDao {
                     G.logger.error(err.message)
                 } else {
                     const db = client.db(dbName)
-                    db.collection(tablename).deleteOne({_id: new ObjectId(id)}, function (err, r) {
+                    let ps1 = {}, ps2 = {}
+                    if (method === 'insert') {
+                        Object.assign(ps1, params)
+                    } else {
+                        Object.assign(ps1, {_id: new ObjectId(id)})
+                        if (method === 'update')
+                            Object.assign(ps2, {$set: params})
+                    }
+                    db.collection(tablename)[`${method}One`](ps1, ps2, function (err, r) {
                         if (err) {
                             reject(G.jsResponse(G.STCODES.DATABASEOPERR, err.message))
                             G.logger.error(err.message)
                         } else {
                             resolve(G.jsResponse(G.STCODES.SUCCESS, 'create success.', {
-                                affectedRows: r.result.n
+                                affectedRows: r.result.n,
+                                insertId: r.insertedId || ps1['_id']
                             }))
                             G.logger.debug(`delete object, it's id: ${id} success.`)
                             client.close()
