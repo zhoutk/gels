@@ -7,6 +7,8 @@ const dbName = G.CONFIGS.dbconfig.db_name
 export default class MongoDao implements IDao {
     select(tablename: string, params: any, fields?: string[]): Promise<any> {
         let { id, sort, search, page, size, ...ps } = params
+        size = (size || G.PAGESIZE) >> 0
+        let begin = page > 0 ? (page - 1) * size : 0
         if (id !== undefined)
             Object.assign(ps, {_id: new ObjectId(id)}) 
         if (sort !== undefined) {
@@ -25,11 +27,23 @@ export default class MongoDao implements IDao {
                 else {
                     const db = client.db(dbName)
                     const collection = db.collection(tablename)
-                    collection.find(ps).sort(sort).toArray(function (err, docs) {
-                        if (err)
-                            reject(G.jsResponse(G.STCODES.DATABASEOPERR, err.message))
-                        else
-                            resolve(G.jsResponse(G.STCODES.SUCCESS, 'query success.', docs))
+                    let trs = new Array()
+                    trs.push(collection.countDocuments(ps))
+                    if (page > 0)
+                        trs.push(collection.find(ps).sort(sort).skip(begin).limit(size).toArray())
+                    else 
+                        trs.push(collection.find(ps).sort(sort).toArray())
+                    Promise.all(trs).then((resp) => {
+                        let num = resp[0], docs = resp[1]
+                        let pages = 0
+                        if (page > 0) {
+                            pages = Math.ceil(num / size)
+                        } else {
+                            pages = docs.length > 0 ? 1 : 0
+                        }
+                        resolve(G.jsResponse(G.STCODES.SUCCESS, 'query success.', {data: docs, pages, records: num}))
+                    }).catch((err) => {
+                        reject(G.jsResponse(G.STCODES.DATABASEOPERR, err.message))
                     })
                     client.close()
                 }
