@@ -72,7 +72,28 @@ export default class MongoDao implements IDao {
         })
     }
     delete(tablename: string, id: string | number): Promise<any> {
-        throw new Error('Method not implemented.')
+        return new Promise((resolve, reject) => {
+            MongoClient.connect(url, { useNewUrlParser: true }, (err, client) => {
+                if (err) {
+                    reject(G.jsResponse(G.STCODES.DATABASECOERR, err.message))
+                    G.logger.error(err.message)
+                } else {
+                    const db = client.db(dbName)
+                    db.collection(tablename).deleteOne({_id: new ObjectId(id)}, function (err, r) {
+                        if (err) {
+                            reject(G.jsResponse(G.STCODES.DATABASEOPERR, err.message))
+                            G.logger.error(err.message)
+                        } else {
+                            resolve(G.jsResponse(G.STCODES.SUCCESS, 'create success.', {
+                                affectedRows: r.result.n
+                            }))
+                            G.logger.debug(`delete object, it's id: ${id} success.`)
+                            client.close()
+                        }
+                    })
+                }
+            })
+        })
     }
     querySql(sql: string, values: any[], params: object, fields?: string[]): Promise<any> {
         throw new Error('Method not implemented.')
