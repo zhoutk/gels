@@ -6,17 +6,33 @@ const dbName = G.CONFIGS.dbconfig.db_name
 
 export default class MongoDao implements IDao {
     select(tablename: string, params: any, fields?: string[]): Promise<any> {
-        let { id, ...ps } = params
+        let { id, sort, search, page, size, ...ps } = params
         if (id !== undefined)
             Object.assign(ps, {_id: new ObjectId(id)}) 
+        if (sort !== undefined) {
+            let tmp = sort.split(',')
+            sort = {}
+            for (let i = 0; i < tmp.length; i++) {
+                let ss = tmp[i].split(' ')
+                sort[ss[0]] = ss.length > 1 ? ( ss[1].toLowerCase() === 'desc' ? -1 : 1 ) : 1
+            }
+        }
+        
         return new Promise((resolve, reject) => {
             MongoClient.connect(url, { useNewUrlParser: true }, (err, client) => { 
-                const db = client.db(dbName)
-                const collection = db.collection(tablename)
-                collection.find(ps).toArray(function (err, docs) {
-                    resolve(G.jsResponse(G.STCODES.SUCCESS, 'query success.', docs))
-                })
-                client.close()
+                if (err)
+                    reject(G.jsResponse(G.STCODES.DATABASECOERR, err.message))
+                else {
+                    const db = client.db(dbName)
+                    const collection = db.collection(tablename)
+                    collection.find(ps).sort(sort).toArray(function (err, docs) {
+                        if (err)
+                            reject(G.jsResponse(G.STCODES.DATABASEOPERR, err.message))
+                        else
+                            resolve(G.jsResponse(G.STCODES.SUCCESS, 'query success.', docs))
+                    })
+                    client.close()
+                }
             })
         })
     }    
