@@ -29,6 +29,8 @@ let options: PoolOptions = {
 let pool = createPool(options)
 
 export default class MysqlDao implements IDao {
+    static logFlag = G.CONFIGS.DbLogClose ? false : true
+
     select(tablename: string, params = {}, fields?: Array<string>): Promise<any> {
         fields = fields || []
         return this.query(tablename, params, fields, '', [])
@@ -110,7 +112,7 @@ export default class MysqlDao implements IDao {
                     reject(G.jsResponse(G.STCODES.DATABASECOERR, err.message))
                     G.logger.error(err.message)
                 } else {
-                    G.logger.debug(`Beginning ${isAsync ? 'Async' : 'Sync'} trans, ${sqls.length} operations are going to do.`)
+                    MysqlDao.logFlag && G.logger.debug(`Beginning ${isAsync ? 'Async' : 'Sync'} trans, ${sqls.length} operations are going to do.`)
                     conn.beginTransaction((err) => {
                         if (err) {
                             reject(G.jsResponse(G.STCODES.DATABASEOPERR, err.message))
@@ -128,7 +130,7 @@ export default class MysqlDao implements IDao {
                                             reject(G.jsResponse(G.STCODES.DATABASEOPERR, err.message))
                                         } else {
                                             conn.release()
-                                            G.logger.debug(`Ending Async trans, ${funcArr.length} operations have been done.`)
+                                            MysqlDao.logFlag && G.logger.debug(`Ending Async trans, ${funcArr.length} operations have been done.`)
                                             resolve(G.jsResponse(G.STCODES.SUCCESS, 'trans run succes.', { resp, affectedRows: resp.length }))
                                         }
                                     })
@@ -154,7 +156,7 @@ export default class MysqlDao implements IDao {
                                                 return reject(G.jsResponse(G.STCODES.DATABASEOPERR, err.message))
                                             })
                                         } else {
-                                            G.logger.debug(`${isAsync ? 'Async' : 'Sync'} trans run success, _Sql_ : ${sqlParam.text}, _Values_ : ${JSON.stringify(sqlParam.values)}`)
+                                            MysqlDao.logFlag && G.logger.debug(`${isAsync ? 'Async' : 'Sync'} trans run success, _Sql_ : ${sqlParam.text}, _Values_ : ${JSON.stringify(sqlParam.values)}`)
                                             return resolve(G.jsResponse(G.STCODES.SUCCESS, 'trans run success', result))
                                         }
                                     })
@@ -174,11 +176,11 @@ export default class MysqlDao implements IDao {
                                             conn.rollback(() => {
                                                 conn.release()
                                             })
-                                            G.logger.debug(`Sync trans run fail, ${err.message}`)
+                                            MysqlDao.logFlag && G.logger.debug(`Sync trans run fail, ${err.message}`)
                                             reject(G.jsResponse(G.STCODES.DATABASEOPERR, err.message))
                                         } else {
                                             conn.release()
-                                            G.logger.debug(`Ending Sync trans, ${sqls.length} operations have been done.`)
+                                            MysqlDao.logFlag && G.logger.debug(`Ending Sync trans, ${sqls.length} operations have been done.`)
                                             resolve(G.jsResponse(G.STCODES.SUCCESS, 'Sync trans run succes.', { affectedRows: sqls.length }))
                                         }
                                     })
@@ -364,7 +366,7 @@ export default class MysqlDao implements IDao {
                             G.logger.error(err.message + ' _Sql_ : ' + sql + v)
                         } else {
                             resolve(result)
-                            G.logger.debug( ' _Sql_ : ' + sql + v)
+                            MysqlDao.logFlag && G.logger.debug( ' _Sql_ : ' + sql + v)
                         }
                     })
                 }

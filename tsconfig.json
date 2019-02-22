@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es2017",                         // 指定 ECMAScript 目标版本: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', or 'ESNEXT'
+    "target": "es2018",                         // 指定 ECMAScript 目标版本: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', or 'ESNEXT'
     "module": "commonjs",                       // 指定使用模块: 'commonjs', 'amd', 'system', 'umd' or 'es2015'
     "moduleResolution": "node",                 // 选择模块解析策略： 'node' (Node.js) or 'classic' (TypeScript pre-1.6)
     "emitDecoratorMetadata": true,              // 为装饰器提供元数据的支持
@@ -15,7 +15,7 @@
     "removeComments": true,                     // 删除编译后的所有的注释
     "importHelpers": true,                      // 从 tslib 导入辅助工具函数
     "strictNullChecks": false,                   // 启用严格的 null 检查
-    "lib": ["es2017"],                          // 指定要包含在编译中的库文件
+    "lib": ["es2018"],                          // 指定要包含在编译中的库文件
     "typeRoots": ["node_modules/@types"],
     "types": [
       "node",

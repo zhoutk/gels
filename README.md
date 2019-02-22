@@ -55,21 +55,26 @@ gels -- 凝胶，希冀该项目能成为联结设计、开发，前端、后端
             directory: {
                 run: false,
                 dirs: ['public/upload', 'public/temp']
+            },
+            socket: {
+                run: false
             }
         },
         port: 5000,
+        StandSocketPort: 1202,
         db_dialect: 'mysql',
+        DbLogClose: false,
         dbconfig: {
-            db_host: 'localhost',
+            db_host: '192.168.0.6',
             db_port: 3306,
-            db_name: 'strest',
+            db_name: 'dbname',
             db_user: 'root',
             db_pass: '123456',
             db_char: 'utf8mb4',
-            db_conn: 10,
+            db_conn: 5,
         },
         jwt: {
-            secret: 'zh-tf2Gp4SFU>a4bh_$3#46d0e85W10aGMkE5xKQ',
+            secret: 'zh-123456SFU>a4bh_$3#46d0e85W10aGMkE5xKQ',
             expires_max: 36000      //10小时，单位：秒
         },
     }
