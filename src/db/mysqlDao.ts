@@ -251,8 +251,7 @@ export default class MysqlDao implements IDao {
             } else {
                     if (value === 'null') {
                         where += keys[i] + ' is null '
-                    } else if ((Array.isArray(value) && value.length > 0 && typeof value[0] === 'string' && value[0].indexOf(',') > 0 ||
-                            typeof value === 'string' && value.length > 2 && value.indexOf(',') > 0) && 
+                    } else if ((Array.isArray(value) && (value.length === 2 || value.length === 4)) && 
                             QUERYUNEQOPERS.some((element) => {
                                 if (Array.isArray(value)) {
                                     return value.join().startsWith(element)
