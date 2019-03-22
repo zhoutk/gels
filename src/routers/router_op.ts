@@ -25,57 +25,6 @@ export default (() => {
                     ctx.body = G.jsResponse(G.STCODES.QUERYEMPTY, 'The user is missing.')
                 }
                 break
-            case 'batch':
-                return ctx.body = await new BaseDao().insertBatch('users', ctx.request.body)
-            case 'trans':
-                let trs = [
-                    {
-                        table: 'users',
-                        method: 'Insert',
-                        params: {
-                            username: 'zhou1',
-                            password: '1',
-                            age: 1
-                        }
-                    },
-                    {
-                        table: 'users',
-                        method: 'Insert',
-                        params: {
-                            username: 'zhou2',
-                            password: '2',
-                            age: 2
-                        }
-                    },
-                    {
-                        table: 'users',
-                        method: 'Insert',
-                        params: {
-                            username: 'zhou3',
-                            password: '3',
-                            age: 3
-                        }
-                    },
-                    {
-                        table: 'users',
-                        method: 'Insert',
-                        params: {
-                            username: 'zhou4',
-                            password: '4',
-                            age: 4
-                        }
-                    },
-                    {
-                        table: 'users',
-                        method: 'Insert',
-                        params: {
-                            username: 'zhou5',
-                            password: '5',
-                            age: 5
-                        }
-                    }
-                ]
-                return ctx.body = await new BaseDao().transGo(trs, true)
             default:
                 ctx.body = G.jsResponse(G.STCODES.NOTFOUND, 'command is not found.')
                 break

@@ -8,12 +8,12 @@ export default {
     //支持 X-Forwarded-Host
     app.proxy = true
     const middlewares = [
+      'cors',
       'logger', //记录所用方式与时间
       'session',
       'globalError', // 全局错误处理
       'conditional', //配合etag
       'etag', //etag 客户端缓存处理
-      'cors',
       'bodyParser', //body解析
       'rewrite', //url重写
       'static',
