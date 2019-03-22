@@ -2,10 +2,11 @@ let dialect: string = G.CONFIGS.db_dialect
 let Dao = require(`./${dialect}Dao`).default
 import TransElement from '../common/transElement'
 import IDao from './idao'
+import * as moment from 'moment'
 
 export default class BaseDao {
     table: string
-    static dao: IDao            
+    static dao: IDao
     constructor(table?: string) {
         this.table = table || ''
         if (!BaseDao.dao)
@@ -22,22 +23,28 @@ export default class BaseDao {
         if (rs.status === G.STCODES.SUCCESS && (!rs.data || rs.data.length === 0))
             return G.jsResponse(G.STCODES.QUERYEMPTY, 'data query empty.', rs)
         else
-            return rs
+            return processDatum(rs)
     }
-    async create(params = {}, fields = [], session = {userid: ''}): Promise<any> {
+    async create(params = {}, fields = [], session = { userid: '' }): Promise<any> {
         let keys = Object.keys(params)
         if (keys.length === 0 || params['id'] !== undefined && keys.length <= 1)
             return G.jsResponse(G.STCODES.PRAMAERR, 'params is error.')
         else {
-            let rs
+            let rs, id = params['id']
             try {
-                rs = await BaseDao.dao.insert(this.table, params)
+                if (!id && params['uuid']) {
+                    id = G.tools.uuid()
+                    delete params['uuid']
+                } else if (params['uuid']) {
+                    delete params['uuid']
+                }
+                rs = await BaseDao.dao.insert(this.table, Object.assign(params, id ? { id } : {}))
             } catch (err) {
                 err.message = `data insert fail: ${err.message}`
                 return err
             }
-            let {affectedRows} = rs
-            return G.jsResponse(G.STCODES.SUCCESS, 'data insert success.', {affectedRows, id: rs.insertId})
+            let { affectedRows } = rs
+            return G.jsResponse(G.STCODES.SUCCESS, 'data insert success.', { affectedRows, id: id || rs.insertId })
         }
     }
     async update(params, fields = [], session = { userid: '' }): Promise<any> {
@@ -58,7 +65,7 @@ export default class BaseDao {
             return G.jsResponse(G.STCODES.SUCCESS, 'data update success.', { affectedRows, id })
         }
     }
-    async delete(params = {}, fields = [], session = {userid: ''}): Promise<any> {
+    async delete(params = {}, fields = [], session = { userid: '' }): Promise<any> {
         if (params['id'] === undefined)
             return G.jsResponse(G.STCODES.PRAMAERR, 'params is error.')
         else {
@@ -70,22 +77,22 @@ export default class BaseDao {
                 err.message = `data delete fail: ${err.message}`
                 return err
             }
-            let {affectedRows} = rs
+            let { affectedRows } = rs
             return G.jsResponse(G.STCODES.SUCCESS, 'data delete success.', { affectedRows, id })
         }
     }
     async querySql(sql: string, values = [], params = {}, fields = []): Promise<any> {
         let rs
         try {
-            rs = await BaseDao.dao.querySql (sql, values, params, fields) 
+            rs = await BaseDao.dao.querySql(sql, values, params, fields)
         } catch (err) {
             err.message = `data querySql fail: ${err.message}`
             return err
         }
-        if (rs.length === 0)
-            return G.jsResponse( G.STCODES.QUERYEMPTY, 'data querySql empty.', rs)
+        if (rs.status === G.STCODES.SUCCESS && (!rs.data || rs.data.length === 0))
+            return G.jsResponse(G.STCODES.QUERYEMPTY, 'data query empty.', rs)
         else
-            return G.jsResponse( G.STCODES.SUCCESS, 'data querySql success.', rs)
+            return processDatum(rs)
     }
     async execSql(sql: string, values = []): Promise<any> {
         let rs
@@ -95,8 +102,8 @@ export default class BaseDao {
             err.message = `data execSql fail: ${err.message}`
             return err
         }
-        let {affectedRows} = rs
-        return G.jsResponse(G.STCODES.SUCCESS, 'data execSql success.', {affectedRows})
+        let { affectedRows } = rs
+        return G.jsResponse(G.STCODES.SUCCESS, 'data execSql success.', { affectedRows })
     }
     async insertBatch(tablename: string, elements = []): Promise<any> {
         let rs
@@ -106,8 +113,8 @@ export default class BaseDao {
             err.message = `data batch fail: ${err.message}`
             return err
         }
-        let {affectedRows} = rs
-        return G.jsResponse(G.STCODES.SUCCESS, 'data batch success.', {affectedRows})
+        let { affectedRows } = rs
+        return G.jsResponse(G.STCODES.SUCCESS, 'data batch success.', { affectedRows })
     }
     async transGo(elements: Array<TransElement>, isAsync = true): Promise<any> {
         let rs
@@ -117,7 +124,23 @@ export default class BaseDao {
             err.message = `data trans fail: ${err.message}`
             return err
         }
-        let {affectedRows} = rs
-        return G.jsResponse(G.STCODES.SUCCESS, 'data trans success.', {affectedRows})
+        let { affectedRows } = rs
+        return G.jsResponse(G.STCODES.SUCCESS, 'data trans success.', { affectedRows })
     }
+}
+
+function processDatum(rs) {
+    rs.data.forEach(element => {
+        let vs = Object.entries(element)
+        for (let [key, value] of vs) {
+            if (G.L.endsWith(key, '_time') && value) {
+                element[key] = moment(value).format('YYYY-MM-DD hh:mm:ss')
+            } else if (G.L.endsWith(key, '_json')) {
+                if (value && value.toString().trim().length === 0) {
+                    element[key] = null
+                }
+            }
+        }
+    })
+    return rs
 }
