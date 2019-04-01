@@ -1,24 +1,55 @@
 import * as Router from 'koa-router'
-import * as jwt from 'jsonwebtoken'
 import BaseDao from '../db/baseDao'
-let { graphql, buildSchema } = require('graphql')
+let {  GraphQLString, GraphQLObjectType, GraphQLSchema } = require('graphql')
+const graphqlHTTP = require('koa-graphql')
 
 let router = new Router()
-const config = G.CONFIGS.jwt
-let schema = buildSchema(`
-    type Query {
-    hello: String
-    }
-`)
-export default (() => {
-    let process = async (ctx, next) => {
-        let { command } = ctx.params
-        let root = { hello: () => 'Hello world!' }
 
-        graphql(schema, '{ hello }', root).then((response) => {
-            ctx.body = response
-            console.log(response)
-        })
+export default (() => {
+    // Maps id to User object
+let fakeDatabase = {
+    'a': {
+      id: 'a',
+      name: 'alice',
+    },
+    'b': {
+      id: 'b',
+      name: 'bob',
+    },
+  }
+  
+  // Define the User type
+  let userType = new GraphQLObjectType({
+    name: 'User',
+    fields: {
+      id: { type: GraphQLString },
+      name: { type: GraphQLString },
     }
-    return router.get('/graphql/:command', process)
+  })
+  
+  // Define the Query type
+  let queryType = new GraphQLObjectType({
+    name: 'Query',
+    fields: {
+      user: {
+        type: userType,
+        // `args` describes the arguments that the `user` query accepts
+        args: {
+          id: { type: GraphQLString },
+          name: { type: GraphQLString }
+        },
+        resolve: function (_, {id}) {
+          return fakeDatabase[id]
+        }
+      }
+    }
+  })
+  
+  let schema = new GraphQLSchema({query: queryType})
+    return router.all('/graphql', graphqlHTTP({
+        schema: schema,
+        graphiql: true
+      }))
+      
+    // return router.get('/graphql/:command', process)
 })() 
