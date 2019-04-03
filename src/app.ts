@@ -1,5 +1,6 @@
 import * as Koa from 'koa'
 import Startup from './inits'
+import GraphQl from './inits/graphql'
 
 //加载中间件
 export default {
@@ -7,6 +8,7 @@ export default {
     const app = new Koa()
     //支持 X-Forwarded-Host
     app.proxy = true
+    await new GraphQl().init(app)
     const middlewares = [
       'cors',
       'logger', //记录所用方式与时间
