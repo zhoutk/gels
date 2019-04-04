@@ -4,7 +4,7 @@ import * as color from 'cli-color'
  */
 export default () => {
     return async (ctx, next) => {
-        if (G.tools.isDev() && ctx.path !== '/graphql') {
+        if (G.tools.isDev() && !(ctx.path === '/graphql' || ctx.path === '/gql')) {
             const start = Date.now()
             await next()
             const diff = Date.now() - start

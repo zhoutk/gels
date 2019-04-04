@@ -94,7 +94,7 @@ export default (() => {
     })
 
     let schema = new GraphQLSchema({ query: queryType })
-    return router.all('/graphql', graphqlHTTP({
+    return router.all('/gql', graphqlHTTP({
         schema: schema,
         graphiql: true
     }))
