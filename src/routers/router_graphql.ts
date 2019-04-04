@@ -6,12 +6,11 @@ const graphqlHTTP = require('koa-graphql')
 let router = new Router()
 
 export default (() => {
-    let userType = new GraphQLObjectType({
-        name: 'User',
+    let authorType = new GraphQLObjectType({
+        name: 'Author',
         fields: {
-            id: { type: GraphQLString },
-            username: { type: GraphQLString },
-            password: { type: GraphQLString }
+            id: { type: GraphQLInt},
+            name: { type: GraphQLString}
         }
     })
 
@@ -19,7 +18,23 @@ export default (() => {
         name: 'Book',
         fields: {
             id: { type: GraphQLInt},
-            title: { type: GraphQLString}
+            title: { type: GraphQLString},
+            author: { 
+                type: authorType,
+                resolve: async (book, args) => {
+                    let rs = await new BaseDao('author').retrieve({id: book.author_id})
+                    return rs.data[0]
+                }
+            }
+        }
+    })
+
+    let userType = new GraphQLObjectType({
+        name: 'User',
+        fields: {
+            id: { type: GraphQLString },
+            username: { type: GraphQLString },
+            password: { type: GraphQLString },
         }
     })
 
@@ -31,13 +46,36 @@ export default (() => {
                 args: {
                     id: { type: GraphQLString },
                     search: { type: GraphQLString },
-                    title: { type: GraphQLString }
+                    title: { type: GraphQLString },
                 },
                 resolve: async function (_, args) {
                     let rs = await new BaseDao('book').retrieve(args)
                     return rs.data
                 }
             },
+            authors: {
+                type: new GraphQLList(authorType),
+                // `args` describes the arguments that the `user` query accepts
+                args: {
+                    id: { type: GraphQLString },
+                    search: { type: GraphQLString },
+                    name: { type: GraphQLString },
+                },
+                resolve: async function (_, args) {
+                    let rs = await new BaseDao('author').retrieve(args)
+                    return rs.data
+                }
+            },
+            // author: {
+            //     type: authorType,
+            //     args: {
+            //         id: { type: GraphQLString },
+            //     },
+            //     resolve: async function (book) {
+            //         let rs = await new BaseDao('author').retrieve({id: book.author_id})
+            //         return rs.data[0]
+            //     }
+            // },
             users: {
                 type: new GraphQLList(userType),
                 // `args` describes the arguments that the `user` query accepts
