@@ -41,7 +41,7 @@ const typeDefs = gql`
 
   # the schema allows the following query:
   type Query {
-    books: [Book]
+    books(id: Int, title: String, search: String): [Book]
     author(id: Int!): Author
   }
 
@@ -55,8 +55,8 @@ const resolvers = {
       let rs = await new BaseDao('book').retrieve(args)
       return rs.data
     },
-    author: async (_, { id }) => {
-      let rs = await new BaseDao('author').retrieve({id})
+    author: async (_, args) => {
+      let rs = await new BaseDao('author').retrieve(args)
       return rs.data[0]
     },
   },
