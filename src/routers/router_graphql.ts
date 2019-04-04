@@ -1,6 +1,6 @@
 import * as Router from 'koa-router'
 import BaseDao from '../db/baseDao'
-let { GraphQLString, GraphQLObjectType, GraphQLSchema, GraphQLList } = require('graphql')
+import { GraphQLString, GraphQLObjectType, GraphQLSchema, GraphQLList, GraphQLInt } from 'graphql'
 const graphqlHTTP = require('koa-graphql')
 
 let router = new Router()
@@ -15,9 +15,29 @@ export default (() => {
         }
     })
 
+    let bookType = new GraphQLObjectType({
+        name: 'Book',
+        fields: {
+            id: { type: GraphQLInt},
+            title: { type: GraphQLString}
+        }
+    })
+
     let queryType = new GraphQLObjectType({
         name: 'Query',
         fields: {
+            books: {
+                type: new GraphQLList(bookType),
+                args: {
+                    id: { type: GraphQLString },
+                    search: { type: GraphQLString },
+                    title: { type: GraphQLString }
+                },
+                resolve: async function (_, args) {
+                    let rs = await new BaseDao('book').retrieve(args)
+                    return rs.data
+                }
+            },
             users: {
                 type: new GraphQLList(userType),
                 // `args` describes the arguments that the `user` query accepts
@@ -28,7 +48,7 @@ export default (() => {
                     username: { type: GraphQLString }
                 },
                 resolve: async function (_, args) {
-                    let rs = await new BaseDao('users').retrieve(args, Object.keys(userType._fields))
+                    let rs = await new BaseDao('users').retrieve(args)
                     return rs.data
                 }
             }
