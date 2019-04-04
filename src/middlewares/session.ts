@@ -7,7 +7,7 @@ export default () => {
     return async (ctx, next) => {
         const { header: { token } } = ctx
         let urlStrs = ctx && ctx.url && ctx.url.split('/')
-        let isAuth: boolean = AUTHURL.some((url) => { return urlStrs[1] === url})
+        let isAuth: boolean = AUTHURL.some((url) => { return urlStrs[1] === url })
         if (token) {
             try {
                 const decoded = jwt.verify(token, config.secret)
@@ -33,6 +33,6 @@ export default () => {
             }
         }
 
-        
+
     }
 }
