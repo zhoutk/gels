@@ -4,6 +4,7 @@ import { getInfoFromSql } from '../../../dist/middlewares/graphql/schema_generat
 const TYPEFROMMYSQLTOGRAPHQL = {
     int: 'Int',
     varchar: 'String',
+    datetime: 'String',
 }
 
 async function getInfoFromSql() {
@@ -28,7 +29,6 @@ async function getInfoFromSql() {
             [G.CONFIGS.dbconfig.db_name, table.TABLE_NAME, G.CONFIGS.dbconfig.db_name]))
     })
     let rs = await Promise.all(columnRs), len = tables.data.length
-    let querys = []
     for (let i = 0; i < len; i++) {
         let table = tables.data[i].TABLE_NAME
         let columns = rs[i].data
@@ -37,8 +37,9 @@ async function getInfoFromSql() {
             typeDefObj[table] = []
         }
         columns.forEach((col) => {
+            let typeStr = TYPEFROMMYSQLTOGRAPHQL[G.tools.getStartTillBracket(col['COLUMN_TYPE'])] || 'String'
             if (!col['COLUMN_NAME'].endsWith('_id')) {
-                typeDefObj[table].push(`${col['COLUMN_NAME']}: ${TYPEFROMMYSQLTOGRAPHQL[G.tools.getStartTillBracket(col['COLUMN_TYPE'])]}\n`)
+                typeDefObj[table].push(`${col['COLUMN_NAME']}: ${typeStr}\n`)
             } else {
                 typeDefObj[table].push(`${G.L.trimEnd(col['COLUMN_NAME'], '_id')}: ${G.tools.bigCamelCase(G.L.trimEnd(col['COLUMN_NAME'], '_id'))}\n`)
                 resolvers[G.tools.bigCamelCase(table)] = {
@@ -47,8 +48,20 @@ async function getInfoFromSql() {
                         return rs.data[0]
                     }
                 }
+
+                let fTable = G.L.trimEnd(col['COLUMN_NAME'], '_id')
+                if (!typeDefObj[fTable]) {
+                    typeDefObj[fTable] = []
+                }
+                typeDefObj[fTable].push(`${table}s: [${G.tools.bigCamelCase(table)}]\n`)
+                resolvers[G.tools.bigCamelCase(fTable)] = {
+                    [`${table}s`]: async (element) => {
+                        let rs = await new BaseDao(table).retrieve({ [col['COLUMN_NAME']]: element.id})
+                        return rs.data
+                    }
+                }
             }
-            paramStr.push(`${col['COLUMN_NAME']}: ${TYPEFROMMYSQLTOGRAPHQL[G.tools.getStartTillBracket(col['COLUMN_TYPE'])]}`)
+            paramStr.push(`${col['COLUMN_NAME']}: ${typeStr}`)
         })
         typeDefObj['query'].push(`${table}s(${paramStr.join(', ')}): [${G.tools.bigCamelCase(table)}]\n`)
         resolvers.Query[`${table}s`] = async (_, args) => {

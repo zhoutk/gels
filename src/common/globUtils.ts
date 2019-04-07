@@ -2,7 +2,7 @@ import * as uuid from 'uuid'
 
 export default class GlobUtils {
     getStartTillBracket(str: string) {
-        return str.substr(0, str.indexOf('('))
+        return str.indexOf('(') > -1 ? str.substr(0, str.indexOf('(')) : str
     }
     bigCamelCase(str: string) {
         return str.split('_').map((al) => {
