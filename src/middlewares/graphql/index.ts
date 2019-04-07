@@ -16,11 +16,8 @@ export default async (app) => {
         ...app.context
       })
     })
-    G.ApolloServer.applyMiddleware({ app })
   }
-  return async (ctx, next) => {
-    await next()
-  }
+  G.ApolloServer.applyMiddleware({ app })
 }
 
 
