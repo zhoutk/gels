@@ -37,9 +37,17 @@ async function getInfoFromSql() {
         let colStr = ''
         let paramStr = []
         columns.forEach((col) => {
-            if (!col['COLUMN_NAME'].endsWith('_id'))
+            if (!col['COLUMN_NAME'].endsWith('_id')) {
                 colStr += `${col['COLUMN_NAME']}: ${TYPEFROMMYSQLTOGRAPHQL[G.tools.getStartTillBracket(col['COLUMN_TYPE'])]}
                 `
+            } else {
+                colStr += `${G.L.trimEnd(col['COLUMN_NAME'], '_id')}: ${G.tools.bigCamelCase(G.L.trimEnd(col['COLUMN_NAME'], '_id'))}
+                `
+                resolvers[G.tools.bigCamelCase(table)][G.L.trimEnd(col['COLUMN_NAME'], '_id')] = async (al) => {
+                    let rs = await new BaseDao(G.L.trimEnd(col['COLUMN_NAME'], '_id')).retrieve({id: al[col['COLUMN_NAME']]})
+                    return rs.data[0]
+                  }
+            }
             paramStr.push(`${col['COLUMN_NAME']}: ${TYPEFROMMYSQLTOGRAPHQL[G.tools.getStartTillBracket(col['COLUMN_TYPE'])]}`)
         })
         typeDefs.push(`
