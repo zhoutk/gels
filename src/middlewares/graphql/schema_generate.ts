@@ -7,9 +7,7 @@ const TYPEFROMMYSQLTOGRAPHQL = {
 }
 
 async function getInfoFromSql() {
-    let typeDefs = [], resolvers = {
-        Query: {}
-    }
+    let typeDefObj = { query: []}, resolvers = { Query: {} }
     let dao = new BaseDao()
     let tables = await dao.querySql('select TABLE_NAME,TABLE_COMMENT from information_schema.`TABLES` ' +
         ' where TABLE_SCHEMA = ? and TABLE_TYPE = ? and substr(TABLE_NAME,1,2) <> ? order by ?',
@@ -34,13 +32,15 @@ async function getInfoFromSql() {
     for (let i = 0; i < len; i++) {
         let table = tables.data[i].TABLE_NAME
         let columns = rs[i].data
-        let colStr = ''
         let paramStr = []
+        if (!typeDefObj[table]) {
+            typeDefObj[table] = []
+        }
         columns.forEach((col) => {
             if (!col['COLUMN_NAME'].endsWith('_id')) {
-                colStr += `${col['COLUMN_NAME']}: ${TYPEFROMMYSQLTOGRAPHQL[G.tools.getStartTillBracket(col['COLUMN_TYPE'])]}\n`
+                typeDefObj[table].push(`${col['COLUMN_NAME']}: ${TYPEFROMMYSQLTOGRAPHQL[G.tools.getStartTillBracket(col['COLUMN_TYPE'])]}\n`)
             } else {
-                colStr += `${G.L.trimEnd(col['COLUMN_NAME'], '_id')}: ${G.tools.bigCamelCase(G.L.trimEnd(col['COLUMN_NAME'], '_id'))}\n`
+                typeDefObj[table].push(`${G.L.trimEnd(col['COLUMN_NAME'], '_id')}: ${G.tools.bigCamelCase(G.L.trimEnd(col['COLUMN_NAME'], '_id'))}\n`)
                 resolvers[G.tools.bigCamelCase(table)] = {
                     [G.L.trimEnd(col['COLUMN_NAME'], '_id')]: async (element) => {
                         let rs = await new BaseDao(G.L.trimEnd(col['COLUMN_NAME'], '_id')).retrieve({ id: element[col['COLUMN_NAME']] })
@@ -50,22 +50,19 @@ async function getInfoFromSql() {
             }
             paramStr.push(`${col['COLUMN_NAME']}: ${TYPEFROMMYSQLTOGRAPHQL[G.tools.getStartTillBracket(col['COLUMN_TYPE'])]}`)
         })
-        typeDefs.push(`
-            type ${G.tools.bigCamelCase(table)} {
-                ${colStr}
-            }
-        `)
-        querys.push(`${table}s(${paramStr.join(', ')}): [${G.tools.bigCamelCase(table)}]\n`)
+        typeDefObj['query'].push(`${table}s(${paramStr.join(', ')}): [${G.tools.bigCamelCase(table)}]\n`)
         resolvers.Query[`${table}s`] = async (_, args) => {
             let rs = await new BaseDao(table).retrieve(args)
             return rs.data
         }
     }
-    typeDefs.push(`
-        type Query {
-            ${querys.join('')}
-        }
-    `)
+    let typeDefs = Object.entries(typeDefObj).reduce((total, cur) => {
+        return total += `
+            type ${G.tools.bigCamelCase(cur[0])} {
+                ${cur[1].join('')}
+            }
+        `
+    }, '')
     return { typeDefs, resolvers }
 }
 
