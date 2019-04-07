@@ -1,5 +1,4 @@
 import BaseDao from '../../db/baseDao'
-import { getInfoFromSql } from '../../../dist/middlewares/graphql/schema_generate'
 
 const TYPEFROMMYSQLTOGRAPHQL = {
     int: 'Int',
@@ -33,6 +32,7 @@ async function getInfoFromSql() {
         let table = tables.data[i].TABLE_NAME
         let columns = rs[i].data
         let paramStr = []
+        let paramId = ''
         if (!typeDefObj[table]) {
             typeDefObj[table] = []
         }
@@ -62,7 +62,18 @@ async function getInfoFromSql() {
                 }
             }
             paramStr.push(`${col['COLUMN_NAME']}: ${typeStr}`)
+            if (col['COLUMN_NAME'] === 'id')
+                paramId = `${col['COLUMN_NAME']}: ${typeStr}`
         })
+        if (paramId.length > 0) {
+            typeDefObj['query'].push(`${table}(${paramId}!): ${G.tools.bigCamelCase(table)}\n`)
+            resolvers.Query[`${table}`] = async (_, { id }) => {
+                let rs = await new BaseDao(table).retrieve({ id })
+                return rs.data[0]
+            }
+        } else {
+            G.logger.error(`Table [${table}] must have id field.`)
+        }
         typeDefObj['query'].push(`${table}s(${paramStr.join(', ')}): [${G.tools.bigCamelCase(table)}]\n`)
         resolvers.Query[`${table}s`] = async (_, args) => {
             let rs = await new BaseDao(table).retrieve(args)
