@@ -99,8 +99,9 @@ async function getInfoFromSql() {
         } else {
             G.logger.error(`Table [${table}] must have id field.`)
         }
-        typeDefObj['query'].push(`${G.tools.bigCamelCase(table)}s(${paramStr.join(', ')}): [${G.tools.bigCamelCase(table)}]\n`)
-        resolvers.Query[`${G.tools.bigCamelCase(table)}s`] = async (_, args) => {
+        let complex = table.endsWith('s') ? (table.substr(0, table.length - 1) + 'z') : (table + 's')
+        typeDefObj['query'].push(`${G.tools.bigCamelCase(complex)}(${paramStr.join(', ')}): [${G.tools.bigCamelCase(table)}]\n`)
+        resolvers.Query[`${G.tools.bigCamelCase(complex)}`] = async (_, args) => {
             let rs = await new BaseDao(table).retrieve(args)
             return rs.data
         }
