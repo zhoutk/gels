@@ -91,16 +91,16 @@ async function getInfoFromSql() {
         typeDefObj[table].push('"""求和（sum）结果返回，规定字段名为 sumrs"""sumrs: Int\n')
         typeDefObj[table].push('"""统计（count）结果返回，规定字段名为 countrs"""countrs: Int\n')
         if (paramId.length > 0) {
-            typeDefObj['query'].push(`${table}(${paramId}!): ${G.tools.bigCamelCase(table)}\n`)
-            resolvers.Query[`${table}`] = async (_, { id }) => {
+            typeDefObj['query'].push(`${G.tools.bigCamelCase(table)}(${paramId}!): ${G.tools.bigCamelCase(table)}\n`)
+            resolvers.Query[`${G.tools.bigCamelCase(table)}`] = async (_, { id }) => {
                 let rs = await new BaseDao(table).retrieve({ id })
                 return rs.data[0]
             }
         } else {
             G.logger.error(`Table [${table}] must have id field.`)
         }
-        typeDefObj['query'].push(`${table}s(${paramStr.join(', ')}): [${G.tools.bigCamelCase(table)}]\n`)
-        resolvers.Query[`${table}s`] = async (_, args) => {
+        typeDefObj['query'].push(`${G.tools.bigCamelCase(table)}s(${paramStr.join(', ')}): [${G.tools.bigCamelCase(table)}]\n`)
+        resolvers.Query[`${G.tools.bigCamelCase(table)}s`] = async (_, args) => {
             let rs = await new BaseDao(table).retrieve(args)
             return rs.data
         }
