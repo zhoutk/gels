@@ -6,6 +6,8 @@ const TYPEFROMMYSQLTOGRAPHQL = {
     datetime: 'String',
 }
 
+const NOTMUTATION = ['create_time', 'update_time']
+
 async function getInfoFromSql() {
     let typeDefObj = { query: [], mutation: []}, resolvers = { Query: {}, Mutation: {} }
     let dao = new BaseDao()
@@ -44,6 +46,7 @@ async function getInfoFromSql() {
             '"""统计函数 count 使用，规定返回字段为countrs，如：count=1,countrs"""count: String', 
             '"""模糊匹配与精确匹配切换开关，如： username=jo&search="""search: String'
         ]
+        let paramForMutation = []
         let paramId = ''
         if (!typeDefObj[table]) {
             typeDefObj[table] = []
@@ -80,6 +83,8 @@ async function getInfoFromSql() {
                 typeDefObj[table].unshift(`"""${col['COLUMN_COMMENT']}"""${col['COLUMN_NAME']}: ${typeStr}${col['IS_NULLABLE'] === 'NO' ? '!' : ''}\n`)
             }
             paramStr.unshift(`"""${col['COLUMN_COMMENT']}"""${col['COLUMN_NAME']}: ${typeStr}`)
+            if (!NOTMUTATION.some((al) => al === col['COLUMN_NAME'] ))
+                paramForMutation.unshift(`"""${col['COLUMN_COMMENT']}"""${col['COLUMN_NAME']}: ${typeStr}${col['IS_NULLABLE'] === 'NO' ? '!' : ''}`)
             if (col['COLUMN_NAME'] === 'id')
                 paramId = `${col['COLUMN_NAME']}: ${typeStr}`
         }
@@ -101,8 +106,8 @@ async function getInfoFromSql() {
         }
 
         typeDefObj['mutation'].push(`
-                create${G.tools.bigCamelCase(table)}(${paramStr.slice(1, paramStr.length - 10).join(', ')}):ReviseResult
-                update${G.tools.bigCamelCase(table)}(${paramStr.slice(0, paramStr.length - 10).join(', ')}):ReviseResult
+                create${G.tools.bigCamelCase(table)}(${paramForMutation.slice(1).join(', ')}):ReviseResult
+                update${G.tools.bigCamelCase(table)}(${paramForMutation.join(', ')}):ReviseResult
                 delete${G.tools.bigCamelCase(table)}(${paramId}!):ReviseResult
             `)
         resolvers.Mutation[`create${G.tools.bigCamelCase(table)}`] = async (_, args) => {
