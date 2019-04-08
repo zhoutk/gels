@@ -31,16 +31,14 @@ async function getInfoFromSql() {
     for (let i = 0; i < len; i++) {
         let table = tables.data[i].TABLE_NAME
         let columns = rs[i].data
-        let paramStr = []
+        let paramStr = ['page: Int', 'size: Int', 'sort: String', 'ins: String', 'ors: String', 'lks: String', 'group: String', 'sum: String', 'search: String']
         let paramId = ''
         if (!typeDefObj[table]) {
             typeDefObj[table] = []
         }
         columns.forEach((col) => {
             let typeStr = TYPEFROMMYSQLTOGRAPHQL[G.tools.getStartTillBracket(col['COLUMN_TYPE'])] || 'String'
-            if (!col['COLUMN_NAME'].endsWith('_id')) {
-                typeDefObj[table].push(`${col['COLUMN_NAME']}: ${typeStr}\n`)
-            } else {
+            if (col['COLUMN_NAME'].endsWith('_id')) {
                 typeDefObj[table].push(`${G.L.trimEnd(col['COLUMN_NAME'], '_id')}: ${G.tools.bigCamelCase(G.L.trimEnd(col['COLUMN_NAME'], '_id'))}\n`)
                 resolvers[G.tools.bigCamelCase(table)] = {
                     [G.L.trimEnd(col['COLUMN_NAME'], '_id')]: async (element) => {
@@ -60,8 +58,10 @@ async function getInfoFromSql() {
                         return rs.data
                     }
                 }
+            } else {
+                typeDefObj[table].push(`${col['COLUMN_NAME']}: ${typeStr}${col['IS_NULLABLE'] === 'NO' ? '!' : ''}\n`)
             }
-            paramStr.push(`${col['COLUMN_NAME']}: ${typeStr}`)
+            paramStr.unshift(`${col['COLUMN_NAME']}: ${typeStr}`)
             if (col['COLUMN_NAME'] === 'id')
                 paramId = `${col['COLUMN_NAME']}: ${typeStr}`
         })
