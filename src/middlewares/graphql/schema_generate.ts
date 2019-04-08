@@ -31,6 +31,7 @@ async function getInfoFromSql() {
     for (let i = 0; i < len; i++) {
         let table = tables.data[i].TABLE_NAME
         let columns = rs[i].data
+        G.DataTables[table] = Object.create(null)
         let paramStr = [
             '"""分页参数，第几页，从1开始"""page: Int', 
             '"""分页参数，每页记录数"""size: Int', 
@@ -49,6 +50,7 @@ async function getInfoFromSql() {
         }
         for (let i = columns.length - 1; i >= 0; i--) {
             let col = columns[i]
+            G.DataTables[table][col['COLUMN_NAME']] = G.L.cloneDeep(col) 
             let typeStr = TYPEFROMMYSQLTOGRAPHQL[G.tools.getStartTillBracket(col['COLUMN_TYPE'])] || 'String'
             if (col['COLUMN_NAME'].endsWith('_id')) {
                 typeDefObj[table].unshift(`"""${col['COLUMN_COMMENT']}"""
