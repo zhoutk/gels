@@ -91,8 +91,8 @@ async function getInfoFromSql() {
         typeDefObj[table].push('"""求和（sum）结果返回，规定字段名为 sumrs"""sumrs: Int\n')
         typeDefObj[table].push('"""统计（count）结果返回，规定字段名为 countrs"""countrs: Int\n')
         if (paramId.length > 0) {
-            typeDefObj['query'].push(`${G.tools.bigCamelCase(table)}(${paramId}!): ${G.tools.bigCamelCase(table)}\n`)
-            resolvers.Query[`${G.tools.bigCamelCase(table)}`] = async (_, { id }) => {
+            typeDefObj['query'].push(`${G.tools.smallCamelCase(table)}(${paramId}!): ${G.tools.bigCamelCase(table)}\n`)
+            resolvers.Query[`${G.tools.smallCamelCase(table)}`] = async (_, { id }) => {
                 let rs = await new BaseDao(table).retrieve({ id })
                 return rs.data[0]
             }
@@ -100,8 +100,8 @@ async function getInfoFromSql() {
             G.logger.error(`Table [${table}] must have id field.`)
         }
         let complex = table.endsWith('s') ? (table.substr(0, table.length - 1) + 'z') : (table + 's')
-        typeDefObj['query'].push(`${G.tools.bigCamelCase(complex)}(${paramStr.join(', ')}): [${G.tools.bigCamelCase(table)}]\n`)
-        resolvers.Query[`${G.tools.bigCamelCase(complex)}`] = async (_, args) => {
+        typeDefObj['query'].push(`${G.tools.smallCamelCase(complex)}(${paramStr.join(', ')}): [${G.tools.bigCamelCase(table)}]\n`)
+        resolvers.Query[`${G.tools.smallCamelCase(complex)}`] = async (_, args) => {
             let rs = await new BaseDao(table).retrieve(args)
             return rs.data
         }
