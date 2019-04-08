@@ -7,7 +7,7 @@ const TYPEFROMMYSQLTOGRAPHQL = {
 }
 
 async function getInfoFromSql() {
-    let typeDefObj = { query: []}, resolvers = { Query: {} }
+    let typeDefObj = { query: [], mutation: []}, resolvers = { Query: {}, Mutation: {} }
     let dao = new BaseDao()
     let tables = await dao.querySql('select TABLE_NAME,TABLE_COMMENT from information_schema.`TABLES` ' +
         ' where TABLE_SCHEMA = ? and TABLE_TYPE = ? and substr(TABLE_NAME,1,2) <> ? order by ?',
@@ -97,6 +97,24 @@ async function getInfoFromSql() {
             let rs = await new BaseDao(table).retrieve(args)
             return rs.data
         }
+
+        typeDefObj['mutation'].push(`
+                create${G.tools.bigCamelCase(table)}(${paramStr.slice(1, paramStr.length - 10).join(', ')}):ReviseResult
+                update${G.tools.bigCamelCase(table)}(${paramStr.slice(0, paramStr.length - 10).join(', ')}):ReviseResult
+                delete${G.tools.bigCamelCase(table)}(${paramId}!):ReviseResult
+            `)
+        resolvers.Mutation[`create${G.tools.bigCamelCase(table)}`] = async (_, args) => {
+            let rs = await new BaseDao(table).create(args)
+            return rs
+        }
+        resolvers.Mutation[`update${G.tools.bigCamelCase(table)}`] = async (_, args) => {
+            let rs = await new BaseDao(table).update(args)
+            return rs
+        }
+        resolvers.Mutation[`delete${G.tools.bigCamelCase(table)}`] = async (_, { id }) => {
+            let rs = await new BaseDao(table).delete({ id })
+            return rs
+        }
     }
     let typeDefs = Object.entries(typeDefObj).reduce((total, cur) => {
         return total += `
@@ -105,6 +123,14 @@ async function getInfoFromSql() {
             }
         `
     }, '')
+    typeDefs += `
+        type ReviseResult {
+            id: Int
+            affectedRows: Int
+            status: Int
+            message: String
+        }
+    `
     return { typeDefs, resolvers }
 }
 
