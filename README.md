@@ -16,6 +16,7 @@ gels -- 凝胶，希冀该项目能成为联结设计、开发，前端、后端
 - [默认路由](#默认路由)
 - [中间件](#中间件)
 - [restful api](#restful_api)
+- [graphql](#graphql)
 - [智能查询](#智能查询)
 - [高级操作](#高级操作)
 - [相关视频资料](#相关视频资料)
@@ -148,6 +149,9 @@ gels -- 凝胶，希冀该项目能成为联结设计、开发，前端、后端
 - /op/:command，只支持POST请求，不鉴权，提供登录等特定服务支持
     - login，登录接口；输入参数{username, password}；登录成功返回参数：{status:200, token}
 - /rs/:table[/:id]，支持四种restful请求，GET, POST, PUT, DELELTE，除GET外，其它请求检测是否授权
+- /graphql ,以apollo-server库实现graphql
+- /gql ,以koa-graphql库实现graphql
+
 
 ## 中间件
 - globalError，全局错误处理中间件
@@ -161,6 +165,63 @@ gels -- 凝胶，希冀该项目能成为联结设计、开发，前端、后端
 - [POST] /rs/users, 新增记录
 - [PUT] /rs/users/{id}, 修改记录
 - [DELETE] /rs/users/{id}, 删除记录
+
+## graphql
+	框架会根据数据表及特殊业务文件自动生成schema。
+> 一些数据库设计原则约定
+
+- 每个表必须有字段id（类型为整数或字符串），作为主键或建立unique索引
+- 表名为小写字母，以下划作为单词分隔
+- 表关联约定：book关联到author，表book中关联字段设为author_id，关联到author.id
+- 表关联自动在相关中嵌入相关对象，Book对象增加Author对象，Author对象增加books列表
+- 特殊业务处理请按照/src/graphql目录中的模式进行编写，框架会自动合并业务
+
+> 测试用数据库脚本
+
+```
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for author
+-- ----------------------------
+DROP TABLE IF EXISTS `author`;
+CREATE TABLE `author` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of author
+-- ----------------------------
+BEGIN;
+INSERT INTO `author` VALUES (1, 'john');
+INSERT INTO `author` VALUES (2, 'white');
+COMMIT;
+
+-- ----------------------------
+-- Table structure for book
+-- ----------------------------
+DROP TABLE IF EXISTS `book`;
+CREATE TABLE `book` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键，自增',
+  `title` varchar(255) NOT NULL COMMENT '书名',
+  `author_id` int(11) DEFAULT NULL COMMENT '作者ID',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of book
+-- ----------------------------
+BEGIN;
+INSERT INTO `book` VALUES (1, 'learn mysql', 1);
+INSERT INTO `book` VALUES (2, 'learn graphql', 1);
+INSERT INTO `book` VALUES (3, 'javascript practice', 2);
+COMMIT;
+
+SET FOREIGN_KEY_CHECKS = 1;
+```
 
 ## 智能查询
 > 查询保留字：fields, page, size, sort, search, lks, ins, ors, count, sum, group
