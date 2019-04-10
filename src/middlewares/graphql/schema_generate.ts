@@ -56,7 +56,7 @@ async function getInfoFromSql() {
             G.DataTables[table][col['COLUMN_NAME']] = G.L.cloneDeep(col) 
             let typeStr = TYPEFROMMYSQLTOGRAPHQL[G.tools.getStartTillBracket(col['COLUMN_TYPE'])] || 'String'
             if (col['COLUMN_NAME'].endsWith('_id')) {
-                typeDefObj[table].unshift(`"""${col['COLUMN_COMMENT']}"""
+                typeDefObj[table].unshift(`"""关联的实体"""
                     ${G.L.trimEnd(col['COLUMN_NAME'], '_id')}: ${G.tools.bigCamelCase(G.L.trimEnd(col['COLUMN_NAME'], '_id'))}`)
                 resolvers[G.tools.bigCamelCase(table)] = {
                     [G.L.trimEnd(col['COLUMN_NAME'], '_id')]: async (element) => {
@@ -70,7 +70,7 @@ async function getInfoFromSql() {
                     typeDefObj[fTable] = []
                 }
                 if (typeDefObj[fTable].length >= 2)
-                    typeDefObj[fTable].splice(typeDefObj[fTable].length - 2, 0, `${table}s: [${G.tools.bigCamelCase(table)}]\n`)
+                    typeDefObj[fTable].splice(typeDefObj[fTable].length - 2, 0, `"""关联实体集合"""${table}s: [${G.tools.bigCamelCase(table)}]\n`)
                 else 
                     typeDefObj[fTable].push(`${table}s: [${G.tools.bigCamelCase(table)}]\n`)
                 resolvers[G.tools.bigCamelCase(fTable)] = {
