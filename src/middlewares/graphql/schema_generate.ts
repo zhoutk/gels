@@ -1,5 +1,6 @@
 import BaseDao from '../../db/baseDao'
 import { customDefs, queryDefs, customResolvers } from '../../graphql/reviseResult'
+let requireDir = require('require-dir')
 
 const TYPEFROMMYSQLTOGRAPHQL = {
     int: 'Int',
@@ -125,16 +126,25 @@ async function getInfoFromSql() {
             return rs
         }
     }
-    typeDefObj.query = typeDefObj.query.concat(queryDefs)
-    let typeDefs = Object.entries(typeDefObj).reduce((total, cur) => {
+
+    let typeDefs = ''
+    let dirGraphql = requireDir('../../graphql')
+    G.L.each(dirGraphql, (item, name) => {
+        if (item && item.customDefs && item.queryDefs && item.customResolvers) {
+            typeDefs += item.customDefs
+            typeDefObj.query = typeDefObj.query.concat(item.queryDefs)
+            Object.assign(resolvers.Query, item.customResolvers.Query)
+        }
+    })
+
+    typeDefs += Object.entries(typeDefObj).reduce((total, cur) => {
         return total += `
             type ${G.tools.bigCamelCase(cur[0])} {
                 ${cur[1].join('')}
             }
         `
     }, '')
-    Object.assign(resolvers.Query, customResolvers.Query)
-    return { typeDefs: [customDefs, typeDefs], resolvers }
+    return { typeDefs, resolvers }
 }
 
 export { getInfoFromSql } 
