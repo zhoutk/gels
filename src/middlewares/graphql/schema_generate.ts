@@ -133,9 +133,8 @@ async function getInfoFromSql() {
             }
         `
     }, '')
-    
-    let rsss = Object.assign(resolvers.Query, customResolvers.Query)
-    return { typeDefs: [customDefs, typeDefs], resolvers: rsss }
+    Object.assign(resolvers.Query, customResolvers.Query)
+    return { typeDefs: [customDefs, typeDefs], resolvers }
 }
 
 export { getInfoFromSql } 
