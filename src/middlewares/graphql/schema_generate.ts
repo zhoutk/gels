@@ -1,11 +1,13 @@
 import BaseDao from '../../db/baseDao'
-import { customDefs, queryDefs, customResolvers } from '../../graphql/reviseResult'
 let requireDir = require('require-dir')
 
 const TYPEFROMMYSQLTOGRAPHQL = {
     int: 'Int',
     varchar: 'String',
     datetime: 'String',
+    double: 'Float',
+    float: 'Float',
+    decimal: 'Float',
 }
 
 const NOTMUTATION = ['create_time', 'update_time']

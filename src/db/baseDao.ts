@@ -32,12 +32,13 @@ export default class BaseDao {
         else {
             let rs, id = params['id']
             try {
-                if (!id && params['uuid']) {
-                    id = G.tools.uuid()
-                    delete params['uuid']
-                } else if (params['uuid']) {
-                    delete params['uuid']
-                }
+                if (!id) {
+                    let idType = G.DataTables[this.table]['id']['COLUMN_TYPE']
+                    let leftBracket = idType.indexOf('(')
+                    if (leftBracket > 3 && idType.substr(leftBracket - 3, 3) !== 'int') {
+                        id = G.tools.uuid()
+                    }
+                } 
                 rs = await BaseDao.dao.insert(this.table, Object.assign(params, id ? { id } : {}))
             } catch (err) {
                 err.message = `data insert fail: ${err.message}`
