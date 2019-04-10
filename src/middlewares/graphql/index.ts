@@ -1,9 +1,11 @@
 import { getInfoFromSql } from './schema_generate'
 const { ApolloServer } = require('apollo-server-koa')
 const { makeExecutableSchema } = require('graphql-tools')
+import { customDefs } from '../../graphql/reviseResult'
 
 export default async (app) => {
-  let { typeDefs, resolvers } = await getInfoFromSql()
+  let { autoTypeDefs, resolvers } = await getInfoFromSql()
+  let typeDefs = [customDefs, autoTypeDefs]
   const schema = makeExecutableSchema({
     typeDefs,
     resolvers,

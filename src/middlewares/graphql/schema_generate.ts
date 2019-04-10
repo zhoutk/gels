@@ -131,15 +131,8 @@ async function getInfoFromSql() {
             }
         `
     }, '')
-    typeDefs += `
-        type ReviseResult {
-            id: Int
-            affectedRows: Int
-            status: Int
-            message: String
-        }
-    `
-    return { typeDefs, resolvers }
+    
+    return { autoTypeDefs: typeDefs, resolvers }
 }
 
 export { getInfoFromSql } 
