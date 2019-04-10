@@ -1,3 +1,5 @@
+import BaseDao from '../db/baseDao'
+
 const customDefs = `
     type ReviseResult {
         id: Int
@@ -5,8 +7,23 @@ const customDefs = `
         status: Int
         message: String
     }
+
+    type Post {
+        id: Int!
+        title: String
+    }
+
 `
 
-const customResolvers = {}
+let queryDefs = ['posts: [Post]']
 
-export { customDefs, customResolvers }
+const customResolvers = {
+    Query: {
+        posts: async () => {
+            let rs = await new BaseDao('book').retrieve({})
+            return rs.data
+        }
+    }
+}
+
+export { customDefs, queryDefs, customResolvers }

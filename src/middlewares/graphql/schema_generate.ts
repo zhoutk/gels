@@ -1,4 +1,5 @@
 import BaseDao from '../../db/baseDao'
+import { customDefs, queryDefs, customResolvers } from '../../graphql/reviseResult'
 
 const TYPEFROMMYSQLTOGRAPHQL = {
     int: 'Int',
@@ -124,6 +125,7 @@ async function getInfoFromSql() {
             return rs
         }
     }
+    typeDefObj.query = typeDefObj.query.concat(queryDefs)
     let typeDefs = Object.entries(typeDefObj).reduce((total, cur) => {
         return total += `
             type ${G.tools.bigCamelCase(cur[0])} {
@@ -132,7 +134,8 @@ async function getInfoFromSql() {
         `
     }, '')
     
-    return { autoTypeDefs: typeDefs, autoResolvers: resolvers }
+    let rsss = Object.assign(resolvers.Query, customResolvers.Query)
+    return { typeDefs: [customDefs, typeDefs], resolvers: rsss }
 }
 
 export { getInfoFromSql } 
