@@ -132,7 +132,7 @@ async function getInfoFromSql() {
         `
     }, '')
     
-    return { autoTypeDefs: typeDefs, resolvers }
+    return { autoTypeDefs: typeDefs, autoResolvers: resolvers }
 }
 
 export { getInfoFromSql } 

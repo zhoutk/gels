@@ -1,4 +1,4 @@
-export const customDefs = `
+const customDefs = `
     type ReviseResult {
         id: Int
         affectedRows: Int
@@ -6,3 +6,7 @@ export const customDefs = `
         message: String
     }
 `
+
+const customResolvers = {}
+
+export { customDefs, customResolvers }
