@@ -1,14 +1,21 @@
-const customDefs = `
-    type ReviseResult {
-        id: Int
-        affectedRows: Int
-        status: Int
-        message: String
+const customDefs = {
+    textDefs: `
+        type ReviseResult {
+            id: Int
+            affectedRows: Int
+            status: Int
+            message: String
+        }
+    `,
+    queryDefs: [],
+    mutationDefs: []
+}
+
+const customResolvers = { 
+    Query: {
+    },
+    Mutation: {
     }
-`
+ }
 
-let queryDefs = []
-
-const customResolvers = { Query: {} }
-
-export { customDefs, queryDefs, customResolvers }
+export { customDefs, customResolvers }

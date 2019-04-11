@@ -129,23 +129,27 @@ async function getInfoFromSql() {
         }
     }
 
-    let typeDefs = ''
+    let typeDefs = []
     let dirGraphql = requireDir('../../graphql')
     G.L.each(dirGraphql, (item, name) => {
-        if (item && item.customDefs && item.queryDefs && item.customResolvers) {
-            typeDefs += item.customDefs
-            typeDefObj.query = typeDefObj.query.concat(item.queryDefs)
-            Object.assign(resolvers.Query, item.customResolvers.Query)
+        if (item && item.customDefs && item.customResolvers) {
+            typeDefs.push(item.customDefs.textDefs || '')
+            typeDefObj.query = typeDefObj.query.concat(item.customDefs.queryDefs || [])
+            typeDefObj.mutation = typeDefObj.mutation.concat(item.customDefs.mutationDefs || [])
+            let { Query, Mutation, ...Other } = item.customResolvers
+            Object.assign(resolvers.Query, Query)
+            Object.assign(resolvers.Mutation, Mutation)
+            Object.assign(resolvers, Other)
         }
     })
 
-    typeDefs += Object.entries(typeDefObj).reduce((total, cur) => {
+    typeDefs.push(Object.entries(typeDefObj).reduce((total, cur) => {
         return total += `
             type ${G.tools.bigCamelCase(cur[0])} {
                 ${cur[1].join('')}
             }
         `
-    }, '')
+    }, ''))
     return { typeDefs, resolvers }
 }
 
