@@ -63,8 +63,9 @@ async function getInfoFromSql() {
                 typeDefObj[table].unshift(`"""关联的实体"""
                     ${G.L.trimEnd(col['COLUMN_NAME'], '_id')}: ${G.tools.bigCamelCase(G.L.trimEnd(col['COLUMN_NAME'], '_id'))}`)
                 resolvers[G.tools.bigCamelCase(table)] = {
-                    [G.L.trimEnd(col['COLUMN_NAME'], '_id')]: async (element) => {
-                        let rs = await new BaseDao(G.L.trimEnd(col['COLUMN_NAME'], '_id')).retrieve({ id: element[col['COLUMN_NAME']] })
+                    [G.L.trimEnd(col['COLUMN_NAME'], '_id')]: async (element, args, ctx, info) => {
+                        let fields = G.tools.getRequestedFieldsFromResolveInfo(table, info.fieldNodes[0])
+                        let rs = await new BaseDao(G.L.trimEnd(col['COLUMN_NAME'], '_id')).retrieve({ id: element[col['COLUMN_NAME']] }, fields)
                         return rs.data[0]
                     }
                 }
@@ -78,8 +79,9 @@ async function getInfoFromSql() {
                 else 
                     typeDefObj[fTable].push(`${table}s: [${G.tools.bigCamelCase(table)}]\n`)
                 resolvers[G.tools.bigCamelCase(fTable)] = {
-                    [`${table}s`]: async (element) => {
-                        let rs = await new BaseDao(table).retrieve({ [col['COLUMN_NAME']]: element.id})
+                    [`${table}s`]: async (element, args, ctx, info) => {
+                        let fields = G.tools.getRequestedFieldsFromResolveInfo(table, info.fieldNodes[0])
+                        let rs = await new BaseDao(table).retrieve({ [col['COLUMN_NAME']]: element.id}, fields)
                         return rs.data
                     }
                 }
@@ -96,8 +98,9 @@ async function getInfoFromSql() {
         typeDefObj[table].push('"""统计（count）结果返回，规定字段名为 countrs"""countrs: Int\n')
         if (paramId.length > 0) {
             typeDefObj['query'].push(`${G.tools.smallCamelCase(table)}(${paramId}!): ${G.tools.bigCamelCase(table)}\n`)
-            resolvers.Query[`${G.tools.smallCamelCase(table)}`] = async (_, { id }) => {
-                let rs = await new BaseDao(table).retrieve({ id })
+            resolvers.Query[`${G.tools.smallCamelCase(table)}`] = async (_, { id }, ctx, info) => {
+                let fields = G.tools.getRequestedFieldsFromResolveInfo(table, info.fieldNodes[0])
+                let rs = await new BaseDao(table).retrieve({ id }, fields)
                 return rs.data[0]
             }
         } else {
