@@ -1,6 +1,23 @@
 import * as uuid from 'uuid'
 
 export default class GlobUtils {
+    getRequestedFieldsFromResolveInfo(table: string, info: any) {
+        let fieldStr = info && info.selectionSet && info.selectionSet.selections || []
+        let fields = ['id']
+        fieldStr.forEach((al) => {
+            let fieldName = al.name.value, realFieldName = G.DataTables[table][fieldName]
+            if (fieldName !== 'id') {
+                if (al.selectionSet && !realFieldName) {
+                    realFieldName = G.DataTables[table][fieldName + '_id']
+                    if (realFieldName)
+                        fields.push(fieldName + '_id')
+                } else {
+                    fields.push(fieldName)
+                }
+            }
+        })
+        return fields
+    }
     getStartTillBracket(str: string) {
         return str.indexOf('(') > -1 ? str.substr(0, str.indexOf('(')) : str
     }
