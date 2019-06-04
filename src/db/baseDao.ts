@@ -33,6 +33,10 @@ export default class BaseDao {
             let rs, id = params['id']
             try {
                 if (!id) {
+                    if (!G.DataTables[this.table])
+                        return G.jsResponse(G.STCODES.DATABASENEEDRESTART, 'database tables had modify, you should restart server.')
+                    if (!G.DataTables[this.table]['id'])
+                        return G.jsResponse(G.STCODES.DATABASENEEDID, 'database tables need id field.')
                     let idType = G.DataTables[this.table]['id']['COLUMN_TYPE']
                     let leftBracket = idType.indexOf('(')
                     if (leftBracket > 3 && idType.substr(leftBracket - 3, 3) !== 'int') {

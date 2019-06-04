@@ -3,7 +3,7 @@ import * as uuid from 'uuid'
 export default class GlobUtils {
     getRequestedFieldsFromResolveInfo(table: string, info: any) {
         let fieldStr = info && info.selectionSet && info.selectionSet.selections || []
-        if (fieldStr.length === 0)
+        if (fieldStr.length === 0 || !G.DataTables[table])
             return []
         let fields = ['id']
         fieldStr.forEach((al) => {
