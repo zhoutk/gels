@@ -28,15 +28,15 @@ export default class BaseDao {
     async create(params = {}, fields = [], session = { userid: '' }): Promise<any> {
         let keys = Object.keys(params)
         if (keys.length === 0 || params['id'] !== undefined && keys.length <= 1)
-            return G.jsResponse(G.STCODES.PRAMAERR, 'params is error.')
+            return G.jsResponse(G.STCODES.PARAMERR, 'params is error.')
         else {
             let rs, id = params['id']
             try {
                 if (!id) {
                     if (!G.DataTables[this.table])
-                        return G.jsResponse(G.STCODES.DATABASENEEDRESTART, 'database tables had modify, you should restart server.')
+                        return G.jsResponse(G.STCODES.DBNEEDRESTARTERR, 'database tables had modify, you should restart server.')
                     if (!G.DataTables[this.table]['id'])
-                        return G.jsResponse(G.STCODES.DATABASENEEDID, 'database tables need id field.')
+                        return G.jsResponse(G.STCODES.DBNEEDIDERR, 'database tables need id field.')
                     let idType = G.DataTables[this.table]['id']['COLUMN_TYPE']
                     let leftBracket = idType.indexOf('(')
                     if (leftBracket > 3 && idType.substr(leftBracket - 3, 3) !== 'int') {
@@ -56,7 +56,7 @@ export default class BaseDao {
         params = params || {}
         let keys = Object.keys(params)
         if (params['id'] === undefined || keys.length <= 1)
-            return G.jsResponse(G.STCODES.PRAMAERR, 'params is error.')
+            return G.jsResponse(G.STCODES.PARAMERR, 'params is error.')
         else {
             const { id, ...restParams } = params
             let rs
@@ -72,7 +72,7 @@ export default class BaseDao {
     }
     async delete(params = {}, fields = [], session = { userid: '' }): Promise<any> {
         if (params['id'] === undefined)
-            return G.jsResponse(G.STCODES.PRAMAERR, 'params is error.')
+            return G.jsResponse(G.STCODES.PARAMERR, 'params is error.')
         else {
             let id = params['id']
             let rs

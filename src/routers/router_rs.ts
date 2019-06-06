@@ -22,7 +22,7 @@ export default (() => {
         if (fields) {
             fields = G.tools.arryParse(fields)
             if (!fields) {
-                throw G.koaError(ctx, G.STCODES.PRAMAERR, 'params fields is wrong.')
+                throw G.koaError(ctx, G.STCODES.PARAMERR, 'params fields is wrong.')
             }
         }
 
@@ -46,7 +46,7 @@ export default (() => {
             let db = new module.default(tableName)
             rs = await db[METHODS[method]](restParams, fields, ctx.session)
         } catch (err) {
-            rs = G.jsResponse(G.STCODES.EXCEPTION, err.message, {stack: err.stack})
+            rs = G.jsResponse(G.STCODES.EXCEPTIONERR, err.message, {stack: err.stack})
         }
         ctx.body = rs
         // ctx.body = await new BaseDao().execSql("insert into users (username, password, age) values (?,?,?) ", ['alice', 122, 16])          //test execSql create

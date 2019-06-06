@@ -2,7 +2,8 @@ import * as lodash from 'lodash'
 import * as Bluebird from 'bluebird'
 import GlobUtils from '../common/globUtils'
 import CONFIGS from '../config/configs'
-import STCODES from './enums'
+import {STCODES} from './enums'
+import {STMESSAGES} from './enums'
 import { configure, getLogger} from 'log4js'
 import logCfg from '../config/log4js'
 
@@ -21,9 +22,9 @@ let GlobVar = {
     })(),
     jsResponse(status: Number, message = '', data?: any) {
         if (Array.isArray(data))
-            return { status, message, data }
+            return { status, message: message === '' ? (STMESSAGES[status.toString()] || '') : message, data }
         else
-            return Object.assign({}, data, { status, message })
+            return Object.assign({}, data, { status, message: message === '' ? (STMESSAGES[status.toString()] || '') : message })
     },
     tools: new GlobUtils(),
     CONFIGS,
@@ -39,7 +40,7 @@ async function globInit() {
 
 class KoaErr extends Error {
     public status: Number
-    constructor({ message = 'Error', status = G.STCODES.EXCEPTION } = {}, ...args) {
+    constructor({ message = 'Error', status = G.STCODES.EXCEPTIONERR } = {}, ...args) {
         super()
         this.message = message
         this.status = status

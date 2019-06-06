@@ -26,7 +26,7 @@ export default (() => {
                 }
                 break
             default:
-                ctx.body = G.jsResponse(G.STCODES.NOTFOUND, 'command is not found.')
+                ctx.body = G.jsResponse(G.STCODES.NOTFOUNDERR, 'command is not found.')
                 break
         }
     }
