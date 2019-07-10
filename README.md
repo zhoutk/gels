@@ -3,7 +3,7 @@
 
 A framework,  which use koa2, mysql, graphql &amp; typescript , to build micro service rapidly, safely &amp; efficiently.
 
-gels -- 凝胶，希冀该项目能成为联结设计、开发，前端、后端的“强力胶水”，成为微服务快速开发的有力框架。
+[gels -- 凝胶][6]，希冀该项目能成为联结设计、开发，前端、后端的“强力胶水”，成为微服务快速开发的有力框架。
 
 ## 设计思路
 中小型企业，更多的是注重快速开发、功能迭代。关系数据库为我们提供了很多有用的支持，我试图把数据库设计与程序开发有机的结合起来，让前端送到后端的json对象自动映射成为标准的SQL查询语句。我的这种ORM方式，服务端不需要写一行代码，只需完成关系数据库的设计，就能为前端提供标准服务接口。  
@@ -424,3 +424,5 @@ SET FOREIGN_KEY_CHECKS = 1;
   [3]: https://segmentfault.com/l/1500000017108031
   [4]: https://segmentfault.com/l/1500000017274102
   [5]: https://segmentfault.com/l/1500000017329004
+  
+  [6]: https://github.com/zhoutk/gels 
