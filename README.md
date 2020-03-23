@@ -19,7 +19,7 @@ A framework,  which use koa2, mysql, graphql &amp; typescript , to build micro s
 - [graphql](#graphql)
 - [智能查询](#智能查询)
 - [高级操作](#高级操作)
-- [相关视频资料](#相关视频资料)
+- [相关视频资料](#相关视频课程)
 
 ## 安装运行 
 - 运行数据脚本
