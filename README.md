@@ -9,17 +9,25 @@ A framework,  which use koa2, mysql, graphql &amp; typescript , to build micro s
 中小型企业，更多的是注重快速开发、功能迭代。关系数据库为我们提供了很多有用的支持，我试图把数据库设计与程序开发有机的结合起来，让前端送到后端的json对象自动映射成为标准的SQL查询语句。我的这种ORM方式，服务端不需要写一行代码，只需完成关系数据库的设计，就能为前端提供标准服务接口。  
 我设计了一套数据库访问标准接口，在实践中已经得到很好的运用。我已经在es6, typescript, java, python & go中实现；下一步是对数据库支持的扩展，准备支持流行的关系数据库（Mssql, sqlite3, prostgres等），有选择支持一些nosql，比如：mongo。  
 
+## 更新状态
+
+更新所有依赖库，apollo-server-koa 升级到版本3，并适配完成。
+
 ## 内容目录
+- [项目介绍](#项目介绍)
+- [设计思路](#设计思路)
+- [更新状态](#更新状态)
+- [内容目录](#内容目录)
 - [安装运行](#安装运行)
 - [项目结构](#项目结构)
 - [数据库接口设计](#数据库接口设计)
 - [默认路由](#默认路由)
 - [中间件](#中间件)
-- [restful api](#restful_api)
+- [restful_api](#restful_api)
 - [graphql](#graphql)
 - [智能查询](#智能查询)
 - [高级操作](#高级操作)
-- [相关视频资料](#相关视频课程)
+- [相关视频课程](#相关视频课程)
 
 ## 安装运行 
 - 运行数据脚本
@@ -85,8 +93,8 @@ A framework,  which use koa2, mysql, graphql &amp; typescript , to build micro s
     git clone https://github.com/zhoutk/gels
     cd gels
     npm i -g yarn
-    yarn global install typescript tslint nodemon
-    yarn install
+    yarn global add typescript tslint nodemon
+    yarn add
     tsc -w          //或 command + shift + B，选 tsc:监视
     yarn start      //或 node ./dist/index.js
     ```
