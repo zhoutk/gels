@@ -17,12 +17,12 @@ export default () => {
                 if (ctx.method === 'GET' || !isAuth) {
                     return await next()
                 }
-                if (err.name === 'TokenExpiredError') {
+                if ((err as Error).name === 'TokenExpiredError') {
                     ctx.body = G.jsResponse(G.STCODES.JWTAUTHERR, 'Token Expired.')
-                } else if (err.name === 'JsonWebTokenError') {
+                } else if ((err as Error).name === 'JsonWebTokenError') {
                     ctx.body = G.jsResponse(G.STCODES.JWTAUTHERR, 'Invalid Token.')
                 } else {
-                    ctx.body = G.jsResponse(G.STCODES.JWTAUTHERR, err.message)
+                    ctx.body = G.jsResponse(G.STCODES.JWTAUTHERR, (err as Error).message)
                 }
             }
         } else {

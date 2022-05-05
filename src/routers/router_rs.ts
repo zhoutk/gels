@@ -46,7 +46,7 @@ export default (() => {
             let db = new module.default(tableName)
             rs = await db[METHODS[method]](restParams, fields, ctx.session)
         } catch (err) {
-            rs = G.jsResponse(G.STCODES.EXCEPTIONERR, err.message, {stack: err.stack})
+            rs = G.jsResponse(G.STCODES.EXCEPTIONERR, (err as Error).message, {stack: (err as Error).stack})
         }
         ctx.body = rs
         // ctx.body = await new BaseDao().execSql("insert into users (username, password, age) values (?,?,?) ", ['alice', 122, 16])          //test execSql create
@@ -60,8 +60,8 @@ function loadModule(path: string) {
     try {
         return require(path)
     } catch (err) {
-        if (err.message.indexOf('Cannot find module') < 0)
-            G.logger.error(err.message)
+        if ((err as Error).message.indexOf('Cannot find module') < 0)
+            G.logger.error((err as Error).message)
         return null
     }
 }

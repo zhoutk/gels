@@ -1,7 +1,7 @@
 import * as Router from 'koa-router'
 import BaseDao from '../db/baseDao'
 import { GraphQLString, GraphQLObjectType, GraphQLSchema, GraphQLList, GraphQLInt } from 'graphql'
-const graphqlHTTP = require('koa-graphql')
+const graphqlHTTP = require('koa-graphql').graphqlHTTP
 
 let router = new Router()
 

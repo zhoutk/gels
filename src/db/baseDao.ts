@@ -17,7 +17,7 @@ export default class BaseDao {
         try {
             rs = await BaseDao.dao.select(this.table, params, fields)
         } catch (err) {
-            err.message = `data query fail: ${err.message}`
+            (err as Error).message = `data query fail: ${(err as Error).message}`
             return err
         }
         if (rs.status === G.STCODES.SUCCESS && (!rs.data || rs.data.length === 0))
@@ -45,7 +45,7 @@ export default class BaseDao {
                 } 
                 rs = await BaseDao.dao.insert(this.table, Object.assign(params, id ? { id } : {}))
             } catch (err) {
-                err.message = `data insert fail: ${err.message}`
+                (err as Error).message = `data insert fail: ${(err as Error).message}`
                 return err
             }
             let { affectedRows } = rs
@@ -63,7 +63,7 @@ export default class BaseDao {
             try {
                 rs = await BaseDao.dao.update(this.table, restParams, id)
             } catch (err) {
-                err.message = `data update fail: ${err.message}`
+                (err as Error).message = `data update fail: ${(err as Error).message}`
                 return err
             }
             let { affectedRows } = rs
@@ -79,7 +79,7 @@ export default class BaseDao {
             try {
                 rs = await BaseDao.dao.delete(this.table, id)
             } catch (err) {
-                err.message = `data delete fail: ${err.message}`
+                (err as Error).message = `data delete fail: ${(err as Error).message}`
                 return err
             }
             let { affectedRows } = rs
@@ -91,7 +91,7 @@ export default class BaseDao {
         try {
             rs = await BaseDao.dao.querySql(sql, values, params, fields)
         } catch (err) {
-            err.message = `data querySql fail: ${err.message}`
+            (err as Error).message = `data querySql fail: ${(err as Error).message}`
             return err
         }
         if (rs.status === G.STCODES.SUCCESS && (!rs.data || rs.data.length === 0))
@@ -104,7 +104,7 @@ export default class BaseDao {
         try {
             rs = await BaseDao.dao.execSql(sql, values)
         } catch (err) {
-            err.message = `data execSql fail: ${err.message}`
+            (err as Error).message = `data execSql fail: ${(err as Error).message}`
             return err
         }
         let { affectedRows } = rs
@@ -115,7 +115,7 @@ export default class BaseDao {
         try {
             rs = await BaseDao.dao.insertBatch(tablename, elements)
         } catch (err) {
-            err.message = `data batch fail: ${err.message}`
+            (err as Error).message = `data batch fail: ${(err as Error).message}`
             return err
         }
         let { affectedRows } = rs
@@ -126,7 +126,7 @@ export default class BaseDao {
         try {
             rs = await BaseDao.dao.transGo(elements, isAsync)
         } catch (err) {
-            err.message = `data trans fail: ${err.message}`
+            (err as Error).message = `data trans fail: ${(err as Error).message}`
             return err
         }
         let { affectedRows } = rs

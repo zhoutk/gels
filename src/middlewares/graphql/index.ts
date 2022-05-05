@@ -13,6 +13,7 @@ export default async (app) => {
       })
     })
   }
+  await G.ApolloServer.start();
   G.ApolloServer.applyMiddleware({ app })
 }
 
