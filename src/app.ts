@@ -17,7 +17,7 @@ export default {
       'bodyParser', //body解析
       'rewrite', //url重写
       'static',
-      ['graphql', app],
+      //['graphql', app],
       'router',
     ]
     for (let n of middlewares) {
