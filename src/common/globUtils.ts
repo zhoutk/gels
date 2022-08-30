@@ -21,12 +21,12 @@ export default class GlobUtils {
         return fields
     }
     getStartTillBracket(str: string) {
-        return str.indexOf('(') > -1 ? str.substr(0, str.indexOf('(')) : str
+        return str.indexOf('(') > -1 ? str.substring(0, str.indexOf('(')) : str
     }
     bigCamelCase(str: string) {
         return str.split('_').map((al) => {
             if (al.length > 0) {
-                return al.substr(0, 1).toUpperCase() + al.substr(1).toLowerCase()
+                return al.substring(0, 1).toUpperCase() + al.substring(1).toLowerCase()
             }
             return al
         }).join('')
@@ -38,7 +38,7 @@ export default class GlobUtils {
         } else {
             let tail = strs.slice(1).map((al) => {
                 if (al.length > 0) {
-                    return al.substr(0, 1).toUpperCase() + al.substr(1).toLowerCase()
+                    return al.substring(0, 1).toUpperCase() + al.substring(1).toLowerCase()
                 }
                 return al
             }).join('')

@@ -106,7 +106,7 @@ async function getInfoFromSql() {
         } else {
             G.logger.error(`Table [${table}] must have id field.`)
         }
-        let complex = table.endsWith('s') ? (table.substr(0, table.length - 1) + 'z') : (table + 's')
+        let complex = table.endsWith('s') ? (table.substring(0, table.length - 1) + 'z') : (table + 's')
         typeDefObj['query'].push(`${G.tools.smallCamelCase(complex)}(${paramStr.join(', ')}): [${G.tools.bigCamelCase(table)}]\n`)
         resolvers.Query[`${G.tools.smallCamelCase(complex)}`] = async (_, args, ctx, info) => {
             let fields = G.tools.getRequestedFieldsFromResolveInfo(table, info.fieldNodes[0])

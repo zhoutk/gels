@@ -274,7 +274,7 @@ export default class MysqlDao implements IDao {
                             values.push(vls[3])
                         } else {
                             if (where.endsWith(AndJoinStr))
-                                where = where.substr(0, where.length - AndJoinStr.length)
+                                where = where.substring(0, where.length - AndJoinStr.length)
                         }
                     } else if (search !== undefined) {
                         value = pool.escape(value).replace(/\', \'/g, "%' and " + key + " like '%")

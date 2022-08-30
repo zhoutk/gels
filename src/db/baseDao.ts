@@ -39,7 +39,7 @@ export default class BaseDao {
                         return G.jsResponse(G.STCODES.DBNEEDIDERR, 'database tables need id field.')
                     let idType = G.DataTables[this.table]['id']['COLUMN_TYPE']
                     let leftBracket = idType.indexOf('(')
-                    if (leftBracket > 3 && idType.substr(leftBracket - 3, 3) !== 'int') {
+                    if (leftBracket > 3 && idType.substring(leftBracket - 3, leftBracket) !== 'int') {
                         id = G.tools.uuid()
                     }
                 } 
