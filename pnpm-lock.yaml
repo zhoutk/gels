@@ -11,6 +11,9 @@ importers:
       '@koa/router':
         specifier: ^15.4.0
         version: 15.4.0(koa@2.16.4)
+      bcryptjs:
+        specifier: ^3.0.3
+        version: 3.0.3
       cli-color:
         specifier: ^2.0.2
         version: 2.0.4
@@ -32,6 +35,12 @@ importers:
       koa-etag:
         specifier: ^4.0.0
         version: 4.0.0
+      koa-helmet:
+        specifier: ^9.0.0
+        version: 9.0.0(helmet@8.1.0)(koa@2.16.4)
+      koa-ratelimit:
+        specifier: ^6.0.0
+        version: 6.0.0
       koa-rewrite:
         specifier: ^3.0.1
         version: 3.0.1
@@ -337,6 +346,10 @@ packages:
   asap@2.0.6:
     resolution: {integrity: sha512-BSHWgDSAiKs50o2Re8ppvp3seVHXSRM44cdSsT9FfNEUUZLOGWVCsiWaRPWM1Znn+mqZ1OfVZ3z3DWEzSp7hRA==}
 
+  async-ratelimiter@1.6.5:
+    resolution: {integrity: sha512-S7q3lpWZyo3E7VBIsOcASeKXlG86r+PtiwYViimDZ7AcHg+yDjMskDMRtVtzcPEDFEyBSs8EzJTy3JDl/KDdGg==}
+    engines: {node: '>= 8'}
+
   aws-ssl-profiles@1.1.2:
     resolution: {integrity: sha512-NZKeq9AfyQvEeNlN0zSYAaWrmBffJh3IELMZfRpJVWgrpEbtEpnjvzqBPf+mxoI287JohRDoa+/nsfqqiZmF6g==}
     engines: {node: '>= 6.0.0'}
@@ -344,6 +357,10 @@ packages:
   balanced-match@4.0.4:
     resolution: {integrity: sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==}
     engines: {node: 18 || 20 || >=22}
+
+  bcryptjs@3.0.3:
+    resolution: {integrity: sha512-GlF5wPWnSa/X5LKM1o0wz0suXIINz1iHRLvTS+sLyi7XPbe5ycmYI3DlZqVGZZtDgl4DmasFg7gOB3JYbphV5g==}
+    hasBin: true
 
   binary-extensions@2.3.0:
     resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
@@ -671,6 +688,10 @@ packages:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
 
+  helmet@8.1.0:
+    resolution: {integrity: sha512-jOiHyAZsmnr8LqoPGmCjYAaiuWwjAPLgY8ZX2XrmHawt99/u1y6RgrZMTeoPfpUbV96HOalYgz1qzkRbw54Pmg==}
+    engines: {node: '>=18.0.0'}
+
   http-assert@1.5.0:
     resolution: {integrity: sha512-uPpH7OKX4H25hBmU6G1jWNaqJGpTXxey+YOUizJUAgu0AjLUeC8D73hTrhvDS5D+GJN1DN1+hhc/eF/wpxtp0w==}
     engines: {node: '>= 0.8'}
@@ -797,6 +818,17 @@ packages:
 
   koa-etag@4.0.0:
     resolution: {integrity: sha512-1cSdezCkBWlyuB9l6c/IFoe1ANCDdPBxkDkRiaIup40xpUub6U/wwRXoKBZw/O5BifX9OlqAjYnDyzM6+l+TAg==}
+
+  koa-helmet@9.0.0:
+    resolution: {integrity: sha512-RuYf19wAQ8twvWHUF4wF0TmJGl1EpOGkDruAXx1KAJm+GdBmbFjCdR09wr13D0IgxpfpsfCzDibC9542KvYRrg==}
+    engines: {node: '>= 18.0.0'}
+    peerDependencies:
+      helmet: ^6 || ^7 || ^8
+      koa: ^2 || ^3
+
+  koa-ratelimit@6.0.0:
+    resolution: {integrity: sha512-UH1CXCF+yVhx5r5Fvx5eOKhc8sMHU/HhGBNCOaJ/SLO0+IcB6g5aKIE63eWsq7L3niwQWLfEbDtNGU3epKt0Hg==}
+    engines: {node: '>=18'}
 
   koa-rewrite@3.0.1:
     resolution: {integrity: sha512-KIGvmurKl2TwfceZEWzHWEmHHyJbkTKUZ2ebpa8G2Ywet0jc3zRhPwi8yxG/tEUra0wFAPDh9Ph8ln7okPcyEg==}
@@ -1461,9 +1493,13 @@ snapshots:
 
   asap@2.0.6: {}
 
+  async-ratelimiter@1.6.5: {}
+
   aws-ssl-profiles@1.1.2: {}
 
   balanced-match@4.0.4: {}
+
+  bcryptjs@3.0.3: {}
 
   binary-extensions@2.3.0: {}
 
@@ -1811,6 +1847,8 @@ snapshots:
     dependencies:
       function-bind: 1.1.2
 
+  helmet@8.1.0: {}
+
   http-assert@1.5.0:
     dependencies:
       deep-equal: 1.0.1
@@ -1954,6 +1992,16 @@ snapshots:
   koa-etag@4.0.0:
     dependencies:
       etag: 1.8.1
+
+  koa-helmet@9.0.0(helmet@8.1.0)(koa@2.16.4):
+    dependencies:
+      helmet: 8.1.0
+      koa: 2.16.4
+
+  koa-ratelimit@6.0.0:
+    dependencies:
+      async-ratelimiter: 1.6.5
+      ms: 2.1.3
 
   koa-rewrite@3.0.1:
     dependencies:

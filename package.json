@@ -22,6 +22,7 @@
   ],
   "dependencies": {
     "@koa/router": "^15.4.0",
+    "bcryptjs": "^3.0.3",
     "cli-color": "^2.0.2",
     "debug": "^4.3.4",
     "jsonwebtoken": "^8.5.1",
@@ -29,6 +30,8 @@
     "koa-body": "^5.0.0",
     "koa-conditional-get": "^3.0.0",
     "koa-etag": "^4.0.0",
+    "koa-helmet": "^9.0.0",
+    "koa-ratelimit": "^6.0.0",
     "koa-rewrite": "^3.0.1",
     "koa-static": "^5.0.0",
     "koa2-cors": "^2.0.6",
@@ -45,7 +48,9 @@
   },
   "homepage": "https://github.com/zhoutk/arest#readme",
   "pnpm": {
-    "onlyBuiltDependencies": ["es5-ext"]
+    "onlyBuiltDependencies": [
+      "es5-ext"
+    ]
   },
   "devDependencies": {
     "@types/cli-color": "^2.0.2",

@@ -9,7 +9,9 @@ export default {
     //支持 X-Forwarded-Host
     app.proxy = true
     const middlewares = [
+      'helmet',
       'cors',
+      'rateLimit',
       'logger', //记录所用方式与时间
       'session',
       'globalError', // 全局错误处理

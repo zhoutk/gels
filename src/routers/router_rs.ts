@@ -2,6 +2,7 @@ import Router from '@koa/router'
 import BaseDao from '../db/baseDao'
 import { config, jsResponse, tools } from '../inits/global'
 import { STCODES } from '../inits/enums'
+import { validateFields, validatePagination } from '../common/validators'
 let router = new Router()
 
 const METHODS = {
@@ -15,18 +16,26 @@ export default (() => {
     let process = async (ctx: any) => {
         // ctx.body = `rs result -- ${JSON.stringify(ctx.params)}`
         let method = ctx.method.toUpperCase() as keyof typeof METHODS
+        if (!Object.prototype.hasOwnProperty.call(METHODS, method)) {
+            ctx.body = jsResponse(STCODES.NOTFOUNDERR, 'method is not supported.')
+            return
+        }
         let tableName: string = ctx.params.table
         let id: string | number | undefined = ctx.params.id
         let params = method === 'POST' || method === 'PUT' ? ctx.request.body : ctx.request.query
         if (id != null)
             params.id = id
-        let {fields, ...restParams} = params
+        const { page, size } = validatePagination(params.page, params.size)
+        let { fields, ...restParams } = params
+        restParams.page = page
+        restParams.size = size
         if (fields) {
-            fields = tools.arryParse(fields)
-            if (!fields) {
+            const validatedFields = validateFields(tableName, fields)
+            if (!validatedFields) {
                 ctx.body = jsResponse(STCODES.PARAMERR, 'params fields is wrong.')
                 return
             }
+            fields = validatedFields
         }
 
         let module = await loadModule(`../dao/${tableName}`), is_module_exist = true
@@ -44,14 +53,8 @@ export default (() => {
                 tableName = 'v_' + tableName
         }
 
-        let rs: any
-        try {
-            let db = new module.default(tableName)
-            rs = await db[METHODS[method]](restParams, fields, ctx.session)
-        } catch (err) {
-            rs = jsResponse(STCODES.EXCEPTIONERR, (err as Error).message)
-        }
-        ctx.body = rs
+        const db = new module.default(tableName)
+        ctx.body = await db[METHODS[method]](restParams, fields, ctx.session)
         // ctx.body = await new BaseDao().execSql("insert into users (username, password, age) values (?,?,?) ", ['alice', 122, 16])          //test execSql create
         // ctx.body = await new BaseDao().execSql("update users set age = ? where id = ? ", [22, 1])          //test execSql update
         // ctx.body = await new BaseDao().querySql("select * from users where age = ? ", [12], params)       //test querySql

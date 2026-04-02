@@ -21,6 +21,8 @@
 
 ### S1 — 登录接口未校验密码
 
+状态：已完成
+
 **文件**：`src/routers/router_op.ts:13-26`
 
 ```typescript
@@ -55,6 +57,8 @@ if (rs.status === G.STCODES.SUCCESS) {
 ---
 
 ### S2 — 错误堆栈暴露给客户端
+
+状态：已完成
 
 **文件**：`src/middlewares/globalError.ts:6`、`src/routers/router_rs.ts:49`
 
@@ -122,6 +126,8 @@ export default {
 
 ### S4 — 缺少请求速率限制
 
+状态：已完成
+
 **风险**：
 - 登录接口可被暴力破解
 - API 可被恶意刷量
@@ -152,6 +158,8 @@ export default () => {
 
 ### S5 — 缺少安全头中间件
 
+状态：已完成
+
 **风险**：
 - XSS 攻击
 - 点击劫持
@@ -176,6 +184,8 @@ import helmet from 'koa-helmet'
 ## 三、高优先级问题（🟠 逻辑缺陷）
 
 ### H1 — 鉴权逻辑存在多处漏洞
+
+状态：已完成
 
 **文件**：`src/middlewares/session.ts`
 
@@ -271,6 +281,8 @@ function validateSortField(sort: string): string | null {
 
 ### H3 — GraphQL 残留代码
 
+状态：已完成
+
 **文件**：`src/common/globUtils.ts:4-21`
 
 ```typescript
@@ -288,6 +300,8 @@ getRequestedFieldsFromResolveInfo(table: string, info: unknown): string[] {
 
 ### H4 — isLogin() 永远返回 true
 
+状态：已完成
+
 **文件**：`src/common/globUtils.ts:53-55`
 
 ```typescript
@@ -303,6 +317,8 @@ isLogin(): boolean {
 ---
 
 ### H5 — 缺少输入参数验证
+
+状态：已完成
 
 **文件**：`src/routers/router_rs.ts`、`src/db/mysqlDao.ts`
 
@@ -337,6 +353,8 @@ export function validateFields(fields: unknown, tableFields: string[]): string[]
 
 ### M1 — 过时依赖
 
+状态：部分完成
+
 | 依赖 | 当前版本 | 最新版本 | 建议 |
 |------|----------|----------|------|
 | `moment` | 2.30.1 | — | 已停止维护，替换为 `dayjs` |
@@ -347,14 +365,16 @@ export function validateFields(fields: unknown, tableFields: string[]): string[]
 | `typescript` | 4.9.5 | 5.x | 错过大量类型系统改进 |
 
 **执行优先级**：
-1. 移除 `bluebird`（立即，低风险）
-2. 替换 `moment` → `dayjs`（立即，需测试日期格式化）
+1. 移除 `bluebird`（已完成）
+2. 替换 `moment` → `dayjs`（已完成）
 3. 升级 `typescript` → 5.x（短期，需修复编译错误）
 4. 升级 `mysql2` 2.x → 3.x（中期，需完整回归测试）
 
 ---
 
 ### M2 — TypeScript 配置过于宽松
+
+状态：已完成
 
 **文件**：`tsconfig.json`
 
@@ -407,6 +427,8 @@ class MysqlDao {
 
 ### M4 — 连接池初始化时序依赖
 
+状态：已完成
+
 **文件**：`src/db/mysqlDao.ts:21-34`
 
 ```typescript
@@ -439,6 +461,8 @@ function getPool(): Pool {
 ---
 
 ### M5 — 日志配置过于简单
+
+状态：已完成
 
 **文件**：`src/config/log4js.ts`
 
@@ -486,6 +510,8 @@ export default {
 
 ### M6 — moment 日期格式化错误
 
+状态：已完成
+
 **文件**：`src/db/baseDao.ts:174`
 
 ```typescript
@@ -504,6 +530,8 @@ import dayjs from 'dayjs'
 ---
 
 ### M7 — 缺少请求体大小限制
+
+状态：已完成
 
 **文件**：`src/middlewares/bodyParser.ts`
 
@@ -559,6 +587,8 @@ describe('BaseDao', () => {
 
 ### L2 — Token 传输不符合标准
 
+状态：已完成
+
 **文件**：`src/middlewares/session.ts:8`
 
 ```typescript
@@ -596,6 +626,8 @@ uuid(): string {
 
 ### L4 — require-dir 带来类型问题
 
+状态：已完成
+
 **文件**：`src/inits/index.ts`、`src/routers/index.ts`
 
 **问题**：`require-dir` 是 CommonJS 工具，TS 项目中存在类型丢失。
@@ -631,6 +663,8 @@ async function loadModules(dir: string) {
 
 ### L6 — CORS 配置可能过于宽松
 
+状态：已完成
+
 **文件**：`src/middlewares/cors.ts`
 
 **建议**：检查 `koa2-cors` 配置，生产环境应限制允许的 origin。
@@ -652,39 +686,39 @@ export default () => {
 
 ### 阶段一：安全加固（2-3天）⭐ 最高优先级
 
-- [ ] S1：修复登录密码校验，引入 bcrypt
-- [ ] S2：生产环境隐藏 stack trace（globalError + router_rs）
+- [x] S1：修复登录密码校验，引入 bcrypt
+- [x] S2：生产环境隐藏 stack trace（globalError + router_rs）
 - [ ] S3：引入环境变量配置，创建 `.env.example`
-- [ ] S4：添加请求速率限制中间件
-- [ ] S5：添加安全头中间件（helmet）
-- [ ] H1：重构 session 鉴权逻辑，显式白名单
+- [x] S4：添加请求速率限制中间件
+- [x] S5：添加安全头中间件（helmet）
+- [x] H1：重构 session 鉴权逻辑，显式白名单
 
 ### 阶段二：逻辑修复（2-3天）
 
 - [ ] H2：SQL 参数白名单校验
-- [ ] H3：删除 GraphQL 残留代码
-- [ ] H4：删除或实现 `isLogin()`
-- [ ] H5：添加输入参数验证器
-- [ ] L2：支持标准 Authorization header
+- [x] H3：删除 GraphQL 残留代码
+- [x] H4：删除或实现 `isLogin()`
+- [x] H5：添加输入参数验证器
+- [x] L2：支持标准 Authorization header
 - [ ] L3：修复 uuid 使用完整 UUID
 
 ### 阶段三：技术债清理（1周）
 
-- [ ] M1-1：移除 bluebird，使用原生 Promise
-- [ ] M1-2：替换 moment → dayjs（含 M6 修复）
+- [x] M1-1：移除 bluebird，使用原生 Promise
+- [x] M1-2：替换 moment → dayjs（含 M6 修复）
 - [ ] M1-3：升级 TypeScript 5.x
-- [ ] M2：开启 TypeScript 严格模式
-- [ ] M4：连接池懒加载初始化
-- [ ] M5：完善 log4js 配置
-- [ ] M7：添加请求体大小限制
-- [ ] L4：替换 require-dir
+- [x] M2：开启 TypeScript 严格模式
+- [x] M4：连接池懒加载初始化
+- [x] M5：完善 log4js 配置
+- [x] M7：添加请求体大小限制
+- [x] L4：替换 require-dir
 
 ### 阶段四：工程规范（持续）
 
 - [ ] L1：引入 vitest 测试框架
 - [ ] M3：逐步解耦全局 G 对象（长期）
 - [ ] L5：收紧 ESLint 规则
-- [ ] L6：完善 CORS 配置
+- [x] L6：完善 CORS 配置
 - [ ] 升级 mysql2 3.x（需完整回归测试）
 - [ ] 完善 API 文档（OpenAPI/Swagger）
 

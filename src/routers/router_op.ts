@@ -11,7 +11,13 @@ export default (() => {
         let { command } = ctx.params
         switch (command) {
             case 'login':
-                let rs = await new BaseDao('users').retrieve({ username: ctx.request.body.username })
+                const username = ctx.request.body?.username
+                const password = ctx.request.body?.password
+                if (!username || !password) {
+                    ctx.body = jsResponse(STCODES.PARAMERR, 'username or password is missing.')
+                    break
+                }
+                let rs = await new BaseDao('users').retrieve({ username, password })
                 if (rs.status === STCODES.SUCCESS) {
                     let user = rs.data[0]
                     let token = jwt.sign({
