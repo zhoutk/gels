@@ -10,7 +10,6 @@ import logCfg from '../config/log4js'
 const env = process.env.NODE_ENV || 'dev'            //dev - 开发; prod - 生产； test - 测试;
 let GlobVar = {
     DataTables: Object.create(null),
-    ApolloServer: null,
     PAGESIZE: 10,
     STCODES,
     ROOT_PATH: `${process.cwd()}${env === 'dev' ? '' : '/dist'}`,

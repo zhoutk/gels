@@ -2,7 +2,7 @@
 
 ## 1. 项目定位
 
-这是一个基于 Koa、MySQL、GraphQL 和 TypeScript 的后端服务框架。它的目标不是做一个通用业务系统，而是提供一套可以快速拼装 REST 接口、GraphQL 接口、数据库访问层和启动初始化流程的服务骨架。
+这是一个基于 Koa、MySQL 和 TypeScript 的后端服务框架。它的目标不是做一个通用业务系统，而是提供一套可以快速拼装 REST 接口、数据库访问层和启动初始化流程的服务骨架。
 
 本次升级保持了运行时主版本尽量不变，只对 TypeScript、类型包和少量开发工具做了保守升级，避免影响既有功能。
 
@@ -10,7 +10,7 @@
 
 - 运行时框架：Koa 2
 - 数据访问：mysql2
-- API 形态：REST + GraphQL
+- API 形态：REST
 - 认证：jsonwebtoken
 - 日志：log4js
 - 工具库：lodash、moment、bluebird、uuid、mkdirp
@@ -102,24 +102,14 @@
 
 ### 4.4 路由层
 
-当前有三类路由：
+当前有两类路由：
 
 - `src/routers/router_rs.ts`：通用 REST CRUD 路由
 - `src/routers/router_op.ts`：操作类路由，当前主要是登录
-- `src/routers/router_graphql.ts`：GraphQL 示例路由
 
 其中 `router_rs.ts` 是整个项目最核心的动态路由，它会根据表名寻找对应 DAO，并调用相同名字的方法完成数据操作。
 
-### 4.5 GraphQL
-
-GraphQL 有两套入口：
-
-- `src/routers/router_graphql.ts`：手写 GraphQL Schema 示例
-- `src/middlewares/graphql/index.ts`：从数据库结构生成 Schema 并挂载 Apollo Server
-
-这说明项目的 GraphQL 设计目标是“数据库结构驱动”，而不是手工维护大量 schema 文件。
-
-### 4.6 初始化模块
+### 4.5 初始化模块
 
 `src/inits/` 下的模块采用约定式加载：文件名以 `init` 开头，且导出 `init(app)` 方法即可参与启动过程。
 
@@ -154,13 +144,12 @@ GraphQL 有两套入口：
 - REST CRUD 自动化程度高，适合快速开发
 - DAO 层封装比较完整，支持事务和复杂查询
 - 配置、日志和响应格式统一，便于排查问题
-- GraphQL 和 REST 两种接口模式并存，适合不同调用场景
+- REST 接口模式清晰，适合快速开发
 
 ### 风险与技术债
 
 - `G` 全局对象耦合度高，不利于测试和模块化演进
-- `apollo-server-koa`、`koa-router`、`tslint` 等包已经进入弃用或迁移期
-- `koa-graphql` 与当前 `graphql` 版本存在 peer dependency 警告
+- `koa-router`、`tslint` 等包已经进入弃用或迁移期
 - 配置文件中直接保存数据库和 JWT 密钥，安全性不足
 - `initSchedule`、`initSocket`、`initMemery` 目前仍是骨架代码，功能完整性有限
 - 缺少可见的自动化测试脚本，升级依赖后回归验证主要依赖人工检查
@@ -175,6 +164,6 @@ GraphQL 有两套入口：
 ## 7. 后续建议
 
 1. 把密钥和数据库配置迁移到环境变量或独立配置层。
-2. 为 REST、DAO 和 GraphQL 增加回归测试。
-3. 逐步评估 `koa-router` -> `@koa/router`、`apollo-server-koa` -> 新 Apollo 方案、`tslint` -> ESLint 的迁移路径。
+2. 为 REST、DAO 增加回归测试。
+3. 逐步评估 `koa-router` -> `@koa/router`、`tslint` -> ESLint 的迁移路径。
 4. 如果要继续扩展项目，优先减少全局 `G` 的使用范围。

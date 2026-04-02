@@ -2,10 +2,9 @@
 
 ## 1. 概述
 
-本项目提供一套面向 MySQL 的 REST API 服务框架，同时支持 GraphQL 查询。它的主要特点是：
+本项目提供一套面向 MySQL 的 REST API 服务框架。它的主要特点是：
 
 - 自动化 REST CRUD
-- 基于数据库结构生成或组织 GraphQL
 - 统一响应格式
 - JWT 认证
 - 目录初始化、日志和缓存中间件
@@ -93,31 +92,7 @@
 - 非 GET 请求访问 `/rs` 类接口时会进行鉴权
 - token 过期或无效会返回统一错误码
 
-## 5. GraphQL 功能
-
-### 5.1 GraphQL 路由
-
-当前项目提供两个 GraphQL 入口：
-
-- `/gql`：手写 schema 示例
-- Apollo Server 挂载入口：基于数据库结构生成 schema
-
-### 5.2 示例能力
-
-示例 schema 中包含：
-
-- `books`
-- `authors`
-- `users`
-- `Book.author` 关联查询
-
-这说明项目支持按表做基本查询，也支持关联字段解析。
-
-### 5.3 当前状态
-
-GraphQL 方案是可用的，但当前仍保留了旧的 `koa-graphql` 示例入口。安装过程中会出现 peer dependency 警告，这是已知现象，不影响 REST 主链路。
-
-## 6. 初始化功能
+## 5. 初始化功能
 
 ### 6.1 目录初始化
 
@@ -160,7 +135,6 @@ GraphQL 方案是可用的，但当前仍保留了旧的 `koa-graphql` 示例入
 
 - `token` 认证头不是标准的 `Authorization`，集成第三方网关时要额外适配
 - `moment`、`bluebird`、`tslint` 都属于老组件，适合后续逐步替换
-- GraphQL 相关依赖存在版本兼容提示，建议后续单独规划迁移
 - 当前缺少自动化测试脚本，功能验证主要靠手工请求
 
 ## 10. 快速使用示例
@@ -189,15 +163,6 @@ Content-Type: application/json
 {"username":"alice","password":"123456"}
 ```
 
-### GraphQL
-
-```http
-POST /gql
-Content-Type: application/json
-
-{"query":"{ users { id username } }"}
-```
-
-## 11. 备注
+## 10. 备注
 
 本项目的功能设计重点是“快速拼装服务”，不是严格分层的企业级架构。如果后续业务扩大，建议优先补测试、收敛全局状态，再逐步迁移掉过时依赖。

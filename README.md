@@ -1,7 +1,7 @@
 ## 项目介绍
-基于koa2、关系数据库（暂时只支持mysql）建立的智能微服务快速开发框架，同时支持graphql与rest标准，使用typescript语言编写，力求安全、高效。  
+基于koa2、关系数据库（暂时只支持mysql）建立的智能微服务快速开发框架，同时支持rest标准，使用typescript语言编写，力求安全、高效。  
 
-A framework,  which use koa2, mysql, graphql &amp; typescript , to build micro service rapidly, safely &amp; efficiently.
+A framework,  which use koa2, mysql &amp; typescript , to build micro service rapidly, safely &amp; efficiently.
 
 [gels -- 凝胶][6]，希冀该项目能成为联结设计、开发，前端、后端的“强力胶水”，成为微服务快速开发的有力框架。
 
@@ -11,7 +11,7 @@ A framework,  which use koa2, mysql, graphql &amp; typescript , to build micro s
 
 ## 更新状态
 
-更新所有依赖库，apollo-server-koa 升级到版本3，并适配完成。
+更新所有依赖库，移除 apollo-server-koa 和 graphql 支持。
 
 ## 内容目录
 - [项目介绍](#项目介绍)
@@ -24,7 +24,6 @@ A framework,  which use koa2, mysql, graphql &amp; typescript , to build micro s
 - [默认路由](#默认路由)
 - [中间件](#中间件)
 - [restful_api](#restful_api)
-- [graphql](#graphql)
 - [智能查询](#智能查询)
 - [高级操作](#高级操作)
 - [相关视频课程](#相关视频课程)
@@ -157,8 +156,6 @@ A framework,  which use koa2, mysql, graphql &amp; typescript , to build micro s
 - /op/:command，只支持POST请求，不鉴权，提供登录等特定服务支持
     - login，登录接口；输入参数{username, password}；登录成功返回参数：{status:200, token}
 - /rs/:table[/:id]，支持四种restful请求，GET, POST, PUT, DELELTE，除GET外，其它请求检测是否授权
-- /graphql ,以apollo-server库实现graphql
-- /gql ,以koa-graphql库实现graphql
 
 
 ## 中间件
@@ -173,64 +170,6 @@ A framework,  which use koa2, mysql, graphql &amp; typescript , to build micro s
 - [POST] /rs/users, 新增记录
 - [PUT] /rs/users/{id}, 修改记录
 - [DELETE] /rs/users/{id}, 删除记录
-
-## graphql
-	框架会根据数据表及特殊业务文件自动生成schema。
-> 一些数据库设计原则约定
-
-- 每个表必须有字段id，类型为整数(自增)或8位字符串(uuid)，作为主键或建立unique索引
-- 表名为小写字母，使用名词单数，以下划作为单词分隔
-- 表关联约定：book关联到author，表book中关联字段设为author_id，关联到author.id
-- 表关联自动在相关中嵌入相关对象，Book对象增加Author对象，Author对象增加books列表
-- 每个表会默认生成两个query，一个是以id为参数进行单条查询，另一个是列表查询；命名规则；单条查询与表名相同，列表查询为表名+s，若表名本身以s结尾，则变s为z。
-- 特殊业务处理请按照/src/graphql目录中的模式进行编写，框架会自动合并业务
-
-> 测试用数据库脚本
-
-```
-SET NAMES utf8mb4;
-SET FOREIGN_KEY_CHECKS = 0;
-
--- ----------------------------
--- Table structure for author
--- ----------------------------
-DROP TABLE IF EXISTS `author`;
-CREATE TABLE `author` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
-
--- ----------------------------
--- Records of author
--- ----------------------------
-BEGIN;
-INSERT INTO `author` VALUES (1, 'john');
-INSERT INTO `author` VALUES (2, 'white');
-COMMIT;
-
--- ----------------------------
--- Table structure for book
--- ----------------------------
-DROP TABLE IF EXISTS `book`;
-CREATE TABLE `book` (
-  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键，自增',
-  `title` varchar(255) NOT NULL COMMENT '书名',
-  `author_id` int(11) DEFAULT NULL COMMENT '作者ID',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
-
--- ----------------------------
--- Records of book
--- ----------------------------
-BEGIN;
-INSERT INTO `book` VALUES (1, 'learn mysql', 1);
-INSERT INTO `book` VALUES (2, 'learn graphql', 1);
-INSERT INTO `book` VALUES (3, 'javascript practice', 2);
-COMMIT;
-
-SET FOREIGN_KEY_CHECKS = 1;
-```
 
 ## 智能查询
 > 查询保留字：fields, page, size, sort, search, lks, ins, ors, count, sum, group

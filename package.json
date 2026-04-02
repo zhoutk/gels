@@ -1,10 +1,11 @@
 {
   "name": "arest",
   "version": "0.1.0",
-  "description": "A framework, which use koa2, mysql, graphql & typescript , to build micro service rapidly, safely & efficiently.",
+  "description": "A framework, which use koa2, mysql & typescript , to build micro service rapidly, safely & efficiently.",
   "main": "app.ts",
   "scripts": {
-    "start": "nodemon dist/index.js",
+    "dev": "nodemon dist/index.js",
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint \"src/**/*.{ts,tsx}\" --ext .ts",
     "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --ext .ts --fix"
@@ -21,17 +22,14 @@
   ],
   "dependencies": {
     "@koa/router": "^15.4.0",
-    "apollo-server-koa": "^3.6.7",
     "bluebird": "^3.7.2",
     "cli-color": "^2.0.2",
     "debug": "^4.3.4",
-    "graphql": "^16.4.0",
     "jsonwebtoken": "^8.5.1",
     "koa": "^2.13.4",
     "koa-body": "^5.0.0",
     "koa-conditional-get": "^3.0.0",
     "koa-etag": "^4.0.0",
-    "koa-graphql": "^0.12.0",
     "koa-rewrite": "^3.0.1",
     "koa-static": "^5.0.0",
     "koa2-cors": "^2.0.6",
@@ -49,6 +47,9 @@
     "url": "https://github.com/zhoutk/arest/issues"
   },
   "homepage": "https://github.com/zhoutk/arest#readme",
+  "pnpm": {
+    "onlyBuiltDependencies": ["es5-ext"]
+  },
   "devDependencies": {
     "@types/bluebird": "^3.5.36",
     "@types/bluebird-global": "^3.5.13",
