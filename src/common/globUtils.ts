@@ -1,24 +1,6 @@
 import { randomUUID } from 'crypto'
 
 export default class GlobUtils {
-    getRequestedFieldsFromResolveInfo(table: string, info: unknown): string[] {
-        const selections = (info && typeof info === 'object' && 'selectionSet' in (info as any) && (info as any).selectionSet?.selections) || []
-        const fieldStr = Array.isArray(selections) ? selections : []
-        if (fieldStr.length === 0 || !G.DataTables[table]) return []
-        const fields: string[] = ['id']
-        fieldStr.forEach((al: any) => {
-            const fieldName = al?.name?.value as string | undefined
-            const realFieldName = fieldName ? G.DataTables[table][fieldName] : undefined
-            if (!fieldName || fieldName === 'id') return
-            if (al.selectionSet && !realFieldName) {
-                const rf = G.DataTables[table][fieldName + '_id']
-                if (rf) fields.push(fieldName + '_id')
-            } else {
-                fields.push(fieldName)
-            }
-        })
-        return fields
-    }
     getStartTillBracket(str: string) {
         return str.indexOf('(') > -1 ? str.substring(0, str.indexOf('(')) : str
     }
@@ -45,13 +27,10 @@ export default class GlobUtils {
         }
     }
     uuid() {
-        return randomUUID().split('-')[0]
+        return randomUUID()
     }
     isDev() {
         return G.NODE_ENV !== 'prod'
-    }
-    isLogin() {
-        return true
     }
     arryParse(arr: unknown): unknown[] | null {
         try {

@@ -46,7 +46,7 @@ export default (() => {
             let db = new module.default(tableName)
             rs = await db[METHODS[method]](restParams, fields, ctx.session)
         } catch (err) {
-            rs = G.jsResponse(G.STCODES.EXCEPTIONERR, (err as Error).message, {stack: (err as Error).stack})
+            rs = G.jsResponse(G.STCODES.EXCEPTIONERR, (err as Error).message)
         }
         ctx.body = rs
         // ctx.body = await new BaseDao().execSql("insert into users (username, password, age) values (?,?,?) ", ['alice', 122, 16])          //test execSql create

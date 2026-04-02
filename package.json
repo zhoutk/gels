@@ -22,7 +22,6 @@
   ],
   "dependencies": {
     "@koa/router": "^15.4.0",
-    "bluebird": "^3.7.2",
     "cli-color": "^2.0.2",
     "debug": "^4.3.4",
     "jsonwebtoken": "^8.5.1",
@@ -36,10 +35,8 @@
     "lodash": "^4.17.21",
     "log4js": "^6.4.6",
     "mkdirp": "^1.0.4",
-    "moment": "^2.29.3",
     "mysql2": "^2.3.3",
-    "require-dir": "^1.2.0",
-    "uuid": "^8.3.2"
+    "require-dir": "^1.2.0"
   },
   "author": "zhoutk@189.cn",
   "license": "MIT",
@@ -51,8 +48,6 @@
     "onlyBuiltDependencies": ["es5-ext"]
   },
   "devDependencies": {
-    "@types/bluebird": "^3.5.36",
-    "@types/bluebird-global": "^3.5.13",
     "@types/cli-color": "^2.0.2",
     "@types/debug": "^4.1.7",
     "@types/jsonwebtoken": "^8.5.9",

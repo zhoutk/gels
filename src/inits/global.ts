@@ -1,5 +1,5 @@
 import * as lodash from 'lodash'
-import * as Bluebird from 'bluebird'
+import { mkdirSync } from 'fs'
 import GlobUtils from '../common/globUtils'
 import CONFIGS from '../config/configs'
 import {STCODES} from './enums'
@@ -35,7 +35,8 @@ let GlobVar = {
 }
 
 function globInit() {
-    Object.assign(global, { G: GlobVar }, { Promise: Bluebird })
+    mkdirSync('logs', { recursive: true })
+    Object.assign(global, { G: GlobVar })
 }
 
 class KoaErr extends Error {

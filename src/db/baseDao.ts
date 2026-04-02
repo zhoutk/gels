@@ -1,6 +1,15 @@
 import TransElement from '../common/transElement'
 import IDao from './idao'
-import * as moment from 'moment'
+
+function pad2(value: number): string {
+    return String(value).padStart(2, '0')
+}
+
+function formatDateTime(value: unknown): string | null {
+    const date = value instanceof Date ? value : new Date(value as any)
+    if (Number.isNaN(date.getTime())) return null
+    return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())} ${pad2(date.getHours())}:${pad2(date.getMinutes())}:${pad2(date.getSeconds())}`
+}
 
 export default class BaseDao {
     table: string
@@ -171,7 +180,10 @@ function processDatum(rs: { data?: Array<Record<string, unknown>> } & Record<str
         const vs = Object.entries(element)
         for (const [key, value] of vs) {
             if (G.L.endsWith(key, '_time') && value) {
-                ;(element as any)[key] = moment(value as any).format('YYYY-MM-DD hh:mm:ss')
+                const formatted = formatDateTime(value)
+                if (formatted) {
+                    ;(element as any)[key] = formatted
+                }
             } else if (G.L.endsWith(key, '_json')) {
                 if (value == null) {
                     ;(element as any)[key] = null

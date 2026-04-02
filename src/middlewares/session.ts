@@ -5,7 +5,7 @@ const AUTHURL = ['rs']
 
 export default () => {
     return async (ctx, next) => {
-        const { header: { token } } = ctx
+        const token = (ctx.header.authorization && ctx.header.authorization.replace(/^Bearer\s+/i, '')) || ctx.header.token
         let urlStrs = ctx && ctx.url && ctx.url.split('/')
         let isAuth: boolean = AUTHURL.some((url) => { return urlStrs[1] === url })
         if (token) {
