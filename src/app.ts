@@ -20,14 +20,14 @@ export default {
       //['graphql', app],
       'router',
     ]
-    for (let n of middlewares) {
-      if (n) {
-        const middleware = await this.loadMiddleware.apply(null, [].concat(n))
-        if (middleware) {
-          //考虑返回多个中间件
-          for (let m of [].concat(middleware)) {
-            m && (app.use.apply(app, [].concat(m)))
-          }
+    for (const name of middlewares) {
+      if (!name) continue
+      const middleware = await this.loadMiddleware(name) as Koa.Middleware | Koa.Middleware[] | undefined
+      if (!middleware) continue
+      const list = Array.isArray(middleware) ? middleware : [middleware]
+      for (const m of list) {
+        if (typeof m === 'function') {
+          app.use(m)
         }
       }
     }
@@ -35,8 +35,27 @@ export default {
     await new Startup().init(app)
     return app
   },
-  async loadMiddleware(name, ...args) {
-    const middleware = require('./middlewares/' + name).default
-    return (middleware && await middleware.apply(null, args)) || async function (ctx, next) { await next() }
+    async loadMiddleware(name: string, ...args: unknown[]) {
+    try {
+      const mod: unknown = await import(`./middlewares/${name}`)
+      const factory = ((mod as { default?: unknown }).default ?? mod)
+      if (typeof factory === 'function') {
+        const result = await (factory as (...a: unknown[]) => unknown)(...args)
+        return result
+      }
+      return factory
+    } catch (err) {
+      let msg: string
+      if (err && typeof (err as any).message === 'string') msg = (err as any).message
+      else if (typeof err === 'string') msg = err
+      else {
+        try { msg = JSON.stringify(err) } catch { msg = Object.prototype.toString.call(err as any) }
+      }
+      if (G.logger && typeof G.logger.error === 'function') G.logger.error(`loadMiddleware ${name} fail: ${msg}`)
+      // fallback to noop middleware
+    }
+    return async function (_ctx: unknown, next: unknown) {
+      if (typeof next === 'function') await (next as () => Promise<unknown>)()
+    }
   }
 }

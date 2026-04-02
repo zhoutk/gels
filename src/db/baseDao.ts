@@ -1,5 +1,3 @@
-let dialect: string = G.CONFIGS.db_dialect
-let Dao = require(`./${dialect}Dao`).default
 import TransElement from '../common/transElement'
 import IDao from './idao'
 import * as moment from 'moment'
@@ -9,10 +7,31 @@ export default class BaseDao {
     static dao: IDao
     constructor(table?: string) {
         this.table = table || ''
-        if (!BaseDao.dao)
-            BaseDao.dao = new Dao()
     }
-    async retrieve(params = {}, fields = [], session = { userid: '' }): Promise<any> {
+    static async initDao(): Promise<void> {
+        if (!BaseDao.dao) {
+            const dialect = G.CONFIGS.db_dialect
+            try {
+                const mod = await import(`./${dialect}Dao`)
+                const DaoCtor = (mod)?.default ?? mod
+                BaseDao.dao = new DaoCtor()
+            } catch (e) {
+                let msg: string
+                if (e && typeof (e as any).message === 'string') msg = (e as any).message
+                else if (typeof e === 'string') msg = e
+                else {
+                    try { msg = JSON.stringify(e) } catch { msg = Object.prototype.toString.call(e as any) }
+                }
+                if (G.logger && typeof G.logger.error === 'function') {
+                    G.logger.error(`initDao fail: ${msg}`)
+                }
+                throw e
+            }
+        }
+    }
+    async retrieve(params = {}, fields = [], _session = { userid: '' }): Promise<any> {
+        await BaseDao.initDao()
+        void _session
         let rs
         try {
             rs = await BaseDao.dao.select(this.table, params, fields)
@@ -25,8 +44,11 @@ export default class BaseDao {
         else
             return processDatum(rs)
     }
-    async create(params = {}, fields = [], session = { userid: '' }): Promise<any> {
-        let keys = Object.keys(params)
+    async create(params = {}, _fields = [], _session = { userid: '' }): Promise<any> {
+        await BaseDao.initDao()
+        void _fields
+        void _session
+        let keys = Object.keys(params as Record<string, unknown>)
         if (keys.length === 0 || params['id'] !== undefined && keys.length <= 1)
             return G.jsResponse(G.STCODES.PARAMERR, 'params is error.')
         else {
@@ -52,9 +74,12 @@ export default class BaseDao {
             return G.jsResponse(G.STCODES.SUCCESS, 'data insert success.', { affectedRows, id: id || rs.insertId })
         }
     }
-    async update(params, fields = [], session = { userid: '' }): Promise<any> {
+    async update(params, _fields = [], _session = { userid: '' }): Promise<any> {
+        await BaseDao.initDao()
+        void _fields
+        void _session
         params = params || {}
-        let keys = Object.keys(params)
+        let keys = Object.keys(params as Record<string, unknown>)
         if (params['id'] === undefined || keys.length <= 1)
             return G.jsResponse(G.STCODES.PARAMERR, 'params is error.')
         else {
@@ -70,14 +95,17 @@ export default class BaseDao {
             return G.jsResponse(G.STCODES.SUCCESS, 'data update success.', { affectedRows, id })
         }
     }
-    async delete(params = {}, fields = [], session = { userid: '' }): Promise<any> {
-        if (params['id'] === undefined)
+    async delete(params = {}, _fields = [], _session = { userid: '' }): Promise<any> {
+        await BaseDao.initDao()
+        void _fields
+        void _session
+        if ((params as Record<string, unknown>)['id'] === undefined)
             return G.jsResponse(G.STCODES.PARAMERR, 'params is error.')
         else {
-            let id = params['id']
+            let id = (params as Record<string, unknown>)['id']
             let rs
             try {
-                rs = await BaseDao.dao.delete(this.table, id)
+                rs = await BaseDao.dao.delete(this.table, id as string | number)
             } catch (err) {
                 (err as Error).message = `data delete fail: ${(err as Error).message}`
                 return err
@@ -87,6 +115,7 @@ export default class BaseDao {
         }
     }
     async querySql(sql: string, values = [], params = {}, fields = []): Promise<any> {
+        await BaseDao.initDao()
         let rs
         try {
             rs = await BaseDao.dao.querySql(sql, values, params, fields)
@@ -100,6 +129,7 @@ export default class BaseDao {
             return processDatum(rs)
     }
     async execSql(sql: string, values = []): Promise<any> {
+        await BaseDao.initDao()
         let rs
         try {
             rs = await BaseDao.dao.execSql(sql, values)
@@ -111,6 +141,7 @@ export default class BaseDao {
         return G.jsResponse(G.STCODES.SUCCESS, 'data execSql success.', { affectedRows })
     }
     async insertBatch(tablename: string, elements = []): Promise<any> {
+        await BaseDao.initDao()
         let rs
         try {
             rs = await BaseDao.dao.insertBatch(tablename, elements)
@@ -122,6 +153,7 @@ export default class BaseDao {
         return G.jsResponse(G.STCODES.SUCCESS, 'data batch success.', { affectedRows })
     }
     async transGo(elements: Array<TransElement>, isAsync = true): Promise<any> {
+        await BaseDao.initDao()
         let rs
         try {
             rs = await BaseDao.dao.transGo(elements, isAsync)
@@ -133,16 +165,25 @@ export default class BaseDao {
         return G.jsResponse(G.STCODES.SUCCESS, 'data trans success.', { affectedRows })
     }
 }
-
-function processDatum(rs) {
+function processDatum(rs: { data?: Array<Record<string, unknown>> } & Record<string, unknown>) {
+    if (!rs || !Array.isArray(rs.data)) return rs
     rs.data.forEach(element => {
-        let vs = Object.entries(element)
-        for (let [key, value] of vs) {
+        const vs = Object.entries(element)
+        for (const [key, value] of vs) {
             if (G.L.endsWith(key, '_time') && value) {
-                element[key] = moment(value).format('YYYY-MM-DD hh:mm:ss')
+                ;(element as any)[key] = moment(value as any).format('YYYY-MM-DD hh:mm:ss')
             } else if (G.L.endsWith(key, '_json')) {
-                if (value && value.toString().trim().length === 0) {
-                    element[key] = null
+                if (value == null) {
+                    ;(element as any)[key] = null
+                } else if (typeof value === 'string') {
+                    if (value.trim().length === 0) {
+                        ;(element as any)[key] = null
+                    }
+                } else if (typeof Buffer !== 'undefined' && (Buffer as any).isBuffer && (Buffer as any).isBuffer(value)) {
+                    const s = (value as Buffer).toString()
+                    if (s.trim().length === 0) {
+                        ;(element as any)[key] = null
+                    }
                 }
             }
         }

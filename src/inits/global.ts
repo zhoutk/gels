@@ -20,7 +20,7 @@ let GlobVar = {
         configure(logCfg)
         return getLogger('default')
     })(),
-    jsResponse(status: Number, message = '', data?: any) {
+    jsResponse(status: number, message = '', data?: any) {
         if (Array.isArray(data))
             return { status, message: message === '' ? (STMESSAGES[status.toString()] || '') : message, data }
         else
@@ -29,17 +29,18 @@ let GlobVar = {
     tools: new GlobUtils(),
     CONFIGS,
     koaError(ctx: any, status: number, message: string, data = []) {
+        void data
         ctx.ErrCode = status
         return new KoaErr({ message, status })
     }
 }
 
-async function globInit() {
+function globInit() {
     Object.assign(global, { G: GlobVar }, { Promise: Bluebird })
 }
 
 class KoaErr extends Error {
-    public status: Number
+    public status: number
     constructor({ message = 'Error', status = G.STCODES.EXCEPTIONERR } = {}, ...args) {
         super()
         this.message = message

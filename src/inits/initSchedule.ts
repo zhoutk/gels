@@ -1,5 +1,6 @@
 export default {
-    async init(app) {
+    init(app) {
+        void app
         G.logger.debug('init schedule.')
     }
 }

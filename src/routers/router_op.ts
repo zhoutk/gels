@@ -1,4 +1,4 @@
-import * as Router from 'koa-router'
+import Router from '@koa/router'
 import * as jwt from 'jsonwebtoken'
 import BaseDao from '../db/baseDao'
 
@@ -6,7 +6,7 @@ let router = new Router()
 const config = G.CONFIGS.jwt
 
 export default (() => {
-    let process = async (ctx, next) => {
+    let process = async (ctx) => {
         let { command } = ctx.params
         switch (command) {
             case 'login':

@@ -1,21 +1,20 @@
-import * as uuid from 'uuid'
+import { randomUUID } from 'crypto'
 
 export default class GlobUtils {
-    getRequestedFieldsFromResolveInfo(table: string, info: any) {
-        let fieldStr = info && info.selectionSet && info.selectionSet.selections || []
-        if (fieldStr.length === 0 || !G.DataTables[table])
-            return []
-        let fields = ['id']
-        fieldStr.forEach((al) => {
-            let fieldName = al.name.value, realFieldName = G.DataTables[table][fieldName]
-            if (fieldName !== 'id') {
-                if (al.selectionSet && !realFieldName) {
-                    realFieldName = G.DataTables[table][fieldName + '_id']
-                    if (realFieldName)
-                        fields.push(fieldName + '_id')
-                } else {
-                    fields.push(fieldName)
-                }
+    getRequestedFieldsFromResolveInfo(table: string, info: unknown): string[] {
+        const selections = (info && typeof info === 'object' && 'selectionSet' in (info as any) && (info as any).selectionSet?.selections) || []
+        const fieldStr = Array.isArray(selections) ? selections : []
+        if (fieldStr.length === 0 || !G.DataTables[table]) return []
+        const fields: string[] = ['id']
+        fieldStr.forEach((al: any) => {
+            const fieldName = al?.name?.value as string | undefined
+            const realFieldName = fieldName ? G.DataTables[table][fieldName] : undefined
+            if (!fieldName || fieldName === 'id') return
+            if (al.selectionSet && !realFieldName) {
+                const rf = G.DataTables[table][fieldName + '_id']
+                if (rf) fields.push(fieldName + '_id')
+            } else {
+                fields.push(fieldName)
             }
         })
         return fields
@@ -46,7 +45,7 @@ export default class GlobUtils {
         }
     }
     uuid() {
-        return uuid.v1().split('-')[0]
+        return randomUUID().split('-')[0]
     }
     isDev() {
         return G.NODE_ENV !== 'prod'
@@ -54,20 +53,16 @@ export default class GlobUtils {
     isLogin() {
         return true
     }
-    arryParse(arr): Array<any>|null {
+    arryParse(arr: unknown): unknown[] | null {
         try {
-            if (Array.isArray(arr) || G.L.isNull(arr))
-                return arr
-            else if (typeof arr === 'string') {
-                if (arr.startsWith('['))
-                    arr = JSON.parse(arr)
-                else
-                    arr = arr.split(',')
-            } else 
-                return null
-        } catch (err) {
-            arr = null
+            if (Array.isArray(arr) || G.L.isNull(arr)) return arr as unknown[]
+            if (typeof arr === 'string') {
+                if ((arr).startsWith('[')) return JSON.parse(arr)
+                return (arr).split(',')
+            }
+            return null
+        } catch {
+            return null
         }
-        return arr
     }
 }

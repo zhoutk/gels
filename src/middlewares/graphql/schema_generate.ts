@@ -1,5 +1,5 @@
 import BaseDao from '../../db/baseDao'
-let requireDir = require('require-dir')
+import requireDir from 'require-dir'
 
 const TYPEFROMMYSQLTOGRAPHQL = {
     int: 'Int',
@@ -135,7 +135,7 @@ async function getInfoFromSql() {
 
     let typeDefs = []
     let dirGraphql = requireDir('../../graphql')
-    G.L.each(dirGraphql, (item, name) => {
+    G.L.each(dirGraphql, (item) => {
         if (item && item.customDefs && item.customResolvers) {
             typeDefs.push(item.customDefs.textDefs || '')
             typeDefObj.query = typeDefObj.query.concat(item.customDefs.queryDefs || [])

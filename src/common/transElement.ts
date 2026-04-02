@@ -1,7 +1,7 @@
 export default interface TransElement {
     table: string;
     method: string;
-    params: object | Array<any>;
+    params: Record<string, unknown> | unknown[];
     sql?: string;
     id?: string | number;
 }

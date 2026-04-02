@@ -1,4 +1,5 @@
-let requireDir = require('require-dir')
+// Use CommonJS require to avoid ES module interop issues with `require-dir`
+const requireDir = require('require-dir')
 export default (() => {
     const inits = []
     let dirData = requireDir(__dirname)

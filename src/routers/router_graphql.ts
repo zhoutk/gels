@@ -1,7 +1,7 @@
-import * as Router from 'koa-router'
+import Router from '@koa/router'
 import BaseDao from '../db/baseDao'
 import { GraphQLString, GraphQLObjectType, GraphQLSchema, GraphQLList, GraphQLInt } from 'graphql'
-const graphqlHTTP = require('koa-graphql').graphqlHTTP
+import { graphqlHTTP } from 'koa-graphql'
 
 let router = new Router()
 
@@ -21,7 +21,7 @@ export default (() => {
             title: { type: GraphQLString},
             author: { 
                 type: authorType,
-                resolve: async (book, args) => {
+                resolve: async (book) => {
                     let rs = await new BaseDao('author').retrieve({id: book.author_id})
                     return rs.data[0]
                 }

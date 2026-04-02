@@ -1,4 +1,4 @@
-import * as Router from 'koa-router'
+import Router from '@koa/router'
 import BaseDao from '../db/baseDao'
 let router = new Router()
 
@@ -10,7 +10,7 @@ const METHODS = {
 }
 
 export default (() => {
-    let process = async (ctx, next) => {
+    let process = async (ctx) => {
         // ctx.body = `rs result -- ${JSON.stringify(ctx.params)}`
         let method: string = ctx.method.toUpperCase()
         let tableName: string = ctx.params.table
@@ -26,10 +26,10 @@ export default (() => {
             }
         }
 
-        let module = loadModule(`../dao/${tableName}`), is_module_exist = true
+        let module = await loadModule(`../dao/${tableName}`), is_module_exist = true
         if (!module) {
             is_module_exist = false
-            module = require('../db/baseDao')
+            module = await loadModule('../db/baseDao')
         }
 
         if (method === 'GET' && !tableName.startsWith('v_') && (!is_module_exist || 
@@ -56,9 +56,9 @@ export default (() => {
     return router.all('/rs/:table', process).all('/rs/:table/:id', process)
 })() 
 
-function loadModule(path: string) {
+async function loadModule(path: string) {
     try {
-        return require(path)
+        return await import(path)
     } catch (err) {
         if ((err as Error).message.indexOf('Cannot find module') < 0)
             G.logger.error((err as Error).message)

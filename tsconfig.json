@@ -16,6 +16,7 @@
     "importHelpers": true,                      // 从 tslib 导入辅助工具函数
     "strictNullChecks": false,                   // 启用严格的 null 检查
     "lib": ["es2018"],                          // 指定要包含在编译中的库文件
+    "skipLibCheck": true,                      // 跳过第三方声明文件检查，避免依赖包声明冲突阻塞编译
     "typeRoots": ["node_modules/@types"],
     "types": [
       "node",
