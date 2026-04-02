@@ -41,6 +41,8 @@ let GlobVar = {
     }
 }
 
+export const runtime = GlobVar
+
 function globInit() {
     mkdirSync('logs', { recursive: true })
     Object.assign(global, { G: GlobVar })
@@ -48,7 +50,7 @@ function globInit() {
 
 class KoaErr extends Error {
     public status: number
-    constructor({ message = 'Error', status = G.STCODES.EXCEPTIONERR } = {}, ...args: unknown[]) {
+    constructor({ message = 'Error', status = STCODES.EXCEPTIONERR } = {}, ...args: unknown[]) {
         super()
         this.message = message
         this.status = status

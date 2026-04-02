@@ -1,5 +1,8 @@
+import * as lodash from 'lodash'
 import TransElement from '../common/transElement'
 import IDao from './idao'
+import { config, jsResponse, logger, runtime, tools } from '../inits/global'
+import { STCODES } from '../inits/enums'
 
 function pad2(value: number): string {
     return String(value).padStart(2, '0')
@@ -19,7 +22,7 @@ export default class BaseDao {
     }
     static async initDao(): Promise<void> {
         if (!BaseDao.dao) {
-            const dialect = G.CONFIGS.db_dialect
+            const dialect = config.db_dialect
             try {
                 const mod = await import(`./${dialect}Dao`)
                 const DaoCtor = (mod)?.default ?? mod
@@ -31,8 +34,8 @@ export default class BaseDao {
                 else {
                     try { msg = JSON.stringify(e) } catch { msg = Object.prototype.toString.call(e as any) }
                 }
-                if (G.logger && typeof G.logger.error === 'function') {
-                    G.logger.error(`initDao fail: ${msg}`)
+                if (logger && typeof logger.error === 'function') {
+                    logger.error(`initDao fail: ${msg}`)
                 }
                 throw e
             }
@@ -48,8 +51,8 @@ export default class BaseDao {
             (err as Error).message = `data query fail: ${(err as Error).message}`
             return err
         }
-        if (rs.status === G.STCODES.SUCCESS && (!rs.data || rs.data.length === 0))
-            return G.jsResponse(G.STCODES.QUERYEMPTY, 'data query empty.', rs)
+        if (rs.status === STCODES.SUCCESS && (!rs.data || rs.data.length === 0))
+            return jsResponse(STCODES.QUERYEMPTY, 'data query empty.', rs)
         else
             return processDatum(rs)
     }
@@ -59,20 +62,20 @@ export default class BaseDao {
         void _session
         let keys = Object.keys(params as Record<string, unknown>)
         if (keys.length === 0 || params['id'] !== undefined && keys.length <= 1)
-            return G.jsResponse(G.STCODES.PARAMERR, 'params is error.')
+            return jsResponse(STCODES.PARAMERR, 'params is error.')
         else {
             let rs
             let id = params['id'] as string | number | undefined
             try {
                 if (!id) {
-                    if (!G.DataTables[this.table])
-                        return G.jsResponse(G.STCODES.DBNEEDRESTARTERR, 'database tables had modify, you should restart server.')
-                    if (!G.DataTables[this.table]['id'])
-                        return G.jsResponse(G.STCODES.DBNEEDIDERR, 'database tables need id field.')
-                    let idType = G.DataTables[this.table]['id']['COLUMN_TYPE']
+                    if (!runtime.DataTables[this.table])
+                        return jsResponse(STCODES.DBNEEDRESTARTERR, 'database tables had modify, you should restart server.')
+                    if (!runtime.DataTables[this.table]['id'])
+                        return jsResponse(STCODES.DBNEEDIDERR, 'database tables need id field.')
+                    let idType = runtime.DataTables[this.table]['id']['COLUMN_TYPE']
                     let leftBracket = idType.indexOf('(')
                     if (leftBracket > 3 && idType.substring(leftBracket - 3, leftBracket) !== 'int') {
-                        id = G.tools.uuid()
+                        id = tools.uuid()
                     }
                 } 
                 rs = await BaseDao.dao.insert(this.table, Object.assign(params, id ? { id } : {}))
@@ -81,7 +84,7 @@ export default class BaseDao {
                 return err
             }
             let { affectedRows } = rs
-            return G.jsResponse(G.STCODES.SUCCESS, 'data insert success.', { affectedRows, id: id || rs.insertId })
+            return jsResponse(STCODES.SUCCESS, 'data insert success.', { affectedRows, id: id || rs.insertId })
         }
     }
     async update(params: Record<string, unknown> = {}, _fields: string[] = [], _session: { userid: string } = { userid: '' }): Promise<any> {
@@ -91,7 +94,7 @@ export default class BaseDao {
         params = params || {}
         let keys = Object.keys(params as Record<string, unknown>)
         if (params['id'] === undefined || keys.length <= 1)
-            return G.jsResponse(G.STCODES.PARAMERR, 'params is error.')
+            return jsResponse(STCODES.PARAMERR, 'params is error.')
         else {
             const id = params['id'] as string | number
             const { id: _id, ...restParams } = params
@@ -103,7 +106,7 @@ export default class BaseDao {
                 return err
             }
             let { affectedRows } = rs
-            return G.jsResponse(G.STCODES.SUCCESS, 'data update success.', { affectedRows, id: _id })
+            return jsResponse(STCODES.SUCCESS, 'data update success.', { affectedRows, id: _id })
         }
     }
     async delete(params: Record<string, unknown> = {}, _fields: string[] = [], _session: { userid: string } = { userid: '' }): Promise<any> {
@@ -111,7 +114,7 @@ export default class BaseDao {
         void _fields
         void _session
         if ((params as Record<string, unknown>)['id'] === undefined)
-            return G.jsResponse(G.STCODES.PARAMERR, 'params is error.')
+            return jsResponse(STCODES.PARAMERR, 'params is error.')
         else {
             let id = (params as Record<string, unknown>)['id'] as string | number
             let rs
@@ -122,7 +125,7 @@ export default class BaseDao {
                 return err
             }
             let { affectedRows } = rs
-            return G.jsResponse(G.STCODES.SUCCESS, 'data delete success.', { affectedRows, id })
+            return jsResponse(STCODES.SUCCESS, 'data delete success.', { affectedRows, id })
         }
     }
     async querySql(sql: string, values: unknown[] = [], params: Record<string, unknown> = {}, fields: string[] = []): Promise<any> {
@@ -134,8 +137,8 @@ export default class BaseDao {
             (err as Error).message = `data querySql fail: ${(err as Error).message}`
             return err
         }
-        if (rs.status === G.STCODES.SUCCESS && (!rs.data || rs.data.length === 0))
-            return G.jsResponse(G.STCODES.QUERYEMPTY, 'data query empty.', rs)
+        if (rs.status === STCODES.SUCCESS && (!rs.data || rs.data.length === 0))
+            return jsResponse(STCODES.QUERYEMPTY, 'data query empty.', rs)
         else
             return processDatum(rs)
     }
@@ -149,7 +152,7 @@ export default class BaseDao {
             return err
         }
         let { affectedRows } = rs
-        return G.jsResponse(G.STCODES.SUCCESS, 'data execSql success.', { affectedRows })
+        return jsResponse(STCODES.SUCCESS, 'data execSql success.', { affectedRows })
     }
     async insertBatch(tablename: string, elements: Array<Record<string, unknown>> = []): Promise<any> {
         await BaseDao.initDao()
@@ -161,7 +164,7 @@ export default class BaseDao {
             return err
         }
         let { affectedRows } = rs
-        return G.jsResponse(G.STCODES.SUCCESS, 'data batch success.', { affectedRows })
+        return jsResponse(STCODES.SUCCESS, 'data batch success.', { affectedRows })
     }
     async transGo(elements: Array<TransElement>, isAsync = true): Promise<any> {
         await BaseDao.initDao()
@@ -173,7 +176,7 @@ export default class BaseDao {
             return err
         }
         let { affectedRows } = rs
-        return G.jsResponse(G.STCODES.SUCCESS, 'data trans success.', { affectedRows })
+        return jsResponse(STCODES.SUCCESS, 'data trans success.', { affectedRows })
     }
 }
 function processDatum(rs: { data?: Array<Record<string, unknown>> } & Record<string, unknown>) {
@@ -181,12 +184,12 @@ function processDatum(rs: { data?: Array<Record<string, unknown>> } & Record<str
     rs.data.forEach(element => {
         const vs = Object.entries(element)
         for (const [key, value] of vs) {
-            if (G.L.endsWith(key, '_time') && value) {
+            if (lodash.endsWith(key, '_time') && value) {
                 const formatted = formatDateTime(value)
                 if (formatted) {
                     ;(element as any)[key] = formatted
                 }
-            } else if (G.L.endsWith(key, '_json')) {
+            } else if (lodash.endsWith(key, '_json')) {
                 if (value == null) {
                     ;(element as any)[key] = null
                 } else if (typeof value === 'string') {

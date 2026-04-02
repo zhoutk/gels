@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto'
+import * as lodash from 'lodash'
 
 export default class GlobUtils {
     getStartTillBracket(str: string) {
@@ -30,11 +31,11 @@ export default class GlobUtils {
         return randomUUID().split('-')[0]
     }
     isDev() {
-        return G.NODE_ENV !== 'prod'
+        return process.env.NODE_ENV !== 'prod'
     }
     arryParse(arr: unknown): unknown[] | null {
         try {
-            if (Array.isArray(arr) || G.L.isNull(arr)) return arr as unknown[]
+            if (Array.isArray(arr) || lodash.isNull(arr)) return arr as unknown[]
             if (typeof arr === 'string') {
                 if ((arr).startsWith('[')) return JSON.parse(arr)
                 return (arr).split(',')

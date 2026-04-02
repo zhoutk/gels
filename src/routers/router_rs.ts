@@ -24,7 +24,8 @@ export default (() => {
         if (fields) {
             fields = tools.arryParse(fields)
             if (!fields) {
-                throw G.koaError(ctx, STCODES.PARAMERR, 'params fields is wrong.')
+                ctx.body = jsResponse(STCODES.PARAMERR, 'params fields is wrong.')
+                return
             }
         }
 

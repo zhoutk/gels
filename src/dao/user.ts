@@ -5,6 +5,6 @@ export default class Users extends BaseDao {
         super(table)
     }
     // async retrieve(params = {}, fields = [], session = { userid: '' }): Promise<any> {
-    //     return G.jsResponse(G.STCODES.SUCCESS)
+    //     return jsResponse(STCODES.SUCCESS)
     // }
 }
