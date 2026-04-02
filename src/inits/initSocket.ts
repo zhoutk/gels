@@ -1,6 +1,7 @@
+import { logger } from './global'
 export default {
-    init(app) {
+    init(app: any) {
         void app
-        G.logger.debug('init socket.')
+        logger.debug('init socket.')
     }
 }

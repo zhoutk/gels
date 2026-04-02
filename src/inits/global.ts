@@ -8,26 +8,33 @@ import { configure, getLogger} from 'log4js'
 import logCfg from '../config/log4js'
 
 const env = process.env.NODE_ENV || 'dev'            //dev - 开发; prod - 生产； test - 测试;
+export const config = CONFIGS
+export const rootPath = `${process.cwd()}${env === 'dev' ? '' : '/dist'}`
+export const logger = (() => {
+    configure(logCfg)
+    return getLogger('default')
+})()
+export const tools = new GlobUtils()
+
+export function jsResponse(status: number, message = '', data?: any) {
+    const statusKey = String(status) as keyof typeof STMESSAGES
+    if (Array.isArray(data))
+        return { status, message: message === '' ? (STMESSAGES[statusKey] || '') : message, data }
+    return Object.assign({}, data, { status, message: message === '' ? (STMESSAGES[statusKey] || '') : message })
+}
+
 let GlobVar = {
     DataTables: Object.create(null),
     PAGESIZE: 10,
     STCODES,
-    ROOT_PATH: `${process.cwd()}${env === 'dev' ? '' : '/dist'}`,
+    ROOT_PATH: rootPath,
     NODE_ENV: env,
     L: lodash,
-    logger: (() => {
-        configure(logCfg)
-        return getLogger('default')
-    })(),
-    jsResponse(status: number, message = '', data?: any) {
-        if (Array.isArray(data))
-            return { status, message: message === '' ? (STMESSAGES[status.toString()] || '') : message, data }
-        else
-            return Object.assign({}, data, { status, message: message === '' ? (STMESSAGES[status.toString()] || '') : message })
-    },
-    tools: new GlobUtils(),
-    CONFIGS,
-    koaError(ctx: any, status: number, message: string, data = []) {
+    logger,
+    jsResponse,
+    tools,
+    CONFIGS: config,
+    koaError(ctx: any, status: number, message: string, data: unknown[] = []) {
         void data
         ctx.ErrCode = status
         return new KoaErr({ message, status })
@@ -41,7 +48,7 @@ function globInit() {
 
 class KoaErr extends Error {
     public status: number
-    constructor({ message = 'Error', status = G.STCODES.EXCEPTIONERR } = {}, ...args) {
+    constructor({ message = 'Error', status = G.STCODES.EXCEPTIONERR } = {}, ...args: unknown[]) {
         super()
         this.message = message
         this.status = status

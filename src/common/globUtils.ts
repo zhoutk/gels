@@ -27,7 +27,7 @@ export default class GlobUtils {
         }
     }
     uuid() {
-        return randomUUID()
+        return randomUUID().split('-')[0]
     }
     isDev() {
         return G.NODE_ENV !== 'prod'

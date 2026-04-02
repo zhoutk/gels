@@ -1,6 +1,7 @@
+import { logger } from './global'
 export default {
-    init(app) {
+    init(app: any) {
         void app
-        G.logger.debug('init schedule.')
+        logger.debug('init schedule.')
     }
 }

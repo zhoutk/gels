@@ -1,8 +1,10 @@
 import middles from '../../routers'
+import { jsResponse } from '../../inits/global'
+import { STCODES } from '../../inits/enums'
 
 export default () => {
-  middles.push((ctx) => {
-    ctx.body = G.jsResponse(G.STCODES.NOTFOUNDERR, 'What you request is not found.')
+  middles.push((ctx: any) => {
+    ctx.body = jsResponse(STCODES.NOTFOUNDERR, 'What you request is not found.')
   })
   return middles
 }

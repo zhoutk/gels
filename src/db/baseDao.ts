@@ -38,7 +38,7 @@ export default class BaseDao {
             }
         }
     }
-    async retrieve(params = {}, fields = [], _session = { userid: '' }): Promise<any> {
+    async retrieve(params: Record<string, unknown> = {}, fields: string[] = [], _session: { userid: string } = { userid: '' }): Promise<any> {
         await BaseDao.initDao()
         void _session
         let rs
@@ -53,7 +53,7 @@ export default class BaseDao {
         else
             return processDatum(rs)
     }
-    async create(params = {}, _fields = [], _session = { userid: '' }): Promise<any> {
+    async create(params: Record<string, unknown> = {}, _fields: string[] = [], _session: { userid: string } = { userid: '' }): Promise<any> {
         await BaseDao.initDao()
         void _fields
         void _session
@@ -61,7 +61,8 @@ export default class BaseDao {
         if (keys.length === 0 || params['id'] !== undefined && keys.length <= 1)
             return G.jsResponse(G.STCODES.PARAMERR, 'params is error.')
         else {
-            let rs, id = params['id']
+            let rs
+            let id = params['id'] as string | number | undefined
             try {
                 if (!id) {
                     if (!G.DataTables[this.table])
@@ -83,7 +84,7 @@ export default class BaseDao {
             return G.jsResponse(G.STCODES.SUCCESS, 'data insert success.', { affectedRows, id: id || rs.insertId })
         }
     }
-    async update(params, _fields = [], _session = { userid: '' }): Promise<any> {
+    async update(params: Record<string, unknown> = {}, _fields: string[] = [], _session: { userid: string } = { userid: '' }): Promise<any> {
         await BaseDao.initDao()
         void _fields
         void _session
@@ -92,7 +93,8 @@ export default class BaseDao {
         if (params['id'] === undefined || keys.length <= 1)
             return G.jsResponse(G.STCODES.PARAMERR, 'params is error.')
         else {
-            const { id, ...restParams } = params
+            const id = params['id'] as string | number
+            const { id: _id, ...restParams } = params
             let rs
             try {
                 rs = await BaseDao.dao.update(this.table, restParams, id)
@@ -101,20 +103,20 @@ export default class BaseDao {
                 return err
             }
             let { affectedRows } = rs
-            return G.jsResponse(G.STCODES.SUCCESS, 'data update success.', { affectedRows, id })
+            return G.jsResponse(G.STCODES.SUCCESS, 'data update success.', { affectedRows, id: _id })
         }
     }
-    async delete(params = {}, _fields = [], _session = { userid: '' }): Promise<any> {
+    async delete(params: Record<string, unknown> = {}, _fields: string[] = [], _session: { userid: string } = { userid: '' }): Promise<any> {
         await BaseDao.initDao()
         void _fields
         void _session
         if ((params as Record<string, unknown>)['id'] === undefined)
             return G.jsResponse(G.STCODES.PARAMERR, 'params is error.')
         else {
-            let id = (params as Record<string, unknown>)['id']
+            let id = (params as Record<string, unknown>)['id'] as string | number
             let rs
             try {
-                rs = await BaseDao.dao.delete(this.table, id as string | number)
+                rs = await BaseDao.dao.delete(this.table, id)
             } catch (err) {
                 (err as Error).message = `data delete fail: ${(err as Error).message}`
                 return err
@@ -123,7 +125,7 @@ export default class BaseDao {
             return G.jsResponse(G.STCODES.SUCCESS, 'data delete success.', { affectedRows, id })
         }
     }
-    async querySql(sql: string, values = [], params = {}, fields = []): Promise<any> {
+    async querySql(sql: string, values: unknown[] = [], params: Record<string, unknown> = {}, fields: string[] = []): Promise<any> {
         await BaseDao.initDao()
         let rs
         try {
@@ -137,7 +139,7 @@ export default class BaseDao {
         else
             return processDatum(rs)
     }
-    async execSql(sql: string, values = []): Promise<any> {
+    async execSql(sql: string, values: unknown[] = []): Promise<any> {
         await BaseDao.initDao()
         let rs
         try {
@@ -149,7 +151,7 @@ export default class BaseDao {
         let { affectedRows } = rs
         return G.jsResponse(G.STCODES.SUCCESS, 'data execSql success.', { affectedRows })
     }
-    async insertBatch(tablename: string, elements = []): Promise<any> {
+    async insertBatch(tablename: string, elements: Array<Record<string, unknown>> = []): Promise<any> {
         await BaseDao.initDao()
         let rs
         try {

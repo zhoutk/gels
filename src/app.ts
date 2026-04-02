@@ -1,5 +1,6 @@
 import * as Koa from 'koa'
 import Startup from './inits'
+import { logger } from './inits/global'
 
 //加载中间件
 export default {
@@ -51,7 +52,7 @@ export default {
       else {
         try { msg = JSON.stringify(err) } catch { msg = Object.prototype.toString.call(err as any) }
       }
-      if (G.logger && typeof G.logger.error === 'function') G.logger.error(`loadMiddleware ${name} fail: ${msg}`)
+      if (logger && typeof logger.error === 'function') logger.error(`loadMiddleware ${name} fail: ${msg}`)
       // fallback to noop middleware
     }
     return async function (_ctx: unknown, next: unknown) {

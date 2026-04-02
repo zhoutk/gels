@@ -2,7 +2,7 @@ import IDao from './idao'
 import { createPool, PoolOptions } from 'mysql2'
 import TransElement from '../common/transElement'
 
-const OPMETHODS = {
+const OPMETHODS: Record<string, string> = {
     Insert : 'INSERT INTO ?? SET ?',
     Update : 'UPDATE ?? SET ? WHERE ?',
     Delete : 'DELETE FROM ?? WHERE ?',
@@ -57,7 +57,7 @@ export default class MysqlDao implements IDao {
     execSql(sql: string, values: unknown[]): Promise<unknown> {
         return this.execQuery(sql, values)
     }
-    insertBatch(tablename: string, elements: Array<Record<string, unknown>>): Promise<unknown> {
+    insertBatch(tablename: string, elements: Array<Record<string, unknown>>): Promise<any> {
         let sql: string = OPMETHODS['Batch']
         let updateStr = ''
         let values: unknown[] = [tablename]
@@ -158,7 +158,7 @@ export default class MysqlDao implements IDao {
                                 return new Promise((resolve, reject) => {
                                     let sql = sqlParam.text
                                     let values = sqlParam.values
-                                    conn.query(sql, values, (err, result) => {
+                                    conn.query(sql, values as any, (err, result) => {
                                         if (err) {
                                             conn.rollback(() => {
                                                 G.logger.error(`${isAsync ? 'Async' : 'Sync'} trans run fail, _Sql_ : ${String(sqlParam.text)}, _Values_ : ${JSON.stringify(sqlParam.values)}, _Err_ : ${String((err as any)?.message ?? err)}`)
@@ -207,7 +207,7 @@ export default class MysqlDao implements IDao {
             })
         })
     }
-    private async query(tablename: string, params: Record<string, unknown> | unknown[], fields: string[] = [], sql = '', values: unknown[] = []): Promise<unknown> {
+    private async query(tablename: string, params: Record<string, unknown> | unknown[], fields: string[] = [], sql = '', values: unknown[] = []): Promise<any> {
         params = params || {}
         let where: string = ''
         const AndJoinStr = ' and '
@@ -216,7 +216,7 @@ export default class MysqlDao implements IDao {
         let page: number | undefined = _page as any
         let size: number | undefined = _size as any
         let {lks, ins, ors} = restParams as any
-        let queryKeys = {ors, count, lks, ins, sum}
+        let queryKeys: Record<string, unknown> = { ors, count, lks, ins, sum }
         page = (page) || 0
         size = (size) || G.PAGESIZE
 
@@ -302,7 +302,7 @@ export default class MysqlDao implements IDao {
                                 where = where.substring(0, where.length - AndJoinStr.length)
                         }
                     } else if (search !== undefined) {
-                        const escaped = pool.escape(String(value))
+                        const escaped = (pool as any).escape(String(value))
                         const replaced = escaped.replace(/', '/g, `%' and ${String(key)} like '%`)
                         const v = replaced.substring(1, replaced.length - 1)
                         where += `${String(key)} like '%${String(v)}%'`
@@ -344,7 +344,7 @@ export default class MysqlDao implements IDao {
         if (group !== undefined) {
             const groupText = toSqlPrimitiveString(group)
             if (groupText === null) return Promise.reject(G.jsResponse(G.STCODES.PARAMERR, 'Invalid group value.'))
-            const valueEscaped = pool.escape(groupText)
+            const valueEscaped = (pool as any).escape(groupText)
             const groupStr = ` GROUP BY ${valueEscaped.substring(1, valueEscaped.length - 1)}`
             sql += groupStr
         }
@@ -352,7 +352,7 @@ export default class MysqlDao implements IDao {
         if (sort !== undefined) {
             const sortText = toSqlPrimitiveString(sort)
             if (sortText === null) return Promise.reject(G.jsResponse(G.STCODES.PARAMERR, 'Invalid sort value.'))
-            const valueEscaped = pool.escape(sortText)
+            const valueEscaped = (pool as any).escape(sortText)
             const sortStr = ` ORDER BY ${valueEscaped.substring(1, valueEscaped.length - 1)}`
             sql += sortStr
         }

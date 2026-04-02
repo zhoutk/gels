@@ -1,15 +1,16 @@
 import * as fs from 'fs'
 import * as mkdirp from 'mkdirp'
+import { config, logger, rootPath } from './global'
 export default {
-    init(app) {
+    init(app: any) {
         void app
-        const initDirs = G.CONFIGS.inits.directory.dirs
+        const initDirs = config.inits.directory.dirs
         for (let dir of initDirs) {
-            let dirPath = `${G.ROOT_PATH}/${dir}`
+            let dirPath = `${rootPath}/${dir}`
             const exists = fs.existsSync(dirPath)
             if (!exists) {
                 mkdirp.sync(dirPath)
-                G.logger.debug(`make directory ${dirPath} `)
+                logger.debug(`make directory ${dirPath} `)
             }
         }
     }

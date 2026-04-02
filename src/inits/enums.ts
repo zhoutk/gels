@@ -17,7 +17,7 @@ enum STCODES {
     PARENTNOTFOUNDERR = 801,       //父记录不存在
 }
 
-const STMESSAGES = {
+const STMESSAGES: Record<string, string> = {
     [STCODES.SUCCESS]: 'Operation succeeded. ',
     [STCODES.QUERYEMPTY]: 'Query result is empty. ',
     [STCODES.PARAMERR]: 'Error: Param is wrong. ',

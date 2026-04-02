@@ -1,5 +1,7 @@
 import Router from '@koa/router'
 import BaseDao from '../db/baseDao'
+import { config, jsResponse, tools } from '../inits/global'
+import { STCODES } from '../inits/enums'
 let router = new Router()
 
 const METHODS = {
@@ -10,9 +12,9 @@ const METHODS = {
 }
 
 export default (() => {
-    let process = async (ctx) => {
+    let process = async (ctx: any) => {
         // ctx.body = `rs result -- ${JSON.stringify(ctx.params)}`
-        let method: string = ctx.method.toUpperCase()
+        let method = ctx.method.toUpperCase() as keyof typeof METHODS
         let tableName: string = ctx.params.table
         let id: string | number | undefined = ctx.params.id
         let params = method === 'POST' || method === 'PUT' ? ctx.request.body : ctx.request.query
@@ -20,9 +22,9 @@ export default (() => {
             params.id = id
         let {fields, ...restParams} = params
         if (fields) {
-            fields = G.tools.arryParse(fields)
+            fields = tools.arryParse(fields)
             if (!fields) {
-                throw G.koaError(ctx, G.STCODES.PARAMERR, 'params fields is wrong.')
+                throw G.koaError(ctx, STCODES.PARAMERR, 'params fields is wrong.')
             }
         }
 
@@ -36,7 +38,7 @@ export default (() => {
             is_module_exist && !Object.getOwnPropertyNames(module.default.prototype).some((al) => al === 'retrieve')) ) {
             let rs = await new BaseDao().querySql(
                 'SELECT TABLE_NAME FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA= ? and TABLE_NAME= ? ',
-                [G.CONFIGS.dbconfig.db_name, 'v_' + tableName])
+                [config.dbconfig.db_name, 'v_' + tableName])
             if (rs.status === 200)
                 tableName = 'v_' + tableName
         }
@@ -46,7 +48,7 @@ export default (() => {
             let db = new module.default(tableName)
             rs = await db[METHODS[method]](restParams, fields, ctx.session)
         } catch (err) {
-            rs = G.jsResponse(G.STCODES.EXCEPTIONERR, (err as Error).message)
+            rs = jsResponse(STCODES.EXCEPTIONERR, (err as Error).message)
         }
         ctx.body = rs
         // ctx.body = await new BaseDao().execSql("insert into users (username, password, age) values (?,?,?) ", ['alice', 122, 16])          //test execSql create
@@ -61,7 +63,7 @@ async function loadModule(path: string) {
         return await import(path)
     } catch (err) {
         if ((err as Error).message.indexOf('Cannot find module') < 0)
-            G.logger.error((err as Error).message)
+            console.error((err as Error).message)
         return null
     }
 }

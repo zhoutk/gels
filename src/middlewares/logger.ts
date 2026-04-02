@@ -1,10 +1,11 @@
 import * as color from 'cli-color'
+import { logger, tools } from '../inits/global'
 /**
  * http日志
  */
 export default () => {
-    return async (ctx, next) => {
-        if (G.tools.isDev()) {
+    return async (ctx: any, next: any) => {
+        if (tools.isDev()) {
             const start = Date.now()
             await next()
             const diff = Date.now() - start
@@ -17,7 +18,7 @@ export default () => {
                 'params',
                 color.green(`${JSON.stringify(ctx.method === 'POST' || ctx.method === 'PUT' ? ctx.request.body : ctx.request.query)}`)
             ]
-            G.logger.debug(msgs.join(' '))
+            logger.debug(msgs.join(' '))
         } else {
             await next()
         }
