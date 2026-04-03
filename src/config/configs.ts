@@ -28,10 +28,21 @@ const sqliteFileDbconfig = {
     db_conn: 1,
 }
 
+const jsonFileDbconfig = {
+    db_host: '',
+    db_port: 0,
+    db_name: 'datum.json',
+    db_user: '',
+    db_pass: '',
+    db_char: 'utf8mb4',
+    db_conn: 1,
+}
+
 const dbconfigByDialect = {
     mysql: mysqlDbconfig,
     sqlite3: sqliteDbconfig,
     'sqlite3-file': sqliteFileDbconfig,
+    'json-file': jsonFileDbconfig,
 }
 
 export default {
@@ -46,7 +57,7 @@ export default {
     },
     port: 5000,
     StandSocketPort: 1202,
-    db_dialect: 'sqlite3-file',
+    db_dialect: 'json-file',
     DbLogClose: false,
     skipRestAuth: true,
     cors: {
