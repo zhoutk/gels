@@ -24,8 +24,10 @@ export default class BaseDao {
     static async initDao(): Promise<void> {
         if (!BaseDao.dao) {
             const dialect = config.db_dialect
+            // Support alias like 'sqlite3-file' mapping to the sqlite3Dao implementation
+            const importName = dialect && String(dialect).startsWith('sqlite3') ? 'sqlite3' : dialect
             try {
-                const mod = await import(`./${dialect}Dao`)
+                const mod = await import(`./${importName}Dao`)
                 const DaoCtor = (mod)?.default ?? mod
                 BaseDao.dao = new DaoCtor()
             } catch (e) {

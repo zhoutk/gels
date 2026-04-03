@@ -3,7 +3,9 @@ import { config } from '../inits/global'
 export const SQLITE_DIALECT = 'sqlite3'
 
 export function isSqliteDialect(): boolean {
-    return config.db_dialect === SQLITE_DIALECT
+    const dialect = (config as { db_dialect?: string }).db_dialect
+    if (!dialect) return false
+    return String(dialect).startsWith(SQLITE_DIALECT)
 }
 
 export function quoteSqliteIdentifier(name: string): string {

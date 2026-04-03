@@ -28,8 +28,6 @@ describe.sequential('rest api integration', () => {
 
     beforeAll(async () => {
         globInit()
-        config.db_dialect = 'sqlite3'
-        config.dbconfig.db_name = ':memory:'
         config.skipRestAuth = true
         config.rateLimit.max = 1000
         app = await appIniter.init()
