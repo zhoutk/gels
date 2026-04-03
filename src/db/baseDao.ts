@@ -3,11 +3,13 @@ import TransElement from '../common/transElement'
 import IDao from './idao'
 import { config, jsResponse, logger, tools } from '../inits/global'
 import { STCODES } from '../inits/enums'
-import { isJsonFileDialect, isSqliteDialect, quoteSqliteIdentifier } from './sqlDialect'
+import { isJsonFileDialect, isPostgresDialect, isSqliteDialect, quoteSqliteIdentifier } from './sqlDialect'
 
 const DIALECT_MODULE_MAP: Record<string, string> = {
     'sqlite3-file': 'sqlite3',
     'json-file': 'jsonFile',
+    postgres: 'postgres',
+    postgresql: 'postgres',
 }
 
 function pad2(value: number): string {
@@ -29,7 +31,8 @@ export default class BaseDao {
     static async initDao(): Promise<void> {
         if (!BaseDao.dao) {
             const dialect = config.db_dialect
-            const importName = dialect ? (DIALECT_MODULE_MAP[String(dialect)] ?? dialect) : dialect
+            const dialectText = dialect ? String(dialect) : ''
+            const importName = DIALECT_MODULE_MAP[dialectText] ?? (dialectText.startsWith('postgres') ? 'postgres' : dialectText)
             try {
                 const mod = await import(`./${importName}Dao`)
                 const DaoCtor = (mod)?.default ?? mod
@@ -233,6 +236,20 @@ async function needsGeneratedId(table: string): Promise<boolean> {
         const columnType = String(idColumn.type ?? '').toLowerCase()
         const pk = Number(idColumn.pk ?? 0)
         return !(pk === 1 && columnType.includes('int'))
+    }
+
+    if (isPostgresDialect()) {
+        const schemaRs = await BaseDao.dao.querySql(
+            'SELECT column_default, is_identity FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = ? AND column_name = ?',
+            [table, 'id'],
+            {},
+            []
+        ) as any
+        const row = schemaRs?.data?.[0] as Record<string, unknown> | undefined
+        if (!row) return true
+        const columnDefault = String(row.column_default ?? '').toLowerCase()
+        const isIdentity = String(row.is_identity ?? '').toLowerCase()
+        return !(isIdentity === 'yes' || columnDefault.includes('nextval'))
     }
 
     const schemaRs = await BaseDao.dao.querySql(

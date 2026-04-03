@@ -28,6 +28,16 @@ const sqliteFileDbconfig = {
     db_conn: 1,
 }
 
+const postgresDbconfig = {
+    db_host: '10.0.0.7',
+    db_port: 5432,
+    db_name: 'dbtest',
+    db_user: 'root',
+    db_pass: '123456',
+    db_char: 'utf8mb4',
+    db_conn: 5,
+}
+
 const jsonFileDbconfig = {
     db_host: '',
     db_port: 0,
@@ -43,6 +53,8 @@ const dbconfigByDialect = {
     sqlite3: sqliteDbconfig,
     'sqlite3-file': sqliteFileDbconfig,
     'json-file': jsonFileDbconfig,
+    postgres: postgresDbconfig,
+    postgresql: postgresDbconfig,
 }
 
 export default {
@@ -57,7 +69,7 @@ export default {
     },
     port: 5000,
     StandSocketPort: 1202,
-    db_dialect: 'json-file',
+    db_dialect: 'postgres',
     DbLogClose: false,
     skipRestAuth: true,
     cors: {

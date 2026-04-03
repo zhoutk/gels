@@ -7,7 +7,7 @@
     "dev": "nodemon dist/index.js",
     "build": "tsc",
     "test": "pnpm build && vitest run",
-    "test-keep-db": "pnpm build && cross-env KEEP_TEST_DB=1 vitest run",
+    "test-keep": "pnpm build && cross-env KEEP_TEST_DB=1 vitest run",
     "test:watch": "pnpm build && vitest",
     "lint": "eslint \"src/**/*.{ts,tsx}\" --ext .ts",
     "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --ext .ts --fix"
@@ -41,6 +41,7 @@
     "log4js": "^6.4.6",
     "mkdirp": "^1.0.4",
     "mysql2": "^3.20.0",
+    "pg": "^8.20.0",
     "require-dir": "^1.2.0",
     "sqlite3": "^6.0.1"
   },
@@ -66,6 +67,7 @@
     "@types/koa-static": "^4.0.2",
     "@types/lodash": "^4.14.182",
     "@types/node": "^22.13.14",
+    "@types/pg": "^8.20.0",
     "@types/require-dir": "^1.0.2",
     "@types/supertest": "^7.2.0",
     "@typescript-eslint/eslint-plugin": "^8.58.0",

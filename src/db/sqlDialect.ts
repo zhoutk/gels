@@ -2,6 +2,7 @@ import { config } from '../inits/global'
 
 export const SQLITE_DIALECT = 'sqlite3'
 export const JSON_FILE_DIALECT = 'json-file'
+export const POSTGRES_DIALECT = 'postgres'
 
 export function isSqliteDialect(): boolean {
     const dialect = (config as { db_dialect?: string }).db_dialect
@@ -15,6 +16,16 @@ export function isJsonFileDialect(): boolean {
     return String(dialect).startsWith(JSON_FILE_DIALECT)
 }
 
+export function isPostgresDialect(): boolean {
+    const dialect = (config as { db_dialect?: string }).db_dialect
+    if (!dialect) return false
+    return String(dialect).startsWith(POSTGRES_DIALECT)
+}
+
 export function quoteSqliteIdentifier(name: string): string {
+    return `"${String(name).replace(/"/g, '""')}"`
+}
+
+export function quotePostgresIdentifier(name: string): string {
     return `"${String(name).replace(/"/g, '""')}"`
 }

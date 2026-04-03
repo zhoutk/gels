@@ -1,5 +1,5 @@
 import BaseDao from '../db/baseDao'
-import { isSqliteDialect, quoteSqliteIdentifier } from '../db/sqlDialect'
+import { isPostgresDialect, isSqliteDialect, quotePostgresIdentifier, quoteSqliteIdentifier } from '../db/sqlDialect'
 import { config, jsResponse } from '../inits/global'
 import { STCODES } from '../inits/enums'
 
@@ -42,15 +42,17 @@ export default class DbInitDao {
         await BaseDao.initDao()
         const tableName = resolveTableName(params)
         const baseDao = new BaseDao(tableName)
-        const dropSql = isSqliteDialect()
+        const dropSql = isSqliteDialect() || isPostgresDialect()
             ? `DROP TABLE IF EXISTS ${quoteSqliteIdentifier(tableName)}`
             : 'DROP TABLE IF EXISTS ??'
         const createSql = isSqliteDialect()
             ? `CREATE TABLE ${quoteSqliteIdentifier(tableName)} (id text NOT NULL, name text DEFAULT NULL, age integer DEFAULT NULL, score real DEFAULT NULL, PRIMARY KEY (id))`
+            : isPostgresDialect()
+                ? `CREATE TABLE ${quotePostgresIdentifier(tableName)} (id text NOT NULL PRIMARY KEY, name text DEFAULT NULL, age integer DEFAULT NULL, score numeric(10,2) DEFAULT NULL)`
             : 'CREATE TABLE ?? (id varchar(32) NOT NULL, name varchar(255) DEFAULT NULL, age int(11) DEFAULT NULL, score decimal(10,2) DEFAULT NULL, PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
 
-        await baseDao.execSql(dropSql, isSqliteDialect() ? [] : [tableName])
-        await baseDao.execSql(createSql, isSqliteDialect() ? [] : [tableName])
+        await baseDao.execSql(dropSql, isSqliteDialect() || isPostgresDialect() ? [] : [tableName])
+        await baseDao.execSql(createSql, isSqliteDialect() || isPostgresDialect() ? [] : [tableName])
 
         const insertResult = await baseDao.insertBatch(tableName, SEED_ROWS)
 
@@ -68,8 +70,14 @@ export default class DbInitDao {
         const rs = await new BaseDao().querySql(
             isSqliteDialect()
                 ? 'SELECT name AS TABLE_NAME FROM sqlite_master WHERE type = ? AND name = ? '
-                : 'SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? ',
-            isSqliteDialect() ? ['table', tableName] : [config.dbconfig.db_name, tableName],
+                : isPostgresDialect()
+                    ? 'SELECT table_name AS TABLE_NAME FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = ? '
+                    : 'SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? ',
+            isSqliteDialect()
+                ? ['table', tableName]
+                : isPostgresDialect()
+                    ? [tableName]
+                    : [config.dbconfig.db_name, tableName],
             {},
             []
         ) as any
@@ -86,8 +94,8 @@ export default class DbInitDao {
         const baseDao = new BaseDao(tableName)
 
         await baseDao.execSql(
-            isSqliteDialect() ? `DROP TABLE IF EXISTS ${quoteSqliteIdentifier(tableName)}` : 'DROP TABLE IF EXISTS ??',
-            isSqliteDialect() ? [] : [tableName]
+            isSqliteDialect() || isPostgresDialect() ? `DROP TABLE IF EXISTS ${quoteSqliteIdentifier(tableName)}` : 'DROP TABLE IF EXISTS ??',
+            isSqliteDialect() || isPostgresDialect() ? [] : [tableName]
         )
 
         return jsResponse(STCODES.SUCCESS, 'db init table removed.', {
