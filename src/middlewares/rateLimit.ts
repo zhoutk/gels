@@ -1,9 +1,10 @@
 // Simple in-memory rate limiter to avoid redis-dependent packages
 const records = new Map<string, { count: number; reset: number }>()
 
+import { config, jsResponse } from '../inits/global'
+import { STCODES } from '../inits/enums'
+
 export default () => {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { config, jsResponse } = require('../inits/global')
     const duration = Number(config?.rateLimit?.duration) || 60 * 1000
     const max = Number(config?.rateLimit?.max) || 100
 
@@ -27,12 +28,7 @@ export default () => {
             records.set(id, rec)
             if (rec.count > max) {
                 ctx.status = 429
-                try {
-                    const { STCODES } = require('../inits/enums')
-                    ctx.body = jsResponse(STCODES.EXCEPTIONERR, 'Too many requests, please try again later.')
-                } catch (err) {
-                    ctx.body = 'Too many requests, please try again later.'
-                }
+                ctx.body = jsResponse(STCODES.EXCEPTIONERR, 'Too many requests, please try again later.')
                 return
             }
         }

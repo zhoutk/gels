@@ -1,5 +1,6 @@
-import * as bodyParser from 'koa-body'
+import * as bodyParserPkg from 'koa-body'
 export default () => {
+    const bodyParser = ((bodyParserPkg as any).default ?? bodyParserPkg) as (options: any) => any
     return bodyParser({
         jsonLimit: '1mb',
         formLimit: '1mb',

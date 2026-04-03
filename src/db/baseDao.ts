@@ -178,6 +178,11 @@ export default class BaseDao {
         let { affectedRows } = rs
         return jsResponse(STCODES.SUCCESS, 'data trans success.', { affectedRows })
     }
+    static async closeDao(): Promise<void> {
+        if (BaseDao.dao && typeof BaseDao.dao.close === 'function') {
+            await BaseDao.dao.close()
+        }
+    }
 }
 function processDatum(rs: { data?: Array<Record<string, unknown>> } & Record<string, unknown>) {
     if (!rs || !Array.isArray(rs.data)) return rs

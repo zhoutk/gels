@@ -4,7 +4,9 @@ import { STCODES } from '../../inits/enums'
 
 export default () => {
   middles.push((ctx: any) => {
-    ctx.body = jsResponse(STCODES.NOTFOUNDERR, 'What you request is not found.')
+    if (ctx.body == null) {
+      ctx.body = jsResponse(STCODES.NOTFOUNDERR, 'What you request is not found.')
+    }
   })
   return middles
 }

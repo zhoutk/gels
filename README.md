@@ -72,6 +72,7 @@ A framework,  which use koa2, mysql &amp; typescript , to build micro service ra
         StandSocketPort: 1202,
         db_dialect: 'mysql',
         DbLogClose: false,
+        skipRestAuth: false,
         dbconfig: {
             db_host: '192.168.0.6',
             db_port: 3306,
@@ -156,6 +157,7 @@ A framework,  which use koa2, mysql &amp; typescript , to build micro service ra
 - /op/:command，只支持POST请求，不鉴权，提供登录等特定服务支持
     - login，登录接口；输入参数{username, password}；登录成功返回参数：{status:200, token}
 - /rs/:table[/:id]，支持四种restful请求，GET, POST, PUT, DELELTE，除GET外，其它请求检测是否授权
+- /rs/db_init，只支持POST请求，用于初始化测试表和测试数据；配合 `skipRestAuth: true` 可以直接跑完整的 REST 集成测试
 
 
 ## 中间件
@@ -246,6 +248,25 @@ A framework,  which use koa2, mysql &amp; typescript , to build micro service ra
 ## 高级操作
 - 新增一条记录
     - url
+
+## 运行测试
+
+- 本项目的测试会先构建 `dist`，然后运行 Vitest 集成套件；默认的 `test` 脚本会在完成后清理测试表。
+- 若你希望在测试后保留由 `/rs/db_init` 创建的测试表以便调试或手动验证，可以在运行测试时设置环境变量 `KEEP_TEST_DB=1`。示例：
+
+    在 bash (Linux/macOS 或 Git Bash / WSL)：
+    ```bash
+    KEEP_TEST_DB=1 pnpm test
+    ```
+
+    在 Windows PowerShell：
+    ```powershell
+    $env:KEEP_TEST_DB = '1'; pnpm test
+    ```
+
+- 如果不设置该变量（默认行为），测试完成后 `afterAll` teardown 会向 `DELETE /rs/db_init?tableName=...` 发送请求并删除测试表。
+
+- 备注：测试脚本 (`package.json` 中的 `test`) 会执行 `pnpm build && vitest run`，确保你的数据库可用且 `src/config/configs.ts` 中的连接信息正确。
     ```
         [POST]/rs/users
     ```

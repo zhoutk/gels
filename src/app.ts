@@ -1,4 +1,4 @@
-import * as Koa from 'koa'
+import Koa from 'koa'
 import Startup from './inits'
 import { logger } from './inits/global'
 

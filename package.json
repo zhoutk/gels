@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "nodemon dist/index.js",
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "pnpm build && vitest run",
+    "test-keep-db": "pnpm build && cross-env KEEP_TEST_DB=1 vitest run",
+    "test:watch": "pnpm build && vitest",
     "lint": "eslint \"src/**/*.{ts,tsx}\" --ext .ts",
     "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --ext .ts --fix"
   },
@@ -49,7 +51,8 @@
   "homepage": "https://github.com/zhoutk/arest#readme",
   "pnpm": {
     "onlyBuiltDependencies": [
-      "es5-ext"
+      "es5-ext",
+      "esbuild"
     ]
   },
   "devDependencies": {
@@ -60,13 +63,17 @@
     "@types/koa-router": "^7.4.4",
     "@types/koa-static": "^4.0.2",
     "@types/lodash": "^4.14.182",
-    "@types/node": "^18.19.0",
+    "@types/node": "^22.13.14",
     "@types/require-dir": "^1.0.2",
+    "@types/supertest": "^7.2.0",
     "@typescript-eslint/eslint-plugin": "^8.58.0",
     "@typescript-eslint/parser": "^8.58.0",
     "eslint": "^10.1.0",
     "eslint-config-prettier": "^10.1.8",
     "nodemon": "^3.1.14",
-    "typescript": "^4.9.5"
+    "supertest": "^7.2.2",
+    "cross-env": "^7.0.3",
+    "typescript": "^4.9.5",
+    "vitest": "^3.2.4"
   }
 }

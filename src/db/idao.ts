@@ -9,4 +9,5 @@ export default interface IDao {
     execSql(sql: string, values: unknown[]): Promise<any>;
     insertBatch(tablename: string, elements: Array<Record<string, unknown>>): Promise<any>;
     transGo(elements: Array<TransElement>, isAsync?: boolean): Promise<any>;
+    close?(): Promise<void>;
 }

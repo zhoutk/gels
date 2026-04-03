@@ -7,6 +7,10 @@ const PUBLIC_PATHS = ['/op/login', '/op/register']
 export default () => {
     return async (ctx: any, next: any) => {
         const requestPath = ctx.path || ctx.url || ''
+        if (config.skipRestAuth && requestPath.startsWith('/rs/')) {
+            await next()
+            return
+        }
         if (PUBLIC_PATHS.some((path) => requestPath.startsWith(path))) {
             await next()
             return

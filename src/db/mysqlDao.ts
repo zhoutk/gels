@@ -7,8 +7,8 @@ import { STCODES } from '../inits/enums'
 
 const OPMETHODS: Record<string, string> = {
     Insert : 'INSERT INTO ?? SET ?',
-    Update : 'UPDATE ?? SET ? WHERE ?',
-    Delete : 'DELETE FROM ?? WHERE ?',
+    Update : 'UPDATE ?? SET ? WHERE id = ?',
+    Delete : 'DELETE FROM ?? WHERE id = ?',
     Batch  : 'INSERT INTO ?? (??) VALUES ',
 }
 
@@ -47,10 +47,10 @@ export default class MysqlDao implements IDao {
         return this.execQuery(OPMETHODS['Insert'], [tablename, params])
     }
     update(tablename: string, params: Record<string, unknown> = {}, id: string|number): Promise<unknown> {
-        return this.execQuery(OPMETHODS['Update'], [tablename, params, {id}])
+        return this.execQuery(OPMETHODS['Update'], [tablename, params, id])
     }
     delete(tablename: string, id: string|number): Promise<unknown> {
-        return this.execQuery(OPMETHODS['Delete'], [tablename, {id}])
+        return this.execQuery(OPMETHODS['Delete'], [tablename, id])
     }
     querySql(sql: string, values: unknown[], params: Record<string, unknown> = {}, fields?: string[]): Promise<unknown> {
         fields = fields || []
@@ -100,7 +100,7 @@ export default class MysqlDao implements IDao {
             }
 
             if (ele.id !== undefined)
-                values.push({id: ele.id})
+                values.push(ele.id)
 
             let sql = {text: '', values}
             if (ele.sql !== undefined) {
@@ -215,16 +215,29 @@ export default class MysqlDao implements IDao {
         })
     }
 
+    close(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            pool.end((err) => {
+                if (err) {
+                    reject(err)
+                    return
+                }
+                resolve()
+            })
+        })
+    }
+
     private async query(tablename: string, params: Record<string, unknown> | unknown[], fields: string[] = [], sql = '', values: unknown[] = []): Promise<any> {
         params = params || {}
         let where: string = ''
         const AndJoinStr = ' and '
 
-        let { sort, search, page: _page, size: _size, sum, count, group, ...restParams } = params as Record<string, unknown>
+        let { sort, search, fuzzy, page: _page, size: _size, sum, count, group, ...restParams } = params as Record<string, unknown>
         let page: number | undefined = _page as any
         let size: number | undefined = _size as any
         let { lks, ins, ors } = restParams as any
         let queryKeys: Record<string, unknown> = { ors, count, lks, ins, sum }
+        const isFuzzySearch = search !== undefined || fuzzy !== undefined
         page = page || 0
         size = size || runtime.PAGESIZE
 
@@ -303,7 +316,7 @@ export default class MysqlDao implements IDao {
                     } else {
                         if (where.endsWith(AndJoinStr)) where = where.substring(0, where.length - AndJoinStr.length)
                     }
-                } else if (search !== undefined) {
+                } else if (isFuzzySearch) {
                     const escaped = (pool as any).escape(String(value))
                     const replaced = escaped.replace(/', '/g, `%' and ${String(key)} like '%`)
                     const v = replaced.substring(1, replaced.length - 1)

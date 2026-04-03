@@ -1,5 +1,6 @@
 import Router from '@koa/router'
 import BaseDao from '../db/baseDao'
+import DbInitDao from '../dao/db_init'
 import { config, jsResponse, tools } from '../inits/global'
 import { STCODES } from '../inits/enums'
 import { validateFields, validatePagination } from '../common/validators'
@@ -25,10 +26,12 @@ export default (() => {
         let params = method === 'POST' || method === 'PUT' ? ctx.request.body : ctx.request.query
         if (id != null)
             params.id = id
-        const { page, size } = validatePagination(params.page, params.size)
         let { fields, ...restParams } = params
-        restParams.page = page
-        restParams.size = size
+        const { page, size } = validatePagination(params.page, params.size)
+        if (method === 'GET') {
+            restParams.page = page
+            restParams.size = size
+        }
         if (fields) {
             const validatedFields = validateFields(tableName, fields)
             if (!validatedFields) {
@@ -38,10 +41,16 @@ export default (() => {
             fields = validatedFields
         }
 
-        let module = await loadModule(`../dao/${tableName}`), is_module_exist = true
-        if (!module) {
-            is_module_exist = false
-            module = await loadModule('../db/baseDao')
+        let module: any
+        let is_module_exist = true
+        if (tableName === 'db_init') {
+            module = { default: DbInitDao }
+        } else {
+            module = await loadModule(`../dao/${tableName}`)
+            if (!module) {
+                is_module_exist = false
+                module = await loadModule('../db/baseDao')
+            }
         }
 
         if (method === 'GET' && !tableName.startsWith('v_') && (!is_module_exist || 
