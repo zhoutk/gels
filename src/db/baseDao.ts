@@ -3,6 +3,7 @@ import TransElement from '../common/transElement'
 import IDao from './idao'
 import { config, jsResponse, logger, tools } from '../inits/global'
 import { STCODES } from '../inits/enums'
+import { isSqliteDialect, quoteSqliteIdentifier } from './sqlDialect'
 
 function pad2(value: number): string {
     return String(value).padStart(2, '0')
@@ -68,22 +69,17 @@ export default class BaseDao {
         const payload = { ...inputParams }
         let insertParams: Record<string, unknown> = payload
         let generatedId = providedId as string | number | undefined
+        let shouldGenerateId = false
 
         if (providedId === undefined) {
             try {
-                const schemaRs = await BaseDao.dao.querySql(
-                    'SELECT EXTRA FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?',
-                    [config.dbconfig.db_name, this.table, 'id'],
-                    {},
-                    []
-                ) as any
-                const idExtra = String(schemaRs?.data?.[0]?.EXTRA ?? '').toLowerCase()
-                if (!idExtra.includes('auto_increment')) {
-                    generatedId = tools.uuid()
-                    insertParams = { ...payload, id: generatedId }
-                }
+                shouldGenerateId = await needsGeneratedId(this.table)
             } catch {
-                insertParams = payload
+                shouldGenerateId = true
+            }
+            if (shouldGenerateId) {
+                generatedId = tools.uuid()
+                insertParams = { ...payload, id: generatedId }
             }
         }
 
@@ -95,12 +91,12 @@ export default class BaseDao {
                 try {
                     rs = await BaseDao.dao.insert(this.table, payload)
                 } catch (err) {
-                    if (!err || typeof err !== 'object') {
+                    if (!err || typeof err !== 'object' || shouldGenerateId) {
                         throw err
                     }
                     const code = (err as any).code
                     const message = `${String((err as any)?.message ?? '')} ${String((err as any)?.sqlMessage ?? '')}`
-                    const needGeneratedId = (code === 'ER_NO_DEFAULT_FOR_FIELD' || code === 'ER_BAD_NULL_ERROR') && /(?:field|column)\s+[`"']?id[`"']?/i.test(message)
+                    const needGeneratedId = code === 'ER_NO_DEFAULT_FOR_FIELD' || code === 'ER_BAD_NULL_ERROR' || code === 'SQLITE_CONSTRAINT' || /(?:field|column)\s+[`"']?id[`"']?/i.test(message) || /not null constraint failed.*\bid\b/i.test(message)
                     if (!needGeneratedId) {
                         throw err
                     }
@@ -214,6 +210,32 @@ export default class BaseDao {
             await BaseDao.dao.close()
         }
     }
+}
+
+async function needsGeneratedId(table: string): Promise<boolean> {
+    if (isSqliteDialect()) {
+        const schemaRs = await BaseDao.dao.querySql(
+            `PRAGMA table_info(${quoteSqliteIdentifier(table)})`,
+            [],
+            {},
+            []
+        ) as any
+        const rows = Array.isArray(schemaRs?.data) ? schemaRs.data : []
+        const idColumn = rows.find((row: Record<string, unknown>) => String(row.name ?? '').toLowerCase() === 'id') as Record<string, unknown> | undefined
+        if (!idColumn) return true
+        const columnType = String(idColumn.type ?? '').toLowerCase()
+        const pk = Number(idColumn.pk ?? 0)
+        return !(pk === 1 && columnType.includes('int'))
+    }
+
+    const schemaRs = await BaseDao.dao.querySql(
+        'SELECT EXTRA FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?',
+        [config.dbconfig.db_name, table, 'id'],
+        {},
+        []
+    ) as any
+    const idExtra = String(schemaRs?.data?.[0]?.EXTRA ?? '').toLowerCase()
+    return !idExtra.includes('auto_increment')
 }
 function processDatum(rs: { data?: Array<Record<string, unknown>> } & Record<string, unknown>) {
     if (!rs || !Array.isArray(rs.data)) return rs

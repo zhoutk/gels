@@ -1,5 +1,5 @@
 ## 项目介绍
-基于koa2、关系数据库（暂时只支持mysql）建立的智能微服务快速开发框架，同时支持rest标准，使用typescript语言编写，力求安全、高效。  
+基于koa2、关系数据库（支持 mysql 与 sqlite3）建立的智能微服务快速开发框架，同时支持rest标准，使用typescript语言编写，力求安全、高效。  
 
 A framework,  which use koa2, mysql &amp; typescript , to build micro service rapidly, safely &amp; efficiently.
 
@@ -70,7 +70,7 @@ A framework,  which use koa2, mysql &amp; typescript , to build micro service ra
         },
         port: 5000,
         StandSocketPort: 1202,
-        db_dialect: 'mysql',
+        db_dialect: 'mysql', // 可切换为 sqlite3
         DbLogClose: false,
         skipRestAuth: false,
         dbconfig: {

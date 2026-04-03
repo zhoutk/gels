@@ -4,6 +4,7 @@ import DbInitDao from '../dao/db_init'
 import { config, jsResponse, tools } from '../inits/global'
 import { STCODES } from '../inits/enums'
 import { validateFields, validatePagination } from '../common/validators'
+import { isSqliteDialect } from '../db/sqlDialect'
 let router = new Router()
 
 const METHODS = {
@@ -56,8 +57,10 @@ export default (() => {
         if (method === 'GET' && !tableName.startsWith('v_') && (!is_module_exist || 
             is_module_exist && !Object.getOwnPropertyNames(module.default.prototype).some((al) => al === 'retrieve')) ) {
             let rs = await new BaseDao().querySql(
-                'SELECT TABLE_NAME FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA= ? and TABLE_NAME= ? ',
-                [config.dbconfig.db_name, 'v_' + tableName])
+                isSqliteDialect()
+                    ? 'SELECT name AS TABLE_NAME FROM sqlite_master WHERE type = ? and name = ? '
+                    : 'SELECT TABLE_NAME FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA= ? and TABLE_NAME= ? ',
+                isSqliteDialect() ? ['view', 'v_' + tableName] : [config.dbconfig.db_name, 'v_' + tableName])
             if (rs.status === 200)
                 tableName = 'v_' + tableName
         }

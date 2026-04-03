@@ -21,7 +21,7 @@
     "types": [
       "node",
       "koa",
-      "lodash",
+      "lodash"
     ],
     "outDir": "./dist",
     "rootDir": "./src"

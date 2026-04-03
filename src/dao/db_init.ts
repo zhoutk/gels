@@ -1,4 +1,5 @@
 import BaseDao from '../db/baseDao'
+import { isSqliteDialect, quoteSqliteIdentifier } from '../db/sqlDialect'
 import { config, jsResponse } from '../inits/global'
 import { STCODES } from '../inits/enums'
 
@@ -41,12 +42,15 @@ export default class DbInitDao {
         await BaseDao.initDao()
         const tableName = resolveTableName(params)
         const baseDao = new BaseDao(tableName)
+        const dropSql = isSqliteDialect()
+            ? `DROP TABLE IF EXISTS ${quoteSqliteIdentifier(tableName)}`
+            : 'DROP TABLE IF EXISTS ??'
+        const createSql = isSqliteDialect()
+            ? `CREATE TABLE ${quoteSqliteIdentifier(tableName)} (id text NOT NULL, name text DEFAULT NULL, age integer DEFAULT NULL, score real DEFAULT NULL, PRIMARY KEY (id))`
+            : 'CREATE TABLE ?? (id varchar(32) NOT NULL, name varchar(255) DEFAULT NULL, age int(11) DEFAULT NULL, score decimal(10,2) DEFAULT NULL, PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4'
 
-        await baseDao.execSql('DROP TABLE IF EXISTS ??', [tableName])
-        await baseDao.execSql(
-            'CREATE TABLE ?? (id varchar(32) NOT NULL, name varchar(255) DEFAULT NULL, age int(11) DEFAULT NULL, score decimal(10,2) DEFAULT NULL, PRIMARY KEY (id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4',
-            [tableName]
-        )
+        await baseDao.execSql(dropSql, isSqliteDialect() ? [] : [tableName])
+        await baseDao.execSql(createSql, isSqliteDialect() ? [] : [tableName])
 
         const insertResult = await baseDao.insertBatch(tableName, SEED_ROWS)
 
@@ -62,8 +66,10 @@ export default class DbInitDao {
         await BaseDao.initDao()
         const tableName = resolveTableName(params)
         const rs = await new BaseDao().querySql(
-            'SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? ',
-            [config.dbconfig.db_name, tableName],
+            isSqliteDialect()
+                ? 'SELECT name AS TABLE_NAME FROM sqlite_master WHERE type = ? AND name = ? '
+                : 'SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? ',
+            isSqliteDialect() ? ['table', tableName] : [config.dbconfig.db_name, tableName],
             {},
             []
         ) as any
@@ -79,7 +85,10 @@ export default class DbInitDao {
         const tableName = resolveTableName(params)
         const baseDao = new BaseDao(tableName)
 
-        await baseDao.execSql('DROP TABLE IF EXISTS ??', [tableName])
+        await baseDao.execSql(
+            isSqliteDialect() ? `DROP TABLE IF EXISTS ${quoteSqliteIdentifier(tableName)}` : 'DROP TABLE IF EXISTS ??',
+            isSqliteDialect() ? [] : [tableName]
+        )
 
         return jsResponse(STCODES.SUCCESS, 'db init table removed.', {
             table: tableName,
