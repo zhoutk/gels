@@ -260,22 +260,9 @@ const sortStr = ` ORDER BY ${valueEscaped.substring(1, valueEscaped.length - 1)}
 - `group` 参数同样处理方式
 - 第308行 `where` 拼接存在类似模式
 
-**修复方案**：
-```typescript
-// 使用字段名白名单校验
-const ALLOWED_SORT_FIELDS = ['id', 'created_at', 'updated_at', ...Object.keys(G.DataTables[table])]
-
-function validateSortField(sort: string): string | null {
-    const parts = sort.split(/\s+/)
-    const field = parts[0]
-    const direction = parts[1]?.toUpperCase()
-    
-    if (!ALLOWED_SORT_FIELDS.includes(field)) return null
-    if (direction && !['ASC', 'DESC'].includes(direction)) return null
-    
-    return direction ? `${field} ${direction}` : field
-}
-```
+**修复思路**：
+- 现在框架已经不再依赖全局表结构缓存
+- 若需要排序字段白名单，建议从数据库元数据或显式配置中获取，而不是依赖运行时缓存
 
 ---
 

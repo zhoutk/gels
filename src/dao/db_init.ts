@@ -1,5 +1,5 @@
 import BaseDao from '../db/baseDao'
-import { config, jsResponse, runtime } from '../inits/global'
+import { config, jsResponse } from '../inits/global'
 import { STCODES } from '../inits/enums'
 
 type DbInitRow = {
@@ -20,39 +20,12 @@ const SEED_ROWS: DbInitRow[] = [
     { id: 'a6b7c8d9', name: 'test005', age: 23, score: 94.44 },
 ]
 
-const TABLE_SCHEMA = () => ({
-    id: {
-        COLUMN_NAME: 'id',
-        COLUMN_TYPE: 'varchar(32)',
-        COLUMN_KEY: 'PRI',
-    },
-    name: {
-        COLUMN_NAME: 'name',
-        COLUMN_TYPE: 'varchar(255)',
-        COLUMN_KEY: '',
-    },
-    age: {
-        COLUMN_NAME: 'age',
-        COLUMN_TYPE: 'int(11)',
-        COLUMN_KEY: '',
-    },
-    score: {
-        COLUMN_NAME: 'score',
-        COLUMN_TYPE: 'decimal(10,2)',
-        COLUMN_KEY: '',
-    },
-})
-
 function resolveTableName(params: Record<string, unknown>): string {
     const candidate = params.tableName || params.table || params.name || params.targetTable
     if (typeof candidate === 'string' && candidate.trim().length > 0) {
         return candidate.trim()
     }
     return DEFAULT_TABLE_NAME
-}
-
-function applyTableSchema(tableName: string) {
-    runtime.DataTables[tableName] = TABLE_SCHEMA()
 }
 
 export default class DbInitDao {
@@ -75,7 +48,6 @@ export default class DbInitDao {
             [tableName]
         )
 
-        applyTableSchema(tableName)
         const insertResult = await baseDao.insertBatch(tableName, SEED_ROWS)
 
         return jsResponse(STCODES.SUCCESS, 'db init success.', {
@@ -87,8 +59,15 @@ export default class DbInitDao {
     }
 
     async retrieve(params: Record<string, unknown> = {}): Promise<any> {
+        await BaseDao.initDao()
         const tableName = resolveTableName(params)
-        const isReady = Boolean(runtime.DataTables[tableName])
+        const rs = await new BaseDao().querySql(
+            'SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? ',
+            [config.dbconfig.db_name, tableName],
+            {},
+            []
+        ) as any
+        const isReady = Array.isArray(rs?.data) && rs.data.length > 0
         return jsResponse(STCODES.SUCCESS, isReady ? 'db init table is ready.' : 'db init table is not ready.', {
             table: tableName,
             ready: isReady,
@@ -101,7 +80,6 @@ export default class DbInitDao {
         const baseDao = new BaseDao(tableName)
 
         await baseDao.execSql('DROP TABLE IF EXISTS ??', [tableName])
-        delete runtime.DataTables[tableName]
 
         return jsResponse(STCODES.SUCCESS, 'db init table removed.', {
             table: tableName,

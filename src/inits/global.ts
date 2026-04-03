@@ -24,7 +24,6 @@ export function jsResponse(status: number, message = '', data?: any) {
 }
 
 let GlobVar = {
-    DataTables: Object.create(null),
     PAGESIZE: 10,
     STCODES,
     ROOT_PATH: rootPath,

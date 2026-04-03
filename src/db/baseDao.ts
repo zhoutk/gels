@@ -1,7 +1,7 @@
 import * as lodash from 'lodash'
 import TransElement from '../common/transElement'
 import IDao from './idao'
-import { config, jsResponse, logger, runtime, tools } from '../inits/global'
+import { config, jsResponse, logger, tools } from '../inits/global'
 import { STCODES } from '../inits/enums'
 
 function pad2(value: number): string {
@@ -60,32 +60,63 @@ export default class BaseDao {
         await BaseDao.initDao()
         void _fields
         void _session
-        let keys = Object.keys(params as Record<string, unknown>)
-        if (keys.length === 0 || params['id'] !== undefined && keys.length <= 1)
+        const inputParams = params || {}
+        const keys = Object.keys(inputParams as Record<string, unknown>)
+        if (keys.length === 0)
             return jsResponse(STCODES.PARAMERR, 'params is error.')
-        else {
-            let rs
-            let id = params['id'] as string | number | undefined
+        const providedId = inputParams['id'] as string | number | undefined
+        const payload = { ...inputParams }
+        let insertParams: Record<string, unknown> = payload
+        let generatedId = providedId as string | number | undefined
+
+        if (providedId === undefined) {
             try {
-                if (!id) {
-                    if (!runtime.DataTables[this.table])
-                        return jsResponse(STCODES.DBNEEDRESTARTERR, 'database tables had modify, you should restart server.')
-                    if (!runtime.DataTables[this.table]['id'])
-                        return jsResponse(STCODES.DBNEEDIDERR, 'database tables need id field.')
-                    let idType = runtime.DataTables[this.table]['id']['COLUMN_TYPE']
-                    let leftBracket = idType.indexOf('(')
-                    if (leftBracket > 3 && idType.substring(leftBracket - 3, leftBracket) !== 'int') {
-                        id = tools.uuid()
-                    }
-                } 
-                rs = await BaseDao.dao.insert(this.table, Object.assign(params, id ? { id } : {}))
-            } catch (err) {
-                (err as Error).message = `data insert fail: ${(err as Error).message}`
-                return err
+                const schemaRs = await BaseDao.dao.querySql(
+                    'SELECT EXTRA FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?',
+                    [config.dbconfig.db_name, this.table, 'id'],
+                    {},
+                    []
+                ) as any
+                const idExtra = String(schemaRs?.data?.[0]?.EXTRA ?? '').toLowerCase()
+                if (!idExtra.includes('auto_increment')) {
+                    generatedId = tools.uuid()
+                    insertParams = { ...payload, id: generatedId }
+                }
+            } catch {
+                insertParams = payload
             }
-            let { affectedRows } = rs
-            return jsResponse(STCODES.SUCCESS, 'data insert success.', { affectedRows, id: id || rs.insertId })
         }
+
+        let rs
+        try {
+            if (providedId !== undefined || insertParams['id'] !== undefined) {
+                rs = await BaseDao.dao.insert(this.table, insertParams)
+            } else {
+                try {
+                    rs = await BaseDao.dao.insert(this.table, payload)
+                } catch (err) {
+                    if (!err || typeof err !== 'object') {
+                        throw err
+                    }
+                    const code = (err as any).code
+                    const message = `${String((err as any)?.message ?? '')} ${String((err as any)?.sqlMessage ?? '')}`
+                    const needGeneratedId = (code === 'ER_NO_DEFAULT_FOR_FIELD' || code === 'ER_BAD_NULL_ERROR') && /(?:field|column)\s+[`"']?id[`"']?/i.test(message)
+                    if (!needGeneratedId) {
+                        throw err
+                    }
+                    generatedId = tools.uuid()
+                    rs = await BaseDao.dao.insert(this.table, { ...payload, id: generatedId })
+                    const { affectedRows } = rs
+                    return jsResponse(STCODES.SUCCESS, 'data insert success.', { affectedRows, id: generatedId })
+                }
+            }
+        } catch (err) {
+            (err as Error).message = `data insert fail: ${(err as Error).message}`
+            return err
+        }
+
+        const { affectedRows } = rs
+        return jsResponse(STCODES.SUCCESS, 'data insert success.', { affectedRows, id: providedId || generatedId || rs.insertId })
     }
     async update(params: Record<string, unknown> = {}, _fields: string[] = [], _session: { userid: string } = { userid: '' }): Promise<any> {
         await BaseDao.initDao()
