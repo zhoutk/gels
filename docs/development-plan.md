@@ -1,8 +1,61 @@
 # Gels AI Agent 开发计划
 
-> 编制日期：2026-04-09
-> 基于项目评审报告（docs/review-report.md）
+> 编制日期：2026-04-10（v2.0 更新）
+> 基于项目评审报告（docs/review-report.md）及源码实际状态复核
 > 目标：将 gels 框架升级为 RESTful API 形式的 AI Agent 平台
+
+---
+
+## 〇、项目现状评估（2026-04-10 复核）
+
+### 代码规模
+
+| 维度 | 数据 |
+|------|------|
+| 源码文件 | ~20 个 TS 文件，~3000 行 |
+| 中间件 | 12 个 |
+| 路由 | 2 个（router_rs + router_op） |
+| DAO 实现 | 4 种方言（MySQL / SQLite3 / PostgreSQL / JSON File） |
+| 测试 | 1 个集成测试文件（Vitest + Supertest） |
+| 文档 | 5 个（project-design / function-doc / optimization-plan / review-report / development-plan） |
+
+### 已完成优化（对照源码验证）
+
+| 编号 | 问题 | 标注状态 | 实际状态 |
+|------|------|----------|----------|
+| S2 | 错误堆栈暴露 | ✅ 已完成 | ✅ `globalError.ts:8` 仅 dev 模式返回 stack |
+| S4 | 请求速率限制 | ✅ 已完成 | ✅ `rateLimit.ts` 自实现内存限流 |
+| S5 | 安全头中间件 | ✅ 已完成 | ✅ `helmet.ts` 已集成 koa-helmet |
+| H1 | 鉴权逻辑漏洞 | ✅ 已完成 | ✅ `session.ts` 显式白名单 + Bearer 支持 |
+| H3 | GraphQL 残留 | ✅ 已完成 | ✅ `globUtils.ts` 已清理 |
+| H4 | isLogin() 空实现 | ✅ 已完成 | ✅ 已删除 |
+| H5 | 输入参数验证 | ✅ 已完成 | ✅ `validators.ts` 分页/字段校验 |
+| L2 | Token 传输标准化 | ✅ 已完成 | ✅ `session.ts:19` 同时支持 Bearer 和 token header |
+| M1-1 | 移除 bluebird | ✅ 已完成 | ✅ package.json 无 bluebird |
+| M1-2 | 替换 moment | ✅ 已完成 | ✅ 使用 dayjs |
+| M2 | TypeScript 严格模式 | ✅ 已完成 | ✅ tsconfig.json strict + noImplicitAny |
+| M5 | log4js 配置 | ✅ 已完成 | ✅ 生产环境文件+控制台双输出 |
+| M7 | 请求体大小限制 | ✅ 已完成 | ✅ bodyParser.ts JSON 1MB、文件 10MB |
+| L6 | CORS 配置 | ✅ 已完成 | ✅ 可配置 origins、支持 credentials |
+
+### 未完成问题（对照源码验证）
+
+| 编号 | 问题 | 严重度 | 验证依据 |
+|------|------|--------|----------|
+| S1-REV | 登录仍用明文密码校验 | 🔴 P0 | `router_op.ts:20` `retrieve({ username, password })` |
+| S3 | 敏感配置硬编码 | 🔴 P0 | `configs.ts:6,36,90` 密码/JWT secret 写在源码 |
+| H2 | MySQL SQL 拼接风险 | 🟠 P1 | `mysqlDao.ts` like/sort/group 仍用字符串拼接 |
+| H6 | MySQL 连接池顶层初始化 | 🟠 P1 | `mysqlDao.ts:24-37` 模块顶层立即 `createPool` |
+| H7 | 密码明文传到数据库 | 🟠 P1 | `router_op.ts:20` password 作为查询条件 |
+| M1-3 | TypeScript 4.x 过旧 | 🟡 P2 | `package.json` typescript ^4.9.5 |
+| M3 | 全局 G 对象耦合 | 🟡 P2 | `global.ts` 仍挂载 `global.G`，多处依赖 |
+| M8 | DAO 查询逻辑重复 | 🟡 P2 | 4 个 DAO 实现 ~2300 行重复查询构建 |
+| M9 | require-dir 未替换 | 🟡 P2 | `inits/index.ts:3` 仍使用 require-dir |
+| L1 | 测试覆盖有限 | 🔵 P3 | 仅 1 个 REST 集成测试文件 |
+| L3 | UUID 仅取 8 位 | 🔵 P3 | `globUtils.ts:31` `randomUUID().split('-')[0]` |
+| L5 | ESLint 核心目录规则宽松 | 🔵 P3 | `eslint.config.js` 对核心目录关闭 unsafe 规则 |
+| L7 | 缺少 API 文档 | 🔵 P3 | 无 OpenAPI/Swagger 规范 |
+| L8 | 错误处理不一致 | 🔵 P3 | baseDao catch 返回错误而非 throw |
 
 ---
 
@@ -25,25 +78,68 @@
 
 ## 二、前置条件（Phase 0）
 
-在开始 AI Agent 开发之前，必须先完成以下加固工作。这些是评审报告中标识的 P0/P1 问题。
+在开始 AI Agent 开发之前，必须先完成以下加固工作。这些是评审报告中标识的、经源码验证确认仍未修复的问题。
 
-### 0.1 安全加固（1-2 天）
+### 0.1 安全加固（2-3 天）
 
-| 任务 | 说明 | 优先级 |
-|------|------|--------|
-| 修复登录密码校验 | 引入 bcrypt，注册用 hash，登录用 compare | P0 |
-| 配置外部化 | 引入 dotenv，敏感配置从环境变量读取 | P0 |
-| MySQL 查询参数化 | 修复模糊搜索和 sort/group 的 SQL 拼接 | P1 |
-| 统一连接池初始化 | 所有 DAO 改为懒加载连接池 | P1 |
+| 任务 | 说明 | 优先级 | 当前状态 |
+|------|------|--------|----------|
+| 修复登录密码校验（S1-REV/H7） | 注册用 `bcrypt.hash()`，登录用 `bcrypt.compare()`，不再将 password 传入 retrieve | P0 | ❌ 未修复 |
+| 配置外部化（S3） | 引入 dotenv，敏感配置从环境变量读取，创建 `.env.example` | P0 | ❌ 未修复 |
+| MySQL 查询参数化（H2） | 修复模糊搜索和 sort/group 的 SQL 拼接，使用参数化查询 | P1 | ❌ 未修复 |
+| 统一连接池初始化（H6） | mysqlDao/postgresDao 改为懒加载连接池 | P1 | ❌ 未修复 |
+
+**S1-REF 修复方案**（详细）：
+
+```typescript
+// src/routers/router_op.ts - 登录逻辑
+import { compare } from 'bcryptjs'
+
+case 'login': {
+    const { username, password } = ctx.request.body || {}
+    if (!username || !password) {
+        ctx.body = jsResponse(STCODES.PARAMERR, 'username or password is missing.')
+        break
+    }
+    let rs = await new BaseDao('users').retrieve({ username })
+    if (rs.status === STCODES.SUCCESS && rs.data?.length > 0) {
+        let user = rs.data[0]
+        if (await compare(password, user.password)) {
+            let token = jwt.sign({ userid: user.id, username }, config.jwt.secret, {
+                expiresIn: config.jwt.expires_max,
+            })
+            ctx.body = jsResponse(STCODES.SUCCESS, 'login success.', { token })
+        } else {
+            ctx.body = jsResponse(STCODES.PASSWORDERR, 'Password is wrong.')
+        }
+    } else {
+        ctx.body = jsResponse(STCODES.QUERYEMPTY, 'The user is missing.')
+    }
+    break
+}
+
+// 注册接口（新增）
+case 'register': {
+    const { username, password } = ctx.request.body || {}
+    if (!username || !password) {
+        ctx.body = jsResponse(STCODES.PARAMERR, 'username or password is missing.')
+        break
+    }
+    const hash = await hash(password, 10)
+    let rs = await new BaseDao('users').create({ username, password: hash })
+    ctx.body = rs
+    break
+}
+```
 
 ### 0.2 架构准备（2-3 天）
 
-| 任务 | 说明 | 优先级 |
-|------|------|--------|
-| 抽取查询构建器 | 将 DAO 查询逻辑重构为 QueryBuilder + Dialect 适配器 | P2 |
-| 统一错误处理 | DAO 层 catch 改为 throw，统一由 globalError 处理 | P2 |
-| 移除 require-dir | inits/index.ts 改为 fs.readdirSync + 动态 import | P2 |
-| 新模块不再依赖 G | 新增代码通过 import 获取 config/logger/tools | P2 |
+| 任务 | 说明 | 优先级 | 当前状态 |
+|------|------|--------|----------|
+| 移除 require-dir（M9） | `inits/index.ts` 改为 `fs.readdirSync` + 动态 import | P2 | ❌ 未修复 |
+| 统一错误处理（L8） | DAO 层 catch 改为 throw，统一由 globalError 处理 | P2 | ❌ 未修复 |
+| 修复 UUID（L3） | `globUtils.ts` 改为返回完整 UUID | P2 | ❌ 未修复 |
+| 新模块不再依赖 G | 新增代码通过 `import` 获取 config/logger/tools | P2 | 准则约定 |
 
 ---
 
@@ -339,22 +435,11 @@ class AgentExecutor {
 // src/agent/session/manager.ts
 
 class SessionManager {
-  // 创建新会话
   async create(agentId: string, userId: string, metadata?: object): Promise<AgentSession>
-
-  // 获取会话
   async get(sessionId: string): Promise<AgentSession | null>
-
-  // 获取会话消息历史
   async getMessages(sessionId: string, page?: number, size?: number): Promise<Message[]>
-
-  // 追加消息
   async addMessage(message: Message): Promise<void>
-
-  // 删除会话及其消息
   async delete(sessionId: string): Promise<void>
-
-  // 清理过期会话
   async cleanup(maxAge: number): Promise<number>
 }
 ```
@@ -432,23 +517,47 @@ class SSEMiddleware {
 
 ## 七、开发阶段规划
 
+### Phase 0：前置加固（3-5 天）
+
+**目标**：修复安全漏洞 + 架构基础准备
+
+| 任务 | 天数 | 交付物 | 状态 |
+|------|------|--------|------|
+| S1-REV：修复登录密码校验，引入 bcrypt | 0.5 | `router_op.ts` 使用 bcrypt.compare | ❌ |
+| S3：配置外部化，引入 dotenv | 0.5 | `.env.example` + configs.ts 读取环境变量 | ❌ |
+| 新增注册接口（使用 bcrypt.hash） | 0.5 | `router_op.ts` register 命令 | ❌ |
+| H2：MySQL 查询参数化 | 1 | mysqlDao.ts like/sort/group 参数化 | ❌ |
+| H6：统一连接池懒加载 | 0.5 | mysqlDao/postgresDao 延迟初始化 | ❌ |
+| M9：移除 require-dir | 0.5 | `inits/index.ts` 改用 fs.readdirSync | ❌ |
+| L8：统一错误处理 | 0.5 | DAO 层 catch 改为 throw | ❌ |
+| L3：修复 UUID | 0.1 | globUtils.ts 返回完整 UUID | ❌ |
+
+**验收标准**：
+- `pnpm build` 通过
+- `pnpm test` 全部通过
+- 登录接口使用 bcrypt 校验，不再明文比较
+- 敏感配置不在源码中硬编码
+- MySQL DAO 使用参数化查询
+
+---
+
 ### Phase 1：基础设施（1 周）
 
-**目标**：完成前置加固 + Agent 数据模型 + LLM Provider 抽象层
+**目标**：Agent 数据模型 + LLM Provider 抽象层 + 会话管理
 
 | 任务 | 天数 | 交付物 |
 |------|------|--------|
-| P0 安全加固（bcrypt、dotenv） | 1 | 可编译运行的安全版本 |
-| 统一错误处理 + 连接池懒加载 | 1 | 重构后的 DAO 层 |
-| 新增数据库表（agent_sessions, agent_messages, agent_tasks） | 0.5 | 迁移脚本 |
+| 新增数据库表（agent_sessions, agent_messages, agent_tasks） | 0.5 | SQL 迁移脚本 |
 | LLM Provider 接口 + OpenAI 实现 | 1.5 | `src/agent/llm/provider.ts` + `openai.ts` |
 | Agent Session Manager | 1 | `src/agent/session/manager.ts` |
-| 配置扩展（LLM API Key、模型选择） | 0.5 | 扩展后的 configs.ts |
+| 配置扩展（LLM API Key、模型选择） | 0.5 | 扩展后的 configs.ts + .env |
+| 数据库方言适配（确保新表在 4 种方言下可用） | 1 | 迁移脚本兼容 SQLite/PG/MySQL |
 
 **验收标准**：
 - `pnpm build` 通过
 - 现有测试全部通过
 - 可通过代码调用 LLM Provider 获得响应
+- Session Manager 可创建/查询/删除会话
 
 ---
 
@@ -548,8 +657,8 @@ export default {
     default_model: 'gpt-4o',
     max_turns: 10,
     default_temperature: 0.7,
-    session_max_age: 86400,          // 会话最大存活时间（秒）
-    session_cleanup_interval: 3600,  // 清理间隔（秒）
+    session_max_age: 86400,
+    session_cleanup_interval: 3600,
   },
 
   llm: {
@@ -572,11 +681,11 @@ export default {
     enabled: ['db_query', 'db_insert', 'db_update', 'db_delete', 'http_get', 'http_post'],
     sql_query: {
       allowed: true,
-      read_only: true,              // 仅允许 SELECT
+      read_only: true,
       max_rows: 1000,
     },
     code_eval: {
-      allowed: false,               // 默认关闭
+      allowed: false,
       timeout: 5000,
     },
   },
@@ -619,20 +728,22 @@ AGENT_DEFAULT_MODEL=gpt-4o
 | 会话数据增长 | 数据库膨胀 | 会话过期清理 + 消息归档 |
 | 并发 LLM 调用 | 资源耗尽 | 请求队列 + 并发限制 + 超时取消 |
 | 全局 G 对象耦合 | 新代码难以测试 | Agent 模块完全通过 import 获取依赖，不使用 G |
+| Phase 0 遗留问题未修复 | 安全漏洞带入生产 | Phase 0 为强制前置条件，不完成不进入 Phase 1 |
 
 ---
 
 ## 十、里程碑与交付
 
-| 阶段 | 预计时间 | 里程碑 |
-|------|----------|--------|
-| Phase 0 + 1 | 第 1-2 周 | 安全加固完成 + LLM 可调用 + 会话管理可用 |
-| Phase 2 | 第 3-4 周 | Agent 执行循环完成 + Tool Calling 可用 |
-| Phase 3 | 第 5 周 | RESTful API 可用 + SSE 流式输出 |
-| Phase 4 | 第 6 周 | 多 Provider + 异步任务 + 生产增强 |
-| Phase 5 | 第 7 周 | 测试覆盖 + 文档完整 |
+| 阶段 | 预计时间 | 里程碑 | 依赖 |
+|------|----------|--------|------|
+| Phase 0 | 第 1 周 | 安全加固完成 + 架构基础就绪 | 无 |
+| Phase 1 | 第 2 周 | LLM 可调用 + 会话管理可用 | Phase 0 |
+| Phase 2 | 第 3-4 周 | Agent 执行循环完成 + Tool Calling 可用 | Phase 1 |
+| Phase 3 | 第 5 周 | RESTful API 可用 + SSE 流式输出 | Phase 2 |
+| Phase 4 | 第 6 周 | 多 Provider + 异步任务 + 生产增强 | Phase 3 |
+| Phase 5 | 第 7 周 | 测试覆盖 + 文档完整 | Phase 4 |
 
-**最小可用产品（MVP）**：Phase 1-3 完成后即可提供基本的 AI Agent RESTful API 服务。
+**最小可用产品（MVP）**：Phase 0-3 完成后即可提供基本的 AI Agent RESTful API 服务。
 
 ---
 
@@ -647,5 +758,25 @@ AGENT_DEFAULT_MODEL=gpt-4o
 
 ---
 
+## 十二、其他待办事项（长期）
+
+以下问题不阻塞 AI Agent 开发，但应在后续迭代中逐步解决：
+
+| 任务 | 优先级 | 说明 |
+|------|--------|------|
+| TypeScript 升级 5.x | P3 | 需修复编译错误，非阻塞 |
+| DAO 查询逻辑重构（M8） | P3 | 抽取共享 QueryBuilder + Dialect 适配器 |
+| 全局 G 对象解耦（M3） | P3 | 渐进式重构，新功能先行 |
+| ESLint 规则收紧（L5） | P3 | 逐步将 off 改为 warn 再改为 error |
+| API 文档（L7） | P3 | OpenAPI/Swagger 规范 |
+| 测试覆盖扩展（L1） | P3 | 中间件、DAO、边界条件测试 |
+| mysql2 升级验证 | P3 | 已升级到 3.x，需完整回归测试 |
+| postgresDao 字段大小写（M10） | P3 | 引号策略兼容性评估 |
+
+---
+
 **编制人**：AI Architecture Review
-**版本**：v1.0
+**版本**：v2.0（2026-04-10 更新，基于源码实际状态复核）
+**变更记录**：
+- v1.0（2026-04-09）：初始版本
+- v2.0（2026-04-10）：基于源码实际状态全面复核，修正已完成/未完成项状态，细化 Phase 0 任务及修复方案，增加长期待办清单
