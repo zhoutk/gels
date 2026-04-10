@@ -1,4 +1,4 @@
-import * as color from 'cli-color'
+import color = require('cli-color')
 import { logger, tools } from '../inits/global'
 /**
  * http日志
@@ -10,7 +10,7 @@ export default () => {
             await next()
             const diff = Date.now() - start
             const msgs = [
-                (ctx.method === 'POST' ? color.bgYellowBright.green : color.bgBlue)(`${ctx.method}`),
+                (ctx.method === 'POST' ? color.green(color.bgYellowBright(`${ctx.method}`)) : color.bgBlue(`${ctx.method}`)),
                 color.cyan(`${ctx.url}`),
                 (ctx.status >= 400 ? color.redBright : color.greenBright)(`[${ctx.status}]`),
                 '-',

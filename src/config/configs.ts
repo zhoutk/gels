@@ -69,7 +69,7 @@ export default {
     },
     port: 5000,
     StandSocketPort: 1202,
-    db_dialect: 'postgres',
+    db_dialect: 'sqlite3',
     DbLogClose: false,
     skipRestAuth: true,
     cors: {
