@@ -27,7 +27,7 @@
     "bcryptjs": "^3.0.3",
     "cli-color": "^2.0.2",
     "debug": "^4.3.4",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "koa": "^2.13.4",
     "koa-body": "^5.0.0",
     "koa-conditional-get": "^3.0.0",
